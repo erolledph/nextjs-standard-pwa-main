@@ -1,0 +1,260 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'tw-animate-css';
+
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #FF7518;
+  --primary-foreground: #ffffff;
+  --secondary: #fff5f0;
+  --secondary-foreground: #000000;
+  --muted: #faf8f6;
+  --muted-foreground: #666666;
+  --accent: #ffe8d6;
+  --accent-foreground: #000000;
+  --destructive: #dc3545;
+  --destructive-foreground: #ffffff;
+  --border: #d0d0d0;
+  --input: #ffffff;
+  --ring: #FF7518;
+  --shadow-gray: #d0d0d0;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.25rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #FF7518;
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.145 0 0);
+  --sidebar-border: oklch(0.92 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #FF7518;
+  --primary-foreground: #ffffff;
+  --secondary: #3d2415;
+  --secondary-foreground: #ffffff;
+  --muted: #252525;
+  --muted-foreground: #999999;
+  --accent: #2a1f15;
+  --accent-foreground: #ffffff;
+  --destructive: #dc3545;
+  --destructive-foreground: #ffffff;
+  --border: #404040;
+  --input: #1a1a1a;
+  --ring: #FF7518;
+  --shadow-gray: #404040;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.16 0.01 155);
+  --sidebar-foreground: oklch(0.92 0.01 155);
+  --sidebar-primary: #FF7518;
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.20 0.01 155);
+  --sidebar-accent-foreground: oklch(0.92 0.01 155);
+  --sidebar-border: oklch(0.25 0.01 155);
+  --sidebar-ring: oklch(0.55 0.15 155);
+}
+
+
+
+@layer base {
+  * {
+    border-color: var(--shadow-gray);
+    outline-color: var(--ring);
+    outline-offset: 2px;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "liga" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    line-height: 1.8;
+  }
+
+  .font-serif {
+    font-family: Georgia, serif;
+  }
+}
+
+@layer utilities {
+  .underline-animation {
+    position: relative;
+    display: inline;
+    background: linear-gradient(
+      to right,
+      #FF7518 0%,
+      #FF7518 100%
+    ) left bottom no-repeat;
+    background-size: 0 2px;
+    animation: underline-expand 0.3s ease-out forwards;
+    padding-bottom: 0;
+  }
+
+  @keyframes underline-expand {
+    to {
+      background-size: 100% 2px;
+    }
+  }
+
+  @keyframes levitate {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .levitate-animation {
+    animation: levitate 3s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-loading {
+    0% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.6;
+    }
+  }
+}
+
+/* Comment system removed - using GitHub-based CMS only */
+
+/* YouTube IFrame Player API Styling - Hide all YouTube UI elements */
+.youtube-container-hidden-details {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+  position: relative;
+  background: #000;
+}
+
+/* Hide YouTube video info and controls completely */
+/* Shift iframe left to hide YouTube branding, info, and channel details on the right */
+.youtube-container-hidden-details iframe {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
+  height: 100%;
+  display: block;
+  border: none;
+}
+
+/* Prevents any YouTube tooltips or info from showing */
+.youtube-container-hidden-details iframe:hover {
+  width: 300%;
+}
+
+/* Hide YouTube end-screen elements and recommendations */
+.youtube-container-hidden-details iframe::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+
+/* Custom Player Controls Animations */
+@keyframes fadeInControls {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOutControls {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.opacity-0 {
+  animation: fadeOutControls 0.3s ease-out forwards;
+}
+
+.opacity-100 {
+  animation: fadeInControls 0.3s ease-in forwards;
+}
+
+/* ===== NProgress Bar Customization ===== */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: #FF7518 !important;
+  height: 4px !important;
+  box-shadow: 0 0 15px rgba(255, 117, 24, 0.8) !important;
+}
+
+#nprogress .pbar {
+  background: #FF7518 !important;
+  box-shadow: 0 0 15px rgba(255, 117, 24, 0.8) !important;
+}
+
+#nprogress .spinner {
+  display: none !important;
+}
+
+#nprogress .spinner-icon {
+  display: none !important;
+}
+
+/* Fade in animation for progress bar */
+#nprogress.active .bar {
+  animation: nprogress-fadeIn 0.2s ease-in-out;
+}
+
+@keyframes nprogress-fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
