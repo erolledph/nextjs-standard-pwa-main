@@ -5,45 +5,9 @@ import { Container } from "@/components/layout/Container"
 import { BlogPostCard } from "@/components/blog/BlogPostCard"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
 
+export const runtime = 'edge'
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ""
-
-// Generate static params for popular tags
-export async function generateStaticParams() {
-  try {
-    const owner = process.env.GITHUB_OWNER || ""
-    const repo = process.env.GITHUB_REPO || ""
-    const token = process.env.GITHUB_TOKEN || ""
-
-    const [blogs, recipes] = await Promise.all([
-      fetchPostsFromGitHub(owner, repo, token),
-      fetchContentFromGitHub(owner, repo, token, "recipes"),
-    ])
-
-    // Extract all unique tags
-    const tags = new Set<string>()
-    ;[...blogs, ...recipes].forEach((post) => {
-      post.tags?.forEach((tag) => tags.add(tag.toLowerCase()))
-    })
-
-    // Return top 20 tags as static params (rest will be generated on demand)
-    const tagFrequency = new Map<string, number>()
-    ;[...blogs, ...recipes].forEach((post) => {
-      post.tags?.forEach((tag) => {
-        const lower = tag.toLowerCase()
-        tagFrequency.set(lower, (tagFrequency.get(lower) || 0) + 1)
-      })
-    })
-
-    return Array.from(tags)
-      .sort((a, b) => (tagFrequency.get(b) || 0) - (tagFrequency.get(a) || 0))
-      .slice(0, 20)
-      .map((tag) => ({
-        tag: tag,
-      }))
-  } catch {
-    return []
-  }
-}
 
 export async function generateMetadata({
   params,
