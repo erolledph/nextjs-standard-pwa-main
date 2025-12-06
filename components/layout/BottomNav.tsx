@@ -37,10 +37,10 @@ export function BottomNav() {
               <Icon
                 className="w-6 h-6 transition-all"
                 style={{
-                  color: active ? "#FF7518" : "currentColor",
+                  color: active ? "#FF7518" : "#8b8078",
                 }}
               />
-              <span className={`text-xs font-medium transition-colors ${active ? '' : 'text-foreground/50'}`} style={active ? { color: "#FF7518" } : {}}>
+              <span className={`text-xs font-medium transition-colors`} style={{ color: active ? "#FF7518" : "#8b8078" }}>
                 {label}
               </span>
             </Link>

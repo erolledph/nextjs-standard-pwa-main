@@ -22,16 +22,16 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/recipes" className="text-sm font-medium text-foreground/50 hover:text-orange-500 transition-colors">
+          <Link href="/recipes" className="text-sm font-medium transition-colors" style={{ color: '#8b8078' }} onMouseEnter={(e) => e.currentTarget.style.color = '#FF7518'} onMouseLeave={(e) => e.currentTarget.style.color = '#8b8078'}>
             Recipes
           </Link>
-          <Link href="/videos" className="text-sm font-medium text-foreground/50 hover:text-orange-500 transition-colors">
+          <Link href="/videos" className="text-sm font-medium transition-colors" style={{ color: '#8b8078' }} onMouseEnter={(e) => e.currentTarget.style.color = '#FF7518'} onMouseLeave={(e) => e.currentTarget.style.color = '#8b8078'}>
             Videos
           </Link>
-          <Link href="/blog" className="text-sm font-medium text-foreground/50 hover:text-orange-500 transition-colors">
+          <Link href="/blog" className="text-sm font-medium transition-colors" style={{ color: '#8b8078' }} onMouseEnter={(e) => e.currentTarget.style.color = '#FF7518'} onMouseLeave={(e) => e.currentTarget.style.color = '#8b8078'}>
             Blog
           </Link>
-          <Link href="/favorites" className="text-sm font-medium text-foreground/50 hover:text-orange-500 transition-colors">
+          <Link href="/favorites" className="text-sm font-medium transition-colors" style={{ color: '#8b8078' }} onMouseEnter={(e) => e.currentTarget.style.color = '#FF7518'} onMouseLeave={(e) => e.currentTarget.style.color = '#8b8078'}>
             Favorites
           </Link>
         </nav>
