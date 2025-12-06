@@ -12,7 +12,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-white dark:bg-slate-950 shadow-sm">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-sm">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
 
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">

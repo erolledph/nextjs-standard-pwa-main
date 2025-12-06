@@ -40,7 +40,7 @@ export function BottomNav() {
                   color: active ? "#FF7518" : "currentColor",
                 }}
               />
-              <span className="text-xs font-medium" style={active ? { color: "#FF7518" } : { color: '#64748b' }}>
+              <span className={`text-xs font-medium transition-colors ${active ? '' : 'text-slate-600 dark:text-slate-300'}`} style={active ? { color: "#FF7518" } : {}}>
                 {label}
               </span>
             </Link>
