@@ -22,16 +22,16 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/recipes" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
+          <Link href="/recipes" className="text-sm font-medium text-foreground/50 hover:text-orange-500 transition-colors">
             Recipes
           </Link>
-          <Link href="/videos" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
+          <Link href="/videos" className="text-sm font-medium text-foreground/50 hover:text-orange-500 transition-colors">
             Videos
           </Link>
-          <Link href="/blog" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
+          <Link href="/blog" className="text-sm font-medium text-foreground/50 hover:text-orange-500 transition-colors">
             Blog
           </Link>
-          <Link href="/favorites" className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">
+          <Link href="/favorites" className="text-sm font-medium text-foreground/50 hover:text-orange-500 transition-colors">
             Favorites
           </Link>
         </nav>

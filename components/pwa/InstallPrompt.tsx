@@ -105,7 +105,7 @@ export function InstallPrompt() {
   const Icon = instructions.platform === 'desktop' ? Monitor : Smartphone
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm">
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 max-w-sm">
       <Card className="shadow-lg border-primary/20 bg-background/95 backdrop-blur-sm">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">

@@ -31,7 +31,7 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center justify-center py-2 px-4 gap-1 transition-all duration-200"
+              className="flex flex-col items-center justify-center py-2 px-4 gap-1 transition-all duration-200 hover:opacity-80"
               aria-label={label}
             >
               <Icon
@@ -40,7 +40,7 @@ export function BottomNav() {
                   color: active ? "#FF7518" : "currentColor",
                 }}
               />
-              <span className={`text-xs font-medium transition-colors ${active ? '' : 'text-foreground/60'}`} style={active ? { color: "#FF7518" } : {}}>
+              <span className={`text-xs font-medium transition-colors ${active ? '' : 'text-foreground/50'}`} style={active ? { color: "#FF7518" } : {}}>
                 {label}
               </span>
             </Link>
