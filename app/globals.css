@@ -5,26 +5,26 @@
 @import 'tw-animate-css';
 
 :root {
-  --background: #ffffff;
-  --foreground: #000000;
+  --background: #fefdfb;
+  --foreground: #1a1410;
   --card: #ffffff;
-  --card-foreground: #000000;
+  --card-foreground: #1a1410;
   --popover: #ffffff;
-  --popover-foreground: #000000;
+  --popover-foreground: #1a1410;
   --primary: #FF7518;
   --primary-foreground: #ffffff;
   --secondary: #fff5f0;
-  --secondary-foreground: #000000;
-  --muted: #faf8f6;
-  --muted-foreground: #666666;
+  --secondary-foreground: #1a1410;
+  --muted: #f3ede5;
+  --muted-foreground: #5a5047;
   --accent: #ffe8d6;
-  --accent-foreground: #000000;
+  --accent-foreground: #1a1410;
   --destructive: #dc3545;
   --destructive-foreground: #ffffff;
-  --border: #d0d0d0;
+  --border: #e8dfd7;
   --input: #ffffff;
   --ring: #FF7518;
-  --shadow-gray: #d0d0d0;
+  --shadow-gray: #d9cfc5;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -42,26 +42,26 @@
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --card: #1a1a1a;
-  --card-foreground: #ffffff;
-  --popover: #1a1a1a;
-  --popover-foreground: #ffffff;
+  --background: #0f0e0d;
+  --foreground: #f5f1ed;
+  --card: #1a1814;
+  --card-foreground: #f5f1ed;
+  --popover: #1a1814;
+  --popover-foreground: #f5f1ed;
   --primary: #FF7518;
   --primary-foreground: #ffffff;
   --secondary: #3d2415;
-  --secondary-foreground: #ffffff;
-  --muted: #252525;
-  --muted-foreground: #999999;
+  --secondary-foreground: #f5f1ed;
+  --muted: #2a2520;
+  --muted-foreground: #b8b0a8;
   --accent: #2a1f15;
-  --accent-foreground: #ffffff;
+  --accent-foreground: #f5f1ed;
   --destructive: #dc3545;
   --destructive-foreground: #ffffff;
-  --border: #404040;
-  --input: #1a1a1a;
+  --border: #3a3530;
+  --input: #1a1814;
   --ring: #FF7518;
-  --shadow-gray: #404040;
+  --shadow-gray: #3a3530;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
