@@ -116,18 +116,23 @@ export function Header() {
               {/* Desktop: Show button with text */}
               <button
                 onClick={handleInstallClick}
-                className="hidden md:flex items-center gap-2 text-sm font-medium transition-colors px-3 py-2 rounded-md hover:bg-muted"
-                style={{ color: '#FF7518' }}
+                className="hidden md:inline-flex items-center gap-2 font-bold py-2 px-4 rounded transition-colors"
+                style={{ backgroundColor: '#FF7518', color: '#ffffff' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E66A0F'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF7518'}
                 aria-label="Install app"
               >
                 <Download className="w-4 h-4" />
-                Install App
+                <span>Install app</span>
               </button>
               
               {/* Mobile: Show icon only */}
               <button
                 onClick={handleInstallClick}
-                className="md:hidden flex items-center justify-center text-sm text-foreground/50 hover:text-foreground/70 transition-colors p-2 rounded-md hover:bg-muted"
+                className="md:hidden flex items-center justify-center font-bold py-2 px-3 rounded transition-colors"
+                style={{ backgroundColor: '#FF7518', color: '#ffffff' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E66A0F'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF7518'}
                 aria-label="Install app"
               >
                 <Download className="w-4 h-4" />
