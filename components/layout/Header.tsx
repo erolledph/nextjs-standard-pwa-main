@@ -126,16 +126,17 @@ export function Header() {
                 <span>Install app</span>
               </button>
               
-              {/* Mobile: Show icon only */}
+              {/* Mobile: Show button with text and icon */}
               <button
                 onClick={handleInstallClick}
-                className="md:hidden flex items-center justify-center font-bold py-2 px-3 rounded transition-colors"
+                className="md:hidden flex items-center gap-2 font-bold py-2 px-3 rounded transition-colors"
                 style={{ backgroundColor: '#FF7518', color: '#ffffff' }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E66A0F'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF7518'}
                 aria-label="Install app"
               >
                 <Download className="w-4 h-4" />
+                <span className="text-sm">Install app</span>
               </button>
             </>
           )}
