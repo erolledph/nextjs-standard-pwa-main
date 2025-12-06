@@ -3,12 +3,17 @@
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
-import { Sun, Moon, UtensilsCrossed, Play } from "lucide-react"
+import { Sun, Moon, UtensilsCrossed, Play, Download } from "lucide-react"
+import { isPWA, canInstallPWA, isIOS } from "@/lib/pwa"
+import type { BeforeInstallPromptEvent } from "@/lib/pwa"
 
 export function Header() {
   const { theme, setTheme, systemTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [isDark, setIsDark] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [showInstallButton, setShowInstallButton] = useState(false)
+  const [isInstalled, setIsInstalled] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -21,8 +26,63 @@ export function Header() {
     setIsDark(currentTheme === 'dark')
   }, [theme, systemTheme, mounted])
 
+  useEffect(() => {
+    // Check if already installed
+    setIsInstalled(isPWA())
+
+    // Don't show prompt if already installed
+    if (isPWA()) {
+      return
+    }
+
+    // Listen for the beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      setShowInstallButton(true)
+    }
+
+    // Listen for app installed event
+    const handleAppInstalled = () => {
+      setIsInstalled(true)
+      setShowInstallButton(false)
+      setDeferredPrompt(null)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener('appinstalled', handleAppInstalled)
+
+    // For iOS devices, show install button
+    if (isIOS() && canInstallPWA()) {
+      setShowInstallButton(true)
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
+    }
+  }, [])
+
   const toggleTheme = () => {
     setTheme(isDark ? 'light' : 'dark')
+  }
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt && !isIOS()) {
+      return
+    }
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
+      const { outcome } = await deferredPrompt.userChoice
+
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt')
+      }
+
+      setDeferredPrompt(null)
+      setShowInstallButton(false)
+    }
   }
 
   return (
@@ -51,6 +111,30 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {mounted && !isInstalled && showInstallButton && (
+            <>
+              {/* Desktop: Show button with text */}
+              <button
+                onClick={handleInstallClick}
+                className="hidden md:flex items-center gap-2 text-sm font-medium transition-colors px-3 py-2 rounded-md hover:bg-muted"
+                style={{ color: '#FF7518' }}
+                aria-label="Install app"
+              >
+                <Download className="w-4 h-4" />
+                Install App
+              </button>
+              
+              {/* Mobile: Show icon only */}
+              <button
+                onClick={handleInstallClick}
+                className="md:hidden flex items-center justify-center text-sm text-foreground/50 hover:text-foreground/70 transition-colors p-2 rounded-md hover:bg-muted"
+                aria-label="Install app"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            </>
+          )}
+          
           <button
             onClick={toggleTheme}
             className="flex items-center justify-center text-sm text-foreground/50 hover:text-foreground/70 transition-colors p-2 rounded-md hover:bg-muted"
