@@ -12,7 +12,7 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-white dark:bg-slate-950 shadow-sm">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
 
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
@@ -22,16 +22,16 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/recipes" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+          <Link href="/recipes" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
             Recipes
           </Link>
-          <Link href="/videos" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+          <Link href="/videos" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
             Videos
           </Link>
-          <Link href="/blog" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+          <Link href="/blog" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
             Blog
           </Link>
-          <Link href="/favorites" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors">
+          <Link href="/favorites" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
             Favorites
           </Link>
         </nav>
@@ -39,7 +39,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <button
             onClick={toggleTheme}
-            className="flex items-center justify-center text-sm text-foreground/60 hover:text-foreground transition-colors p-2 rounded-md hover:bg-muted"
+            className="flex items-center justify-center text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
             aria-label="Toggle theme"
           >
             <Sun className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

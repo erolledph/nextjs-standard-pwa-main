@@ -23,7 +23,7 @@ export function BottomNav() {
   ]
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 shadow-lg">
       <div className="mx-auto max-w-7xl px-0 py-2 flex items-center justify-around">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = isActive(href)
@@ -40,7 +40,7 @@ export function BottomNav() {
                   color: active ? "#FF7518" : "currentColor",
                 }}
               />
-              <span className="text-xs font-medium text-foreground/70" style={active ? { color: "#FF7518" } : {}}>
+              <span className="text-xs font-medium" style={active ? { color: "#FF7518" } : { color: '#64748b' }}>
                 {label}
               </span>
             </Link>
