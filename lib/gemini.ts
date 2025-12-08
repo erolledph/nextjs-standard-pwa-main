@@ -7,11 +7,18 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import { RecipeResponse, AIChefInput } from "@/types/ai-chef"
 
 const apiKey = process.env.GEMINI_API_KEY
-if (!apiKey) {
-  throw new Error("GEMINI_API_KEY environment variable is not set")
-}
 
-const client = new GoogleGenerativeAI(apiKey)
+let client: GoogleGenerativeAI | null = null
+
+function getClient(): GoogleGenerativeAI {
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY environment variable is not set")
+  }
+  if (!client) {
+    client = new GoogleGenerativeAI(apiKey)
+  }
+  return client
+}
 
 /**
  * System prompt to constrain AI responses
@@ -69,7 +76,7 @@ export async function generateRecipeWithAI(input: AIChefInput): Promise<RecipeRe
     console.log("🟡 [GEMINI-2] User prompt built:", userPrompt.substring(0, 100) + "...")
 
     console.log("🟡 [GEMINI-3] Getting Gemini model instance...")
-    const model = client.getGenerativeModel({
+    const model = getClient().getGenerativeModel({
       model: "gemini-2.5-flash-lite",
       systemInstruction: SYSTEM_PROMPT,
     })
