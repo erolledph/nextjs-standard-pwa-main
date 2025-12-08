@@ -74,10 +74,10 @@ A modern, production-ready **Progressive Web App (PWA)** food blog and recipe pl
 | **Runtime** | React with Hooks | 19.0.0 |
 | **Language** | TypeScript | 5 (strict) |
 | **Styling** | Tailwind CSS | 3.4 |
-| **UI Components** | Radix UI | Latest |
+| **UI Components** | Radix UI, Lucide React | Latest |
 | **Form Handling** | React Hook Form + Zod | Latest |
 | **CMS** | GitHub API | N/A |
-| **Hosting** | Cloudflare Pages | Edge Runtime |
+| **Hosting** | Cloudflare Pages | Edge Runtime (Node.js Compat) |
 | **PWA** | next-pwa | 5.6.0 |
 | **Analytics** | Google Analytics 4 | G-SDNJH7W92S |
 
@@ -286,6 +286,7 @@ pnpm preview          # Preview build locally
 3. **Add Environment Variables**
    - In Cloudflare Pages settings → Environment variables
    - Add all variables from `.env.local`
+   - **Crucial:** Ensure `nodejs_compat` compatibility flag is set (usually via `wrangler.toml` or dashboard settings).
 
 4. **Custom Domain**
    - In Pages settings → Custom domain
