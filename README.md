@@ -461,3 +461,4 @@ Built with:
 [Visit Site](https://worldfoodrecipes.sbs) • [GitHub](https://github.com/erolledph/nextjs-standard-pwa-main) • [Report Issue](https://github.com/erolledph/nextjs-standard-pwa-main/issues)
 
 </div>
+.
