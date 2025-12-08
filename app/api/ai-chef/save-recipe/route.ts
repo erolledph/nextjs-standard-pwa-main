@@ -10,8 +10,8 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { saveAIRecipeToFirebase } from "@/lib/firebase-admin"
 
-// This endpoint requires Edge runtime for Cloudflare Pages
-export const runtime = "edge"
+// This endpoint requires Node.js runtime for firebase-admin
+export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   console.log("🔴 [SAVE-1] POST /api/ai-chef/save-recipe received")

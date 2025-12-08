@@ -1,5 +1,3 @@
-"use server"
-
 /**
  * AI Chef API endpoint - improved version
  * 1. Searches for similar cached recipes first (zero cost)
