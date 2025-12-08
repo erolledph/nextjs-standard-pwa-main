@@ -211,57 +211,8 @@ ${content}
     const result = await response.json()
     console.log("[POST /api/recipes] Recipe created successfully:", result.content?.path)
     
-    // Also save to Firebase for local development access
-    try {
-      console.log("[POST /api/recipes] Saving recipe to Firebase...")
-      const db = getFirestore()
-      const recipeSlug = slug
-      
-      const recipeData = {
-        title,
-        slug: recipeSlug,
-        author: author || "Admin",
-        excerpt: excerpt || "",
-        tags: Array.isArray(tags) ? tags : (tags ? tags.split(",").map((t: string) => t.trim()) : []),
-        image: image || "",
-        content: content || "",
-        prepTime: prepTime || "",
-        cookTime: cookTime || "",
-        servings: servings || "",
-        ingredients: Array.isArray(ingredients) ? ingredients : (ingredients ? [ingredients] : []),
-        instructions: Array.isArray(instructions) ? instructions : (instructions ? [instructions] : []),
-        difficulty: difficulty || "Medium",
-        source: "admin",
-        isPublished: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        views: 0,
-        likes: 0,
-        comments: 0,
-      }
-      
-      await db.collection("recipes").doc(recipeSlug).set(recipeData)
-      console.log("[POST /api/recipes] Recipe saved to Firebase:", recipeSlug)
-    } catch (firebaseError) {
-      console.error("[POST /api/recipes] Failed to save to Firebase:", firebaseError)
-      // Don't fail the entire request if Firebase save fails, GitHub is the source of truth
-    }
-    
-    // Mark AI recipe as converted if it came from AI
-    if (ai_recipe_id) {
-      try {
-        await markAIRecipeAsConverted(ai_recipe_id, {
-          slug,
-          author: author || "Admin",
-          image: image || undefined,
-          difficulty: difficulty || undefined,
-        })
-        console.log("[POST /api/recipes] Marked AI recipe as converted:", ai_recipe_id)
-      } catch (error) {
-        console.error("[POST /api/recipes] Failed to mark AI recipe as converted:", error)
-        // Don't fail the recipe creation if this fails
-      }
-    }
+    // Firebase save is not available on Cloudflare Pages (edge runtime)
+    console.log("[POST /api/recipes] Recipe saved to GitHub (Firebase not available on this deployment)")
     
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
