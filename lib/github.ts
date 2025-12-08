@@ -24,6 +24,7 @@ export interface Recipe extends BlogPost {
   cookTime?: string
   servings?: string
   ingredients?: string[]
+  instructions?: string[]
   difficulty?: string
 }
 
@@ -207,12 +208,27 @@ function parseMarkdownContent(
         .filter((i) => i.length > 0)
     }
 
+    // Parse instructions (can be newline-separated numbered steps)
+    let instructions: string[] = []
+    if (frontmatter.instructions) {
+      if (typeof frontmatter.instructions === 'string') {
+        // Remove numbering like "1. ", "2. " etc and split by newlines
+        instructions = frontmatter.instructions
+          .split("\n")
+          .map((inst: string) => inst.replace(/^\d+\.\s*/, '').trim())
+          .filter((inst: string) => inst.length > 0)
+      } else if (Array.isArray(frontmatter.instructions)) {
+        instructions = frontmatter.instructions
+      }
+    }
+
     return {
       ...basePost,
       prepTime,
       cookTime,
       servings,
       ingredients,
+      instructions,
       difficulty,
     } as Recipe
   }

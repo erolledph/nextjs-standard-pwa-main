@@ -20,6 +20,7 @@ function CreatePostContent() {
   const [error, setError] = useState("")
   const [showPreview, setShowPreview] = useState(false)
   const [contentType, setContentType] = useState<"blog" | "recipes">("blog")
+  const [aiRecipeId, setAiRecipeId] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     title: "",
@@ -33,6 +34,7 @@ function CreatePostContent() {
     cookTime: "",
     servings: "",
     ingredients: [""],
+    instructions: [""],
     difficulty: "Easy",
   })
 
@@ -40,6 +42,88 @@ function CreatePostContent() {
     const type = searchParams.get("type")
     if (type === "recipes") {
       setContentType("recipes")
+    }
+
+    // Parse AI recipe data from query parameter
+    const aiData = searchParams.get("ai")
+    if (aiData) {
+      try {
+        const decodedData = JSON.parse(decodeURIComponent(aiData))
+        
+        // Track AI recipe ID for marking as converted
+        if (decodedData.aiRecipeId) {
+          setAiRecipeId(decodedData.aiRecipeId)
+        }
+        
+        // Parse ingredients - they come as a formatted string from AIRecipesTab
+        let parsedIngredients: string[] = [""]
+        if (decodedData.ingredients) {
+          if (typeof decodedData.ingredients === "string") {
+            // String format: "Item - amount unit\nItem2 - amount unit"
+            parsedIngredients = decodedData.ingredients
+              .split("\n")
+              .map((ing: string) => ing.trim())
+              .filter(Boolean)
+          } else if (Array.isArray(decodedData.ingredients)) {
+            // Array format - map to string
+            parsedIngredients = decodedData.ingredients
+              .map((ing: any) => {
+                if (typeof ing === "string") return ing
+                const item = ing.item || ""
+                const amount = ing.amount || ""
+                const unit = ing.unit || ""
+                if (amount && unit) return `${item} - ${amount} ${unit}`
+                if (amount) return `${item} - ${amount}`
+                if (unit) return `${item} - ${unit}`
+                return item
+              })
+              .filter(Boolean)
+          }
+        }
+        
+        // Parse tags - can be array or comma-separated string
+        let parsedTags = ""
+        if (decodedData.tags) {
+          if (Array.isArray(decodedData.tags)) {
+            parsedTags = decodedData.tags.join(", ")
+          } else if (typeof decodedData.tags === "string") {
+            parsedTags = decodedData.tags
+          }
+        }
+        
+        // Parse instructions - can be array or string
+        let parsedInstructions: string[] = [""]
+        if (decodedData.instructions) {
+          if (Array.isArray(decodedData.instructions)) {
+            parsedInstructions = decodedData.instructions.filter(Boolean)
+          } else if (typeof decodedData.instructions === "string") {
+            parsedInstructions = decodedData.instructions
+              .split("\n")
+              .map((inst: string) => inst.trim())
+              .filter(Boolean)
+          }
+        }
+        
+        // Pre-fill form with AI recipe data
+        setFormData(prev => ({
+          ...prev,
+          title: decodedData.title || "",
+          excerpt: decodedData.excerpt || "",
+          prepTime: decodedData.prepTime || "",
+          cookTime: decodedData.cookTime || "",
+          servings: decodedData.servings || "",
+          ingredients: parsedIngredients,
+          instructions: parsedInstructions,
+          difficulty: decodedData.difficulty || "Easy",
+          content: decodedData.content || "",
+          tags: parsedTags,
+        }))
+        
+        // Set content type to recipes
+        setContentType("recipes")
+      } catch (error) {
+        console.error("Failed to parse AI recipe data:", error)
+      }
     }
   }, [searchParams])
 
@@ -101,7 +185,9 @@ function CreatePostContent() {
         cookTime: formData.cookTime,
         servings: formData.servings,
         ingredients: formData.ingredients.filter(ing => ing.trim().length > 0),
+        instructions: formData.instructions.filter(inst => inst.trim().length > 0),
         difficulty: formData.difficulty,
+        ...(aiRecipeId && { ai_recipe_id: aiRecipeId }),
       } : {
         title: formData.title,
         author: formData.author,
@@ -153,6 +239,19 @@ function CreatePostContent() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {aiRecipeId && (
+                <div className="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md flex items-start gap-3">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                      ✨ Recipe pre-filled from AI Generation
+                    </p>
+                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                      Review and customize the recipe details as needed. Add an image before publishing.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
                 <Input
@@ -278,6 +377,54 @@ function CreatePostContent() {
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">Add each ingredient on a separate line</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Instructions</Label>
+                    <div className="space-y-2">
+                      {formData.instructions.map((instruction, index) => (
+                        <div key={index} className="flex gap-2">
+                          <div className="flex-shrink-0 flex items-center justify-center w-8 h-10 bg-muted rounded text-sm font-medium">
+                            {index + 1}
+                          </div>
+                          <Textarea
+                            placeholder={`Step ${index + 1} (e.g., Preheat oven to 350°F)`}
+                            value={instruction}
+                            onChange={(e) => {
+                              const newInstructions = [...formData.instructions]
+                              newInstructions[index] = e.target.value
+                              setFormData({ ...formData, instructions: newInstructions })
+                            }}
+                            rows={2}
+                            className="resize-none"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const newInstructions = formData.instructions.filter((_, i) => i !== index)
+                              setFormData({ ...formData, instructions: newInstructions.length > 0 ? newInstructions : [""] })
+                            }}
+                            disabled={formData.instructions.length === 1}
+                            className="flex-shrink-0 h-10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFormData({ ...formData, instructions: [...formData.instructions, ""] })}
+                        className="w-full"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Instruction
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Add each instruction step in order</p>
                   </div>
                 </>
               )}

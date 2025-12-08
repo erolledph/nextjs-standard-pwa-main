@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, Check, Eye, Pencil, Copy, Trash2 } from "lucide-react"
+import { FileText, Check, Eye, Pencil, Copy, Trash2, ChefHat } from "lucide-react"
 import { toast } from "sonner"
 import { CacheStatsCard } from "@/components/admin/CacheStatsCard"
 import { YouTubeQuotaCard } from "@/components/admin/YouTubeQuotaCard"
+import { AIRecipesTab } from "@/components/admin/AIRecipesTab"
 
 interface BlogPost {
   id: string
@@ -49,7 +50,7 @@ export default function AdminDashboard() {
     // Check for tab query parameter
     const searchParams = new URLSearchParams(window.location.search)
     const tab = searchParams.get('tab')
-    if (tab && ['overview', 'content', 'recipes', 'stats', 'youtube'].includes(tab)) {
+    if (tab && ['overview', 'content', 'recipes', 'ai-recipes', 'stats', 'youtube'].includes(tab)) {
       setActiveTab(tab)
     }
   }, [])
@@ -256,6 +257,16 @@ export default function AdminDashboard() {
               }`}
             >
               Recipes
+            </button>
+            <button
+              onClick={() => setActiveTab("ai-recipes")}
+              className={`pb-3 px-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === "ai-recipes"
+                  ? "text-foreground border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              AI Generated
             </button>
             <button
               onClick={() => setActiveTab("stats")}
@@ -631,6 +642,10 @@ export default function AdminDashboard() {
 
         {activeTab === "stats" && (
           <CacheStatsCard />
+        )}
+
+        {activeTab === "ai-recipes" && (
+          <AIRecipesTab />
         )}
 
         {activeTab === "youtube" && (

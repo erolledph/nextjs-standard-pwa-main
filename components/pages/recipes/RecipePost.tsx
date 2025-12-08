@@ -27,6 +27,7 @@ interface RecipeData {
   cookTime?: string
   servings?: string
   ingredients?: string[]
+  instructions?: string[]
   difficulty?: string
 }
 
@@ -70,10 +71,16 @@ export function RecipePost({ recipe }: RecipePostProps) {
     ...(recipe.cookTime && { "cookTime": recipe.cookTime.replace(/\s+/g, '').toLowerCase().includes('min') ? `PT${recipe.cookTime.match(/(\d+)/)?.[1]}M` : recipe.cookTime }),
     ...(recipe.servings && { "recipeYield": recipe.servings }),
     "recipeIngredient": recipe.ingredients || [],
-    "recipeInstructions": [{
-      "@type": "HowToStep",
-      "text": recipe.content
-    }],
+    "recipeInstructions": recipe.instructions && recipe.instructions.length > 0 
+      ? recipe.instructions.map((instruction, index) => ({
+          "@type": "HowToStep",
+          "position": index + 1,
+          "text": instruction
+        }))
+      : [{
+          "@type": "HowToStep",
+          "text": recipe.content
+        }],
     "datePublished": recipe.date,
     "keywords": (recipe.tags || []).join(", "),
   }
@@ -217,6 +224,23 @@ export function RecipePost({ recipe }: RecipePostProps) {
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {/* Instructions Section */}
+          {recipe.instructions && recipe.instructions.length > 0 && (
+            <div className="mb-12 bg-card p-6 rounded-lg border border-border">
+              <h2 className="text-2xl font-bold text-foreground mb-6">Instructions</h2>
+              <ol className="space-y-4">
+                {recipe.instructions.map((instruction, idx) => (
+                  <li key={idx} className="flex gap-4">
+                    <span className="inline-block w-8 h-8 bg-primary text-white rounded-full text-center text-sm leading-8 flex-shrink-0 font-semibold">
+                      {idx + 1}
+                    </span>
+                    <span className="text-foreground pt-1">{instruction}</span>
+                  </li>
+                ))}
+              </ol>
             </div>
           )}
 

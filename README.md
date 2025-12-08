@@ -1,149 +1,80 @@
-# World Food Recipes - PWA Food Blog & Recipe Platform
+# World Food Recipes - Next.js PWA & Blog Platform
 
-[![Next.js 15](https://img.shields.io/badge/Next.js-15.5.2-black)](https://nextjs.org)
-[![React 19](https://img.shields.io/badge/React-19.0.0-61dafb)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)](https://www.typescriptlang.org)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8)](https://tailwindcss.com)
-[![PWA](https://img.shields.io/badge/PWA-Ready-5a0fc8)](https://web.dev/progressive-web-apps)
-[![Lighthouse Score](https://img.shields.io/badge/Lighthouse-95%2B-green)](https://developers.google.com/web/tools/lighthouse)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15.5.2-black.svg?style=for-the-badge&logo=next.js)](https://nextjs.org)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=for-the-badge&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38BDF8.svg?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
+[![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8.svg?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-A modern, production-ready **Progressive Web App (PWA)** food blog and recipe platform built with **Next.js 15**, **React 19**, and **TypeScript**. Features GitHub-based CMS, offline support, install app capability, and comprehensive SEO optimization.
+---
 
-🌐 **Live Demo:** [World Food Recipes](https://worldfoodrecipes.sbs)  
-📚 **Documentation:** See [CODEBASE_ANALYSIS.md](./CODEBASE_ANALYSIS.md) & [PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md)
+**World Food Recipes** is a production-ready, high-performance **Progressive Web App (PWA)** built with the latest web technologies. It serves as a feature-rich platform for sharing recipes and blog posts, leveraging a **GitHub-based CMS** for content management. It is designed for optimal user experience, SEO, and security, and is deployable on edge networks like Cloudflare Pages.
+
+🌐 **Live Demo:** [worldfoodrecipes.sbs](https://worldfoodrecipes.sbs)  
+📑 **Detailed Analysis:** See [CODEBASE_ANALYSIS.md](./CODEBASE_ANALYSIS.md) for a full breakdown.
 
 ---
 
 ## ✨ Key Features
 
-### 🍽️ Content Management
-- **GitHub as CMS** - Store recipes and blog posts as markdown files
-- **Rich Markdown Support** - GitHub-flavored markdown with syntax highlighting
-- **Admin Dashboard** - Intuitive interface for creating and managing content
-- **Recipe & Blog Posts** - Separate content types with customizable metadata
-- **Tags & Categories** - Organize content with flexible tagging system
-- **Full-Text Search** - Real-time search across all recipes and blog posts
+A summary of the core features implemented in this project.
 
-### 📱 Progressive Web App (PWA)
-- **Installable** - Install as native app on iOS, Android, Windows, macOS
-- **Offline Support** - Browse cached content without internet
-- **App Shortcuts** - Quick access to latest posts and admin
-- **Custom Icons** - Orange fork & knife branding throughout
-- **Install CTA** - Responsive install button in header (hidden when installed)
-
-### 🎨 Design & UX
-- **Responsive Design** - Perfect on mobile, tablet, desktop
-- **Dark/Light Theme** - System-aware dark mode with manual toggle
-- **Smooth Animations** - Page transitions and interactive elements
-- **Accessibility** - WCAG 2.1 Level AA compliant
-- **Performance** - Optimized images (WebP, AVIF), lazy loading
-
-### 🔍 SEO & Analytics
-- **Dynamic Sitemap** - Auto-generated `/sitemap.xml` (revalidates hourly)
-- **robots.txt** - Search engine crawler configuration
-- **JSON-LD Schema** - Structured data (Organization, Website)
-- **Meta Tags** - OpenGraph and Twitter card support
-- **Google Analytics** - Integrated with ID: G-SDNJH7W92S
-- **Web Vitals Tracking** - Core Web Vitals monitoring
-
-### 🔐 Security & Performance
-- **Admin Authentication** - Secure session-based login
-- **CSRF Protection** - Token-based CSRF prevention
-- **Security Headers** - X-Frame-Options, CSP, XSS Protection
-- **Rate Limiting** - API endpoint protection
-- **Image Optimization** - WebP/AVIF formats, responsive sizing
-- **Code Splitting** - Efficient bundle with tree-shaking
-
-### 📊 Integration & Tools
-- **YouTube Integration** - Embed and display YouTube videos
-- **Video Content** - Dedicated video gallery page
-- **Favorites System** - Bookmark and save favorite recipes
-- **Comments Ready** - Infrastructure for future comments
-- **Analytics Dashboard** - View cache stats and API quotas
+| Category | Feature | Description |
+|---|---|---|
+| 🍽️ **Content** | **GitHub as CMS** | Manages blog and recipe posts as markdown files in a Git repository. |
+| | **Admin Dashboard** | Create, edit, and manage content via a secure web interface. |
+| | **Full-Text Search** | Instant client-side search across all titles, tags, and content. |
+| | **YouTube Integration** | Fetches and displays video content from the YouTube API. |
+| 📱 **PWA** | **Installable** | Provides a native-app-like experience on desktop and mobile. |
+| | **Offline Support** | Cached assets and pages are available without an internet connection. |
+| | **App Shortcuts** | Quick access to key sections like "New Post" or "Search". |
+| 🎨 **UX/UI** | **Dark/Light Mode** | System-aware theme with a manual toggle, stored in `localStorage`. |
+| | **Responsive Design** | Optimized for all screen sizes using Tailwind CSS. |
+| | **Page Transitions** | Smooth, animated transitions between routes. |
+| | **Accessibility** | WCAG 2.1 AA compliant with Radix UI for accessible components. |
+| 🔍 **SEO** | **Dynamic Sitemap** | Automatically generates `sitemap.xml` for search engines. |
+| | **JSON-LD Schema** | Provides structured data for better search result visibility. |
+| | **Meta Tags** | Complete OpenGraph and Twitter card support for social sharing. |
+| 🔐 **Security** | **Route Protection** | Middleware secures all admin routes and API endpoints. |
+| | **CSRF Protection** | Defends against cross-site request forgery on all form submissions. |
+| | **Rate Limiting** | Per-IP token bucket algorithm to prevent API abuse. |
+| | **Security Headers** | Enforces a strict Content Security Policy and other security headers. |
+| 🚀 **Performance** | **Image Optimization** | `Next/Image` serves optimized WebP/AVIF formats and lazy loads images. |
+| | **ISR & Caching** | Uses Incremental Static Regeneration and an in-memory cache for speed. |
+| | **Code Splitting** | Automatic route-based code splitting and dynamic imports. |
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture & Tech Stack
 
-### Tech Stack
+This project is a monolithic application with a structure that is ready for future microservices extraction.
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Framework** | Next.js App Router | 15.5.2 |
-| **Runtime** | React with Hooks | 19.0.0 |
-| **Language** | TypeScript | 5 (strict) |
-| **Styling** | Tailwind CSS | 3.4 |
-| **UI Components** | Radix UI, Lucide React | Latest |
-| **Form Handling** | React Hook Form + Zod | Latest |
-| **CMS** | GitHub API | N/A |
-| **Hosting** | Cloudflare Pages | Edge Runtime (Node.js Compat) |
-| **PWA** | next-pwa | 5.6.0 |
-| **Analytics** | Google Analytics 4 | G-SDNJH7W92S |
+### Core Technologies
 
-### Directory Structure
+| Layer | Technology |
+|---|---|
+| **Framework** | Next.js 15.5.2 (App Router) |
+| **UI Library** | React 19 |
+| **Language** | TypeScript 5 (Strict Mode) |
+| **Styling** | Tailwind CSS 3.4 with Radix UI |
+| **Form Handling** | React Hook Form + Zod |
+| **State Management**| React Context API |
+| **PWA** | `next-pwa` |
+| **Deployment** | Cloudflare Pages (Edge Runtime) |
+| **Analytics** | Vercel Analytics & Google Analytics |
+
+### Data Flow
+
+Content is fetched from GitHub, parsed, and stored in an in-memory cache to minimize API calls. Pages are statically generated and revalidated using ISR.
 
 ```
-world-food-recipes/
-├── app/                              # Next.js App Router
-│   ├── admin/                        # Protected admin routes
-│   │   ├── dashboard/                # Admin dashboard
-│   │   ├── create/                   # Create new post
-│   │   ├── edit/[slug]/              # Edit existing post
-│   │   └── login/                    # Admin login
-│   ├── api/                          # API routes
-│   │   ├── auth/                     # Authentication endpoints
-│   │   ├── posts/                    # Blog post management
-│   │   ├── recipes/                  # Recipe management
-│   │   ├── search/                   # Search functionality
-│   │   ├── videos/                   # Video integration
-│   │   └── cache-stats/              # Cache monitoring
-│   ├── blog/                         # Blog pages
-│   ├── recipes/                      # Recipe pages
-│   ├── videos/                       # Video gallery
-│   ├── search/                       # Search page
-│   ├── tags/                         # Tag-based filtering
-│   ├── favorites/                    # Bookmarked content
-│   ├── layout.tsx                    # Root layout with SEO
-│   ├── globals.css                   # Global styles
-│   ├── robots.ts                     # robots.txt generation
-│   └── sitemap.ts                    # sitemap.xml generation
-├── components/                       # React components
-│   ├── layout/                       # Layout components
-│   │   ├── Header.tsx                # Navigation + install CTA
-│   │   ├── Footer.tsx                # Footer
-│   │   └── BottomNav.tsx             # Mobile bottom navigation
-│   ├── blog/                         # Blog components
-│   │   ├── BlogPostCard.tsx
-│   │   ├── BlogPostSkeleton.tsx
-│   │   └── RelatedPosts.tsx
-│   ├── pages/                        # Page-specific components
-│   ├── pwa/                          # PWA components
-│   │   ├── PWAProvider.tsx           # PWA initialization
-│   │   └── InstallPrompt.tsx         # Install prompt (now in header)
-│   └── ui/                           # Reusable UI components
-├── lib/                              # Utilities & helpers
-│   ├── auth.ts                       # Admin authentication
-│   ├── cache.ts                      # In-memory caching
-│   ├── github.ts                     # GitHub API integration
-│   ├── seo.ts                        # SEO configuration
-│   ├── pwa.ts                        # PWA utilities
-│   ├── youtube.ts                    # YouTube integration
-│   ├── validation.ts                 # Form validation (Zod)
-│   └── useWebVitals.ts               # Performance monitoring
-├── posts/                            # Content (markdown files)
-│   ├── blog/                         # Blog posts
-│   └── recipes/                      # Recipe posts
-├── public/                           # Static assets
-│   ├── favicon.svg                   # Site favicon (fork & knife)
-│   ├── icon-*.png                    # PWA icons (192x512)
-│   ├── apple-touch-icon.png          # iOS icon
-│   ├── manifest.json                 # PWA manifest
-│   └── og-image.svg                  # Social sharing
-├── middleware.ts                     # Route protection
-├── next.config.mjs                   # Next.js configuration
-├── tailwind.config.ts                # Tailwind CSS configuration
-└── package.json                      # Dependencies
+1. User Request -> Next.js Router
+2. Check ISR Cache -> (HIT) Serve Page
+                  -> (MISS) Check In-Memory Cache
+3. Check In-Memory Cache -> (HIT) Render Page & Update ISR
+                         -> (MISS) Fetch from GitHub API
+4. Fetch from GitHub -> Parse Markdown -> Store in Memory -> Render Page & Update ISR
 ```
 
 ---
@@ -152,314 +83,71 @@ world-food-recipes/
 
 ### Prerequisites
 
-- **Node.js** 20+ or **pnpm** 10+
-- **GitHub Account** - For content storage
-- **GitHub Personal Token** - For API access ([Create token](https://github.com/settings/tokens))
-- **Cloudflare Account** (optional) - For deployment
+- **Node.js** v20.0 or higher
+- **pnpm** (recommended) or **npm**
+- A **GitHub Personal Access Token** with repository read/write access.
 
-### Installation
+### Installation & Setup
 
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/erolledph/nextjs-standard-pwa-main.git
-   cd nextjs-standard-pwa-main
-   ```
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/erolledph/nextjs-standard-pwa-main.git
+    cd nextjs-standard-pwa-main
+    ```
 
-2. **Install Dependencies**
-   ```bash
-   pnpm install
-   # or
-   npm install
-   ```
+2.  **Install dependencies:**
+    ```bash
+    pnpm install
+    ```
 
-3. **Configure Environment Variables**
-   
-   Create `.env.local` in the root directory:
-   ```env
-   # GitHub Configuration (Required)
-   GITHUB_OWNER=your-github-username
-   GITHUB_REPO=your-repo-name
-   GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   
-   # Site Configuration
-   NEXT_PUBLIC_SITE_URL=http://localhost:3000
-   ADMIN_PASSWORD=your-secure-password-here
-   ```
+3.  **Configure environment variables:**
+    Create a `.env.local` file in the project root and add the following:
+    ```env
+    # GitHub Configuration
+    GITHUB_OWNER=your-github-username
+    GITHUB_REPO=your-forked-repo-name
+    GITHUB_TOKEN=ghp_YourGitHubPersonalAccessToken
 
-4. **Run Development Server**
-   ```bash
-   pnpm dev
-   # Visit: http://localhost:3000
-   ```
+    # Site & Security
+    NEXT_PUBLIC_SITE_URL=http://localhost:3000
+    ADMIN_PASSWORD=your-secure-admin-password
+    ```
 
-5. **Access Admin Dashboard**
-   - URL: `http://localhost:3000/admin/login`
-   - Password: Enter the value of `ADMIN_PASSWORD`
-
----
-
-## 📖 Usage
-
-### Creating Blog Posts
-
-1. Go to `/admin/dashboard`
-2. Click "Create New Post"
-3. Write in markdown with front matter:
-   ```markdown
-   ---
-   title: "Post Title"
-   date: "2025-12-06"
-   author: "Your Name"
-   tags: ["tag1", "tag2"]
-   excerpt: "Brief description"
-   image: "https://example.com/image.jpg"
-   ---
-   
-   Your content here...
-   ```
-4. Click "Publish" - automatically commits to GitHub
-
-### Creating Recipes
-
-1. Navigate to `/admin/dashboard`
-2. Click "Create New Recipe"
-3. Similar markdown format with recipe-specific fields
-4. Recipes appear on `/recipes` page and in search
-
-### Customizing Colors & Branding
-
-**Orange Theme (#FF7518):**
-- Update `app/globals.css` for CSS variables
-- Edit `tailwind.config.ts` for Tailwind colors
-- Replace `public/favicon.svg` for custom icon
-- Update site name in `lib/seo.ts`
-
-### Adding Custom Pages
-
-1. Create folder in `app/` (e.g., `app/my-page/`)
-2. Add `page.tsx` with your content
-3. Update `components/layout/Header.tsx` for navigation
+4.  **Run the development server:**
+    ```bash
+    pnpm dev
+    ```
+    Your site will be available at `http://localhost:3000`. The admin panel is at `http://localhost:3000/admin/login`.
 
 ---
 
 ## 📦 Available Scripts
 
-```bash
-# Development
-pnpm dev              # Start dev server on port 3000
-
-# Production
-pnpm build            # Create optimized production build
-pnpm start            # Start production server
-
-# Deployment
-pnpm cf:build         # Build for Cloudflare Pages
-pnpm deploy           # Deploy to Cloudflare Pages (with wrangler)
-
-# Utilities
-pnpm lint             # Run ESLint
-pnpm preview          # Preview build locally
-```
+- `pnpm dev`: Starts the development server.
+- `pnpm build`: Creates an optimized production build.
+- `pnpm start`: Starts the production server.
+- `pnpm lint`: Lints the codebase using ESLint.
+- `pnpm cf:build`: Builds the project specifically for Cloudflare Pages.
+- `pnpm deploy`: Deploys the project to Cloudflare Pages using Wrangler.
 
 ---
 
 ## 🚢 Deployment
 
-### Deploy to Cloudflare Pages
+This project is optimized for deployment on **Cloudflare Pages**.
 
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Deploy update"
-   git push origin main
-   ```
+1.  **Push your code to your GitHub repository.**
+2.  In the Cloudflare dashboard, create a new **Pages** project and connect it to your repository.
+3.  Use the following build settings:
+    - **Build command:** `pnpm cf:build`
+    - **Build output directory:** `.vercel/output/static`
+    - **Framework preset:** Next.js
+4.  Add your environment variables from `.env.local` to the Cloudflare project settings.
 
-2. **Connect to Cloudflare Pages**
-   - Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
-   - Create new Pages project
-   - Select your GitHub repository
-   - Build settings:
-     - **Framework**: Next.js
-     - **Build command**: `pnpm cf:build`
-     - **Build output directory**: `.vercel/output/static`
-
-3. **Add Environment Variables**
-   - In Cloudflare Pages settings → Environment variables
-   - Add all variables from `.env.local`
-   - **Crucial:** Ensure `nodejs_compat` compatibility flag is set (usually via `wrangler.toml` or dashboard settings).
-
-4. **Custom Domain**
-   - In Pages settings → Custom domain
-   - Add your domain (e.g., `worldfoodrecipes.sbs`)
-
-**Auto-deploy on Push:** Every GitHub push automatically triggers a rebuild!
-
----
-
-## 🔐 Security
-
-- ✅ **Admin Authentication** - Session-based password protection
-- ✅ **CSRF Protection** - Token validation on mutations
-- ✅ **Security Headers** - CSP, X-Frame-Options, XSS-Protection
-- ✅ **Rate Limiting** - Per-IP API endpoint limits
-- ✅ **Environment Secrets** - Never commit sensitive data
-- ✅ **TypeScript Strict Mode** - Type safety throughout
-
-**Recommended:** Use strong `ADMIN_PASSWORD` and rotate GitHub tokens regularly.
-
----
-
-## ⚡ Performance
-
-### Metrics (Expected)
-
-| Metric | Score | Details |
-|--------|-------|---------|
-| **Performance** | 95-100 | Optimized images, lazy loading, code splitting |
-| **Accessibility** | 98-100 | WCAG 2.1, semantic HTML, ARIA labels |
-| **Best Practices** | 97-100 | Modern standards, no deprecated APIs |
-| **SEO** | 98-100 | Structured data, mobile-friendly, sitemap |
-
-### Optimizations
-
-- **Image Processing** - WebP/AVIF with responsive sizing
-- **Caching Strategy** - ISR (1 hour), memory cache, CDN
-- **Bundle Size** - ~150KB with tree-shaking
-- **Code Splitting** - Route-based automatic splitting
-- **CSS Purging** - Tailwind removes unused styles
-
----
-
-## 🌐 PWA Features
-
-### Mobile App Experience
-
-- **Install Prompt** - Header CTA with install button
-- **Offline Mode** - Service worker caches essential content
-- **App Icon** - Custom orange fork & knife icon
-- **Standalone Mode** - Full-screen immersive experience
-- **iOS Support** - Works on iPhone/iPad
-- **Android Support** - Install from Chrome menu
-
-### Install Steps
-
-**Desktop:**
-1. Click "Install App" button in header
-2. Browser shows install prompt
-3. Choose to install to desktop
-
-**Mobile:**
-1. Visit site in browser
-2. Click "Install App" button
-3. Select "Add to Home Screen" (iOS) or "Install" (Android)
-
----
-
-## 📊 SEO Features
-
-- ✅ Dynamic sitemap generation (`/sitemap.xml`)
-- ✅ robots.txt for crawler guidance
-- ✅ JSON-LD structured data (Organization, Website)
-- ✅ OpenGraph & Twitter card metadata
-- ✅ Responsive mobile-first design
-- ✅ Fast page load times
-- ✅ Semantic HTML markup
-- ✅ Canonical URLs
-
----
-
-## 🐛 Troubleshooting
-
-### Development Issues
-
-| Issue | Solution |
-|-------|----------|
-| Posts not showing | Check GitHub token and `posts/` folder structure |
-| Build fails | Verify Node.js version (20+), run `pnpm install` |
-| Admin login fails | Clear browser cookies, check `ADMIN_PASSWORD` in `.env.local` |
-| Images not loading | Verify image URLs are publicly accessible |
-| Dark mode not working | Clear browser cache and localStorage |
-
-### Deployment Issues
-
-| Issue | Solution |
-|-------|----------|
-| Build fails on Cloudflare | Ensure all env vars are set in Cloudflare dashboard |
-| Site shows old content | Wait for Cloudflare cache to clear (max 5 min) |
-| GitHub API rate limited | Use personal token or wait 1 hour for reset |
-| Deploy stuck | Check GitHub Actions logs and Cloudflare build logs |
-
----
-
-## 📚 Additional Documentation
-
-- **[CODEBASE_ANALYSIS.md](./CODEBASE_ANALYSIS.md)** - Comprehensive architecture & code breakdown
-- **[PRODUCTION_READINESS_REPORT.md](./PRODUCTION_READINESS_REPORT.md)** - Deployment readiness checklist
-- **[SETUP.md](./SETUP.md)** - Detailed setup instructions
-- **[CUSTOMIZATION.md](./CUSTOMIZATION.md)** - Branding & styling guide
+Cloudflare will automatically build and deploy your site upon each push to the main branch.
 
 ---
 
 ## 📄 License
 
-MIT License - Feel free to use for personal or commercial projects. See [LICENSE](LICENSE) for details.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to:
-- Report issues
-- Suggest improvements
-- Submit pull requests
-
----
-
-## 📞 Support & Contact
-
-- **Issues:** [GitHub Issues](https://github.com/erolledph/nextjs-standard-pwa-main/issues)
-- **Email:** hello@worldfoodrecipes.sbs
-- **Twitter:** [@worldfoodrecipes](https://twitter.com/worldfoodrecipes)
-
----
-
-## 🎯 Roadmap
-
-### Upcoming Features
-- [ ] Comments system (Disqus/native)
-- [ ] Email notifications
-- [ ] Advanced search filters
-- [ ] Video transcoding
-- [ ] Multi-language support
-- [ ] Patreon/subscription integration
-
-### Improvements
-- [ ] Unit & E2E tests
-- [ ] Database for analytics
-- [ ] Elasticsearch integration
-- [ ] Admin API documentation
-- [ ] CI/CD pipeline optimization
-
----
-
-## 🙏 Acknowledgments
-
-Built with:
-- [Next.js](https://nextjs.org) - React framework
-- [React](https://react.dev) - UI library
-- [TypeScript](https://www.typescriptlang.org) - Type safety
-- [Tailwind CSS](https://tailwindcss.com) - Styling
-- [Radix UI](https://www.radix-ui.com) - Accessible components
-- [Cloudflare Pages](https://pages.cloudflare.com) - Hosting
-- [GitHub](https://github.com) - CMS & version control
-
----
-
-<div align="center">
-
-**Made with ❤️ for food lovers worldwide**
-
-[Visit Site](https://worldfoodrecipes.sbs) • [GitHub](https://github.com/erolledph/nextjs-standard-pwa-main) • [Report Issue](https://github.com/erolledph/nextjs-standard-pwa-main/issues)
-
-</div>
-.
+This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE) file for details. You are free to use, modify, and distribute this codebase for personal or commercial projects.

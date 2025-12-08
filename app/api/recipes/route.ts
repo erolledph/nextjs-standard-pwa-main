@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 import { fetchContentFromGitHub } from "@/lib/github"
 import { isAdminAuthenticated } from "@/lib/auth"
+import { markAIRecipeAsConverted, getFirestore } from "@/lib/firebase-admin"
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET(request: Request) {
   try {
@@ -62,7 +63,9 @@ export async function POST(request: Request) {
       cookTime, 
       servings, 
       ingredients, 
-      difficulty 
+      instructions,
+      difficulty,
+      ai_recipe_id
     } = await request.json()
 
     console.log("[POST /api/recipes] Recipe data received:", {
@@ -113,6 +116,11 @@ export async function POST(request: Request) {
       ? ingredients.join(", ") 
       : ingredients || ""
 
+    // Build instructions list
+    const instructionsList = Array.isArray(instructions)
+      ? instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join("\n")
+      : instructions || ""
+
     const frontmatter = `---
 title: ${title}
 date: ${date}
@@ -124,7 +132,9 @@ prepTime: ${prepTime || ""}
 cookTime: ${cookTime || ""}
 servings: ${servings || ""}
 ingredients: ${ingredientsList}
+instructions: ${instructionsList}
 difficulty: ${difficulty || "Medium"}
+${ai_recipe_id ? `ai_recipe_id: ${ai_recipe_id}` : ""}
 ---
 
 ${content}
@@ -146,6 +156,27 @@ ${content}
     }
     const base64Content = btoa(binary)
 
+    // First, try to get the file if it exists to get its SHA
+    let fileSha = undefined
+    try {
+      console.log("[POST /api/recipes] Checking if file exists...")
+      const checkResponse = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      })
+      
+      if (checkResponse.ok) {
+        const existingFile = await checkResponse.json()
+        fileSha = existingFile.sha
+        console.log("[POST /api/recipes] File exists, SHA:", fileSha)
+      }
+    } catch (error) {
+      console.log("[POST /api/recipes] File doesn't exist (expected for new recipes)")
+    }
+
     console.log("[POST /api/recipes] Sending request to GitHub...")
     const response = await fetch(apiUrl, {
       method: "PUT",
@@ -158,6 +189,7 @@ ${content}
         message: `Add recipe: ${title}`,
         content: base64Content,
         branch: "main",
+        ...(fileSha && { sha: fileSha }),
       }),
     })
 
@@ -179,6 +211,59 @@ ${content}
 
     const result = await response.json()
     console.log("[POST /api/recipes] Recipe created successfully:", result.content?.path)
+    
+    // Also save to Firebase for local development access
+    try {
+      console.log("[POST /api/recipes] Saving recipe to Firebase...")
+      const db = getFirestore()
+      const recipeSlug = slug
+      
+      const recipeData = {
+        title,
+        slug: recipeSlug,
+        author: author || "Admin",
+        excerpt: excerpt || "",
+        tags: Array.isArray(tags) ? tags : (tags ? tags.split(",").map((t: string) => t.trim()) : []),
+        image: image || "",
+        content: content || "",
+        prepTime: prepTime || "",
+        cookTime: cookTime || "",
+        servings: servings || "",
+        ingredients: Array.isArray(ingredients) ? ingredients : (ingredients ? [ingredients] : []),
+        instructions: Array.isArray(instructions) ? instructions : (instructions ? [instructions] : []),
+        difficulty: difficulty || "Medium",
+        source: "admin",
+        isPublished: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        views: 0,
+        likes: 0,
+        comments: 0,
+      }
+      
+      await db.collection("recipes").doc(recipeSlug).set(recipeData)
+      console.log("[POST /api/recipes] Recipe saved to Firebase:", recipeSlug)
+    } catch (firebaseError) {
+      console.error("[POST /api/recipes] Failed to save to Firebase:", firebaseError)
+      // Don't fail the entire request if Firebase save fails, GitHub is the source of truth
+    }
+    
+    // Mark AI recipe as converted if it came from AI
+    if (ai_recipe_id) {
+      try {
+        await markAIRecipeAsConverted(ai_recipe_id, {
+          slug,
+          author: author || "Admin",
+          image: image || undefined,
+          difficulty: difficulty || undefined,
+        })
+        console.log("[POST /api/recipes] Marked AI recipe as converted:", ai_recipe_id)
+      } catch (error) {
+        console.error("[POST /api/recipes] Failed to mark AI recipe as converted:", error)
+        // Don't fail the recipe creation if this fails
+      }
+    }
+    
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
     console.error("[POST /api/recipes] Unexpected error:", error)
