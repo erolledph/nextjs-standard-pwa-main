@@ -14,6 +14,8 @@ import { fetchContentFromGitHub, type Recipe } from "@/lib/github"
 import { promises as fs } from "fs"
 import path from "path"
 
+export const runtime = "edge"
+
 // Mock cached recipes (in production, this would come from Firebase)
 const CACHED_RECIPES_DB: Record<string, any> = {}
 

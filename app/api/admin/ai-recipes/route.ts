@@ -8,7 +8,7 @@
 import { NextResponse } from "next/server"
 import { getAIRecipes } from "@/lib/firebase-admin"
 
-export const runtime = "nodejs"
+export const runtime = "edge"
 
 export async function GET() {
   console.log("🔴 [API-1] Fetching AI recipes for admin dashboard...")
