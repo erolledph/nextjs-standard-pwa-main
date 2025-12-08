@@ -9,69 +9,23 @@ import { NextRequest, NextResponse } from "next/server"
 import { AIChefInputSchema, type AIChefInputType } from "@/lib/ai-chef-schema"
 import { generateQueryHash, calculateQuerySimilarity, findBestMatches } from "@/lib/fuzzy-match"
 import { fetchContentFromGitHub, type Recipe } from "@/lib/github"
-import { promises as fs } from "fs"
-import path from "path"
 
-export const runtime = "nodejs"
+export const runtime = "edge"
 
 // Mock cached recipes (in production, this would come from Firebase)
 const CACHED_RECIPES_DB: Record<string, any> = {}
 
 /**
- * Load recipe posts from the posts/recipes directory
+ * Load recipe posts from GitHub (edge runtime compatible)
  */
 async function loadRecipePosts(): Promise<Recipe[]> {
   try {
-    // Try local filesystem first (development mode)
-    const recipesDir = path.join(process.cwd(), "posts/recipes")
-    
-    try {
-      const files = await fs.readdir(recipesDir)
-      const mdFiles = files.filter((f) => f.endsWith(".md"))
-
-      const recipes: Recipe[] = []
-
-      for (const file of mdFiles) {
-        const filePath = path.join(recipesDir, file)
-        const content = await fs.readFile(filePath, "utf-8")
-        
-        // Parse frontmatter
-        const match = content.match(/^---\n([\s\S]*?)\n---/m)
-        const data: Record<string, any> = {}
-        
-        if (match) {
-          match[1].split("\n").forEach((line) => {
-            const [key, ...valueParts] = line.split(":")
-            if (key && valueParts.length > 0) {
-              const value = valueParts.join(":").trim().replace(/^["']|["']$/g, "")
-              data[key.trim()] = value
-            }
-          })
-        }
-
-        recipes.push({
-          id: file.replace(".md", ""),
-          slug: file.replace(".md", ""),
-          title: data.title || "Untitled",
-          content: content,
-          excerpt: data.excerpt || data.description || "Delicious recipe",
-          date: data.date || new Date().toISOString().split("T")[0],
-          author: data.author || "Chef",
-          tags: data.tags ? data.tags.split(",").map((t: string) => t.trim()) : [],
-          image: data.image,
-          prepTime: data.prepTime || "Unknown",
-          cookTime: data.cookTime || "Unknown",
-          difficulty: data.difficulty || "Medium",
-          servings: data.servings ? String(data.servings) : "4",
-          ingredients: data.ingredients ? data.ingredients.split(",").map((i: string) => i.trim()) : [],
-        })
-      }
-
-      return recipes
-    } catch (fsError) {
-      console.log("Local recipe files not found, skipping")
-      return []
-    }
+    // Fetch recipes from GitHub (edge runtime compatible)
+    const owner = process.env.GITHUB_OWNER || ""
+    const repo = process.env.GITHUB_REPO || ""
+    const token = process.env.GITHUB_TOKEN || ""
+    const recipes = await fetchContentFromGitHub(owner, repo, token, "recipes")
+    return recipes as Recipe[]
   } catch (error) {
     console.error("🔴 Error loading recipe posts:", error)
     return []
