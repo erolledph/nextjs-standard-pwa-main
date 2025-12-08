@@ -1,15 +1,17 @@
 ---
 title: test recipe
 date: 2025-12-08
-author: Your Name
-excerpt: this is exerpt of the recipe post
+author: im author
+excerpt: this is exerpt
 tags: savory, spicy, umami
-image: https://firebasestorage.googleapis.com/v0/b/jumblestacks.firebasestorage.app/o/blog-headers%2F1762678780937-jumble-guy__1_.png?alt=media&token=d74a1fa1-1e79-4928-bdef-9c0d09b2cc57
+image: https://images.unsplash.com/photo-1561070791-2526d30994b5?w=500&h=300&fit=crop
 prepTime: 5
 cookTime: 10
-servings: 4
-ingredients: onion, garlic
-difficulty: Easy
+servings: 3
+ingredients: garlic, onion
+instructions: 1. head pan
+2. add oil
+difficulty: Medium
 
 ---
 
