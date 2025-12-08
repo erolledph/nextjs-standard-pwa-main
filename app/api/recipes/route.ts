@@ -3,7 +3,7 @@ import { fetchContentFromGitHub } from "@/lib/github"
 import { isAdminAuthenticated } from "@/lib/auth"
 import { markAIRecipeAsConverted, getFirestore } from "@/lib/firebase-admin"
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET(request: Request) {
   try {
