@@ -8,8 +8,8 @@
 import { NextResponse } from "next/server"
 import { initializeFirebase } from "@/lib/firebase-admin"
 
-// Use Node.js runtime to access Firebase Admin SDK
-export const runtime = "nodejs"
+// Use Edge runtime for Cloudflare Pages
+export const runtime = "edge"
 
 export async function GET() {
   console.log("🔴 [API-1] Fetching AI recipes for admin dashboard...")
