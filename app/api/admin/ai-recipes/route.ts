@@ -8,17 +8,18 @@
 import { NextResponse } from "next/server"
 
 // Use Edge runtime for Cloudflare Pages compatibility
-// This route requires Node.js runtime, so it will only work on Vercel or similar platforms
 export const runtime = "edge"
 
 export async function GET() {
-  // Return error for Cloudflare Pages edge runtime
-  // This endpoint is not compatible with edge runtime due to Firebase Admin SDK requirements
+  // Edge runtime compatible response
+  // Clients should fetch directly from Firestore using client-side SDK
   return NextResponse.json(
     {
-      error: "This endpoint is not available on Cloudflare Pages",
-      message: "Firebase Admin SDK requires Node.js runtime. Deploy to Vercel for this functionality.",
+      success: false,
+      error: "Admin recipes endpoint not available",
+      message: "Use client-side Firestore query to fetch ai_recipes collection",
+      note: "On Cloudflare Pages, query ai_recipes directly from client with proper Firestore rules",
     },
-    { status: 503 }
+    { status: 501 }
   )
 }
