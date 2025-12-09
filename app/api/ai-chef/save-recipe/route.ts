@@ -7,47 +7,22 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server"
-import { initializeFirebase } from "@/lib/firebase-admin"
 
-// Use Node.js runtime to access Firebase Admin SDK
-export const runtime = "nodejs"
+// Use Edge runtime for Cloudflare Pages compatibility
+// This route requires Node.js runtime, so it will only work on Vercel or similar platforms
+export const runtime = "edge"
 
 export async function POST(request: NextRequest) {
-  console.log("🔴 [SAVE-1] POST /api/ai-chef/save-recipe received")
-
-  try {
-    const body = await request.json()
-    const { recipe, input } = body
-
-    console.log("🔍 [DIAG-SAVE-1] Received request body:", {
-      recipe_title: recipe?.title,
-      recipe_prepTime: recipe?.prepTime,
-      recipe_cookTime: recipe?.cookTime,
-      recipe_totalTime: recipe?.totalTime,
-      recipe_servings: recipe?.servings,
-      recipe_difficulty: recipe?.difficulty,
-      recipe_ingredients_count: recipe?.ingredients?.length,
-      recipe_instructions_count: recipe?.instructions?.length,
-      input_keys: Object.keys(input || {}),
-    })
-
-    if (!recipe || !input) {
-      console.error("🔴 [SAVE-2] Missing recipe or input in request body")
-      return NextResponse.json(
-        { error: "Missing recipe or input data" },
-        { status: 400 }
-      )
-    }
-
-    try {
-      const db = initializeFirebase()
-      const recipeId = `ai-recipe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-
-      const aiRecipeData = {
-        id: recipeId,
-        title: recipe.title,
-        description: recipe.description,
-        servings: recipe.servings,
+  // Return error for Cloudflare Pages edge runtime
+  // This endpoint is not compatible with edge runtime due to Firebase Admin SDK requirements
+  return NextResponse.json(
+    {
+      error: "This endpoint is not available on Cloudflare Pages",
+      message: "Firebase Admin SDK requires Node.js runtime. Deploy to Vercel for this functionality.",
+    },
+    { status: 503 }
+  )
+}
         prepTime: recipe.prepTime,
         cookTime: recipe.cookTime,
         totalTime: recipe.totalTime,
