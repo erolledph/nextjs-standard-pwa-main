@@ -4,7 +4,7 @@
  */
 
 import { Metadata } from "next"
-import { AIChefPageImproved } from "@/components/ai-chef/AIChefPageImproved"
+import { AIChefPageNew } from "@/components/ai-chef/AIChefPageNew"
 
 export const metadata: Metadata = {
   title: "AI Chef - Smart Recipe Search & Generation",
@@ -25,5 +25,5 @@ export const metadata: Metadata = {
 }
 
 export default function AIChefPage() {
-  return <AIChefPageImproved />
+  return <AIChefPageNew />
 }
