@@ -48,34 +48,34 @@ From AI Chef on World Food Recipes`
         </h1>
 
         {/* Recipe Info Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8 bg-muted/30 p-6 rounded-lg">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 bg-muted/30 p-6 rounded-lg">
           <div className="text-center">
             <div className="flex justify-center mb-2">
               <Clock className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground mb-1">Prep Time</p>
-            <p className="font-semibold text-foreground">{recipe.prepTime}</p>
+            <p className="text-xs text-muted-foreground mb-1 font-semibold">Prep Time</p>
+            <p className="font-bold text-foreground">{recipe.prepTime}</p>
           </div>
           <div className="text-center">
             <div className="flex justify-center mb-2">
               <Flame className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground mb-1">Cook Time</p>
-            <p className="font-semibold text-foreground">{recipe.cookTime}</p>
+            <p className="text-xs text-muted-foreground mb-1 font-semibold">Cook Time</p>
+            <p className="font-bold text-foreground">{recipe.cookTime}</p>
           </div>
           <div className="text-center">
             <div className="flex justify-center mb-2">
               <Users className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground mb-1">Servings</p>
-            <p className="font-semibold text-foreground">{recipe.servings}</p>
+            <p className="text-xs text-muted-foreground mb-1 font-semibold">Servings</p>
+            <p className="font-bold text-foreground">{recipe.servings}</p>
           </div>
           <div className="text-center">
             <div className="flex justify-center mb-2">
               <ChefHat className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-xs text-muted-foreground mb-1">Difficulty</p>
-            <p className="font-semibold text-foreground">Moderate</p>
+            <p className="text-xs text-muted-foreground mb-1 font-semibold">Difficulty</p>
+            <p className="font-bold text-foreground text-sm">{recipe.difficulty || "Moderate"}</p>
           </div>
         </div>
 

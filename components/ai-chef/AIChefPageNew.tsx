@@ -101,8 +101,8 @@ export function AIChefPageNew() {
 
 CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required fields:
 {
-  "title": "Recipe Name",
-  "description": "A short 1-2 sentence description",
+  "title": "A creative and appetizing recipe name (e.g., 'Spiced Saffron Chicken Biryani' or 'Creamy Garlic Butter Prawns')",
+  "description": "A short 1-2 sentence description of the dish",
   "servings": 4,
   "prepTime": "15 minutes",
   "cookTime": "45 minutes",
@@ -119,14 +119,15 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
 }
 
 DO NOT INCLUDE ANY TEXT BEFORE OR AFTER THE JSON.
-EVERY FIELD IS REQUIRED.`
+EVERY FIELD IS REQUIRED.
+THE TITLE MUST BE CREATIVE, DESCRIPTIVE, AND APPETIZING.`
 
       const userPrompt = `Generate a delicious authentic ${data.country} recipe featuring ${data.protein} with these characteristics:
 - Description: ${data.description}
 - Taste profile: ${data.taste.join(", ")}
 - Key ingredients: ${data.ingredients.slice(0, 5).join(", ")}
 
-Return ONLY the JSON object with no additional text.`
+Create a creative and appetizing recipe title that describes the dish. Return ONLY the JSON object with no additional text.`
 
       const generativeResponse = await model.generateContent({
         contents: [{ role: "user", parts: [{ text: userPrompt }] }],
@@ -146,10 +147,65 @@ Return ONLY the JSON object with no additional text.`
         .trim()
       const freshResponse = JSON.parse(cleanText)
 
+      // Helper function to generate creative title if missing
+      const generateTitle = (protein: string, country: string, tasteProfiles: string[]) => {
+        const adjectives = {
+          spicy: ["Spiced", "Fiery", "Zesty"],
+          savory: ["Savory", "Rich", "Umami-Packed"],
+          sweet: ["Sweet", "Honey-Glazed", "Caramelized"],
+          tangy: ["Tangy", "Citrus-Kissed", "Tangy"],
+          creamy: ["Creamy", "Silky", "Luxurious"],
+          light: ["Light", "Fresh", "Refreshing"],
+        }
+
+        const tasteAdj = tasteProfiles[0]?.toLowerCase() || "delicious"
+        const adjList = adjectives[tasteAdj as keyof typeof adjectives] || [
+          "Delicious",
+          "Authentic",
+          "Aromatic",
+        ]
+        const adj = adjList[Math.floor(Math.random() * adjList.length)]
+
+        // Capitalize protein
+        const proteinCapitalized =
+          protein.charAt(0).toUpperCase() + protein.slice(1).toLowerCase()
+
+        // Add country reference if it's a specific cuisine
+        const countryRef = country && country !== "International" ? ` ${country}` : ""
+
+        return `${adj}${countryRef} ${proteinCapitalized} Recipe`
+      }
+
+      // Ensure all required fields have proper defaults
+      const enrichedResponse = {
+        title:
+          freshResponse.title?.trim() &&
+          freshResponse.title.trim() !== "Recipe Name" &&
+          freshResponse.title.trim() !== ""
+            ? freshResponse.title.trim()
+            : generateTitle(data.protein, data.country, data.taste),
+        description: freshResponse.description?.trim() || "",
+        servings: freshResponse.servings || 4,
+        prepTime: (freshResponse.prepTime?.toString() || "15 minutes").trim(),
+        cookTime: (freshResponse.cookTime?.toString() || "30 minutes").trim(),
+        totalTime: (freshResponse.totalTime?.toString() || "45 minutes").trim(),
+        difficulty: (freshResponse.difficulty?.trim() || "Medium"),
+        ingredients: (freshResponse.ingredients || []).map((ing: any) => ({
+          item: ing.item?.trim() || "",
+          amount: ing.amount?.toString().trim() || "",
+          unit: ing.unit?.trim() || "",
+        })),
+        instructions: (freshResponse.instructions || []).map((inst: any) => 
+          typeof inst === "string" ? inst.trim() : inst
+        ),
+        nutritionPer100g: freshResponse.nutritionPer100g || null,
+        cuisine: freshResponse.cuisine || data.country,
+      }
+
       // Show results with both tabs immediately
       const results: SearchResult = {
         ...searchData,
-        freshResponse: freshResponse,
+        freshResponse: enrichedResponse,
       }
 
       setSearchResults(results)
@@ -166,15 +222,22 @@ Return ONLY the JSON object with no additional text.`
   const handleViewRecipe = async (recipe: any, isFreshAI: boolean = false) => {
     const normalizedRecipe = {
       ...recipe,
-      prepTime: recipe.prepTime || recipe.prep_time || "",
-      cookTime: recipe.cookTime || recipe.cook_time || "",
-      totalTime: recipe.totalTime || recipe.total_time || "",
+      title: recipe.title?.toString().trim() || "AI Generated Recipe",
+      description: recipe.description?.toString().trim() || "",
+      difficulty: recipe.difficulty?.toString().trim() || "Moderate",
+      servings: recipe.servings || 4,
+      prepTime: (recipe.prepTime?.toString().trim() || "15 minutes"),
+      cookTime: (recipe.cookTime?.toString().trim() || "30 minutes"),
+      totalTime: recipe.totalTime?.toString().trim() || "",
       ingredients: (recipe.ingredients || []).map((ing: any) => ({
-        item: ing.item || ing.name || "",
-        amount: ing.amount || ing.qty || "",
-        unit: ing.unit || ing.unit_of_measurement || "",
+        item: ing.item?.toString().trim() || ing.name?.toString().trim() || "",
+        amount: ing.amount?.toString().trim() || ing.qty?.toString().trim() || "",
+        unit: ing.unit?.toString().trim() || ing.unit_of_measurement?.toString().trim() || "",
       })),
-      nutritionPer100g: recipe.nutritionPer100g || recipe.nutrition_per_100g || null,
+      instructions: (recipe.instructions || []).map((inst: any) => 
+        typeof inst === "string" ? inst.trim() : inst
+      ),
+      nutritionInfo: recipe.nutritionInfo || recipe.nutritionPer100g || recipe.nutrition_per_100g || null,
     }
 
     setSelectedRecipe(normalizedRecipe)
@@ -496,13 +559,13 @@ Return ONLY the JSON object with no additional text.`
             >
               {/* Header Section */}
               <div className="p-6 md:p-8">
-                <div className="flex justify-between items-start mb-4 gap-4">
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground flex-1" style={{ fontFamily: 'Georgia, serif' }}>
+                <div className="flex flex-col gap-2 mb-4">
+                  <span className="inline-block w-fit px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 uppercase tracking-wider">
+                    AI Generated Recipe
+                  </span>
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>
                     {searchResults.freshResponse.title}
                   </h3>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary whitespace-nowrap">
-                    AI Generated
-                  </span>
                 </div>
 
                 {searchResults.freshResponse.description && (
@@ -512,39 +575,34 @@ Return ONLY the JSON object with no additional text.`
                 )}
 
                 {/* Quick Info Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-6 border-b border-shadow-gray">
-                  {searchResults.freshResponse.prepTime && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1 font-semibold">Prep Time</p>
-                      <p className="font-bold text-foreground">{searchResults.freshResponse.prepTime}</p>
-                    </div>
-                  )}
-                  {searchResults.freshResponse.cookTime && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1 font-semibold">Cook Time</p>
-                      <p className="font-bold text-foreground">{searchResults.freshResponse.cookTime}</p>
-                    </div>
-                  )}
-                  {searchResults.freshResponse.servings && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1 font-semibold">Servings</p>
-                      <p className="font-bold text-foreground">{searchResults.freshResponse.servings}</p>
-                    </div>
-                  )}
-                  {searchResults.freshResponse.difficulty && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1 font-semibold">Difficulty</p>
-                      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100">
-                        {searchResults.freshResponse.difficulty}
-                      </span>
-                    </div>
-                  )}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 bg-muted/30 p-4 rounded-lg">
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-1 font-semibold">Prep Time</p>
+                    <p className="font-bold text-foreground">{searchResults.freshResponse.prepTime || "—"}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-1 font-semibold">Cook Time</p>
+                    <p className="font-bold text-foreground">{searchResults.freshResponse.cookTime || "—"}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-1 font-semibold">Servings</p>
+                    <p className="font-bold text-foreground">{searchResults.freshResponse.servings || "—"}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-1 font-semibold">Difficulty</p>
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100">
+                      {searchResults.freshResponse.difficulty || "Moderate"}
+                    </span>
+                  </div>
                 </div>
 
-                {/* CTA */}
-                <p className="text-sm text-muted-foreground mt-6 font-medium">
-                  Click to view full recipe →
-                </p>
+                {/* CTA with enhanced styling */}
+                <div className="flex items-center justify-start pt-4 border-t border-shadow-gray">
+                  <p className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
+                    Click to view full recipe
+                    <span className="ml-2 inline-block transition-transform">→</span>
+                  </p>
+                </div>
               </div>
             </div>
           )}
