@@ -27,8 +27,6 @@ import {
 } from "lucide-react"
 import { RecipeResult } from "./RecipeResult"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
-import { initializeApp, getApps } from "firebase/app"
-import { getFirestore, collection, addDoc, Timestamp } from "firebase/firestore"
 
 interface SearchResult {
   recipePosts: any[]
@@ -247,46 +245,31 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
 
     if (isFreshAI && formData) {
       try {
-        // Initialize Firebase on client side (Firestore only)
-        const firebaseConfig = {
-          apiKey: "AIzaSyB2grFk9IQj7rP-gMrYVNuLRHpdQiEoVAo",
-          projectId: "chef-ai-nunoy",
-        }
-
-        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-        const db = getFirestore(app)
-
-        const recipeId = `ai-recipe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        
-        const aiRecipeData = {
-          id: recipeId,
-          title: normalizedRecipe.title,
-          description: normalizedRecipe.description,
-          servings: normalizedRecipe.servings,
-          prepTime: normalizedRecipe.prepTime,
-          cookTime: normalizedRecipe.cookTime,
-          totalTime: normalizedRecipe.totalTime,
-          difficulty: normalizedRecipe.difficulty,
-          ingredients: normalizedRecipe.ingredients,
-          instructions: normalizedRecipe.instructions,
-          nutritionInfo: normalizedRecipe.nutritionInfo || null,
-          cuisine: formData.country,
-          userInput: {
-            description: formData.description,
-            country: formData.country,
-            protein: formData.protein,
-            taste: formData.taste,
-            ingredients: formData.ingredients,
+        const response = await fetch('/api/ai-chef/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          createdAt: Timestamp.now(),
-          isPublished: false,
-          source: "ai-generated",
-        }
+          body: JSON.stringify({
+            recipe: normalizedRecipe,
+            userInput: {
+              description: formData.description,
+              country: formData.country,
+              protein: formData.protein,
+              taste: formData.taste,
+              ingredients: formData.ingredients,
+            },
+          }),
+        });
 
-        await addDoc(collection(db, "ai_recipes"), aiRecipeData)
-        console.log("✅ Recipe saved to Firebase:", recipeId)
+        if (response.ok) {
+          const result = await response.json();
+          console.log("✅ Recipe saved to Firebase:", result.recipeId);
+        } else {
+          console.error("Error saving recipe to Firebase:", await response.text());
+        }
       } catch (err) {
-        console.error("Error saving recipe to Firebase:", err)
+        console.error("Error saving recipe to Firebase:", err);
         // Don't block UI if save fails
       }
     }

@@ -461,6 +461,22 @@ export async function updateRecipeStats(
   }
 }
 
+
+/**
+ * Delete an AI-generated recipe
+ */
+export async function deleteAIRecipe(recipeId: string) {
+  try {
+    const db = getFirestore();
+    await db.collection("ai_recipes").doc(recipeId).delete();
+    console.log(`✅ AI Recipe ${recipeId} deleted`);
+    return true;
+  } catch (error) {
+    console.error("❌ Error deleting AI recipe:", error);
+    return false;
+  }
+}
+
 /**
  * Mark AI recipe as converted to recipe post
  */

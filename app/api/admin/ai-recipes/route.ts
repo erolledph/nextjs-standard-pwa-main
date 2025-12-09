@@ -1,25 +1,20 @@
-/**
- * Get all AI-generated recipes from Firebase
- * Fetches unpublished AI recipes for the admin dashboard
- * 
- * GET /api/admin/ai-recipes
- */
+import { NextRequest, NextResponse } from "next/server";
+import { getAIRecipes } from "@/lib/firebase-admin";
+import { isAdminAuthenticated } from "@/lib/auth";
 
-import { NextResponse } from "next/server"
-
-// Use Edge runtime for Cloudflare Pages compatibility
-export const runtime = "edge"
-
-export async function GET() {
-  // Edge runtime compatible response
-  // Clients should fetch directly from Firestore using client-side SDK
-  return NextResponse.json(
-    {
-      success: false,
-      error: "Admin recipes endpoint not available",
-      message: "Use client-side Firestore query to fetch ai_recipes collection",
-      note: "On Cloudflare Pages, query ai_recipes directly from client with proper Firestore rules",
-    },
-    { status: 501 }
-  )
+export async function GET(request: NextRequest) {
+  try {
+    const isAuthenticated = await isAdminAuthenticated();
+    if (!isAuthenticated) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const recipes = await getAIRecipes(false); // Fetch all recipes, not just published
+    return NextResponse.json(recipes);
+  } catch (error) {
+    console.error("Error fetching AI recipes:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch AI recipes" },
+      { status: 500 }
+    );
+  }
 }

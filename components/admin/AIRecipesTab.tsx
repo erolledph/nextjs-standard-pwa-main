@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Sparkles, ChefHat, Calendar, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import { initializeApp, getApps } from "firebase/app"
-import { getFirestore, collection, query, orderBy, getDocs, deleteDoc, doc } from "firebase/firestore"
 
 interface AIRecipe {
   id: string
@@ -42,50 +40,42 @@ export function AIRecipesTab() {
   }, [])
 
   async function fetchAIRecipes() {
-    setLoading(true)
+    setLoading(true);
     try {
-      // Initialize Firebase on client
-      const firebaseConfig = {
-        apiKey: "AIzaSyB2grFk9IQj7rP-gMrYVNuLRHpdQiEoVAo",
-        projectId: "chef-ai-nunoy",
+      const response = await fetch('/api/admin/ai-recipes');
+      if (response.ok) {
+        const recipes = await response.json();
+        setAIRecipes(recipes);
+      } else {
+        throw new Error('Failed to fetch AI recipes');
       }
-
-      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-      const db = getFirestore(app)
-
-      // Query ai_recipes collection ordered by createdAt descending
-      const q = query(collection(db, "ai_recipes"), orderBy("createdAt", "desc"))
-      const snapshot = await getDocs(q)
-      const recipes = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as AIRecipe[]
-
-      setAIRecipes(recipes)
     } catch (error) {
-      console.error("Error fetching AI recipes:", error)
-      toast.error("Failed to load AI recipes")
+      console.error("Error fetching AI recipes:", error);
+      toast.error("Failed to load AI recipes");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   async function deleteAIRecipe(recipeId: string) {
     try {
-      const firebaseConfig = {
-        apiKey: "AIzaSyB2grFk9IQj7rP-gMrYVNuLRHpdQiEoVAo",
-        projectId: "chef-ai-nunoy",
+      const response = await fetch('/api/admin/ai-recipes/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ recipeId }),
+      });
+
+      if (response.ok) {
+        setAIRecipes((prev) => prev.filter((r) => r.id !== recipeId));
+        toast.success("Recipe deleted");
+      } else {
+        throw new Error('Failed to delete recipe');
       }
-
-      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-      const db = getFirestore(app)
-
-      await deleteDoc(doc(db, "ai_recipes", recipeId))
-      setAIRecipes((prev) => prev.filter((r) => r.id !== recipeId))
-      toast.success("Recipe deleted")
     } catch (error) {
-      console.error("Error deleting recipe:", error)
-      toast.error("Failed to delete recipe")
+      console.error("Error deleting recipe:", error);
+      toast.error("Failed to delete recipe");
     }
   }
 
