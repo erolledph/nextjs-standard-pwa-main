@@ -4,8 +4,10 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Sparkles, ChefHat, Calendar } from "lucide-react"
+import { Loader2, Sparkles, ChefHat, Calendar, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { initializeApp, getApps } from "firebase/app"
+import { getFirestore, collection, query, orderBy, getDocs, deleteDoc, doc } from "firebase/firestore"
 
 interface AIRecipe {
   id: string
@@ -42,15 +44,48 @@ export function AIRecipesTab() {
   async function fetchAIRecipes() {
     setLoading(true)
     try {
-      const response = await fetch("/api/admin/ai-recipes")
-      if (!response.ok) throw new Error("Failed to fetch AI recipes")
-      const data = await response.json()
-      setAIRecipes(data)
+      // Initialize Firebase on client
+      const firebaseConfig = {
+        apiKey: "AIzaSyB2grFk9IQj7rP-gMrYVNuLRHpdQiEoVAo",
+        projectId: "chef-ai-nunoy",
+      }
+
+      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+      const db = getFirestore(app)
+
+      // Query ai_recipes collection ordered by createdAt descending
+      const q = query(collection(db, "ai_recipes"), orderBy("createdAt", "desc"))
+      const snapshot = await getDocs(q)
+      const recipes = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as AIRecipe[]
+
+      setAIRecipes(recipes)
     } catch (error) {
       console.error("Error fetching AI recipes:", error)
       toast.error("Failed to load AI recipes")
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function deleteAIRecipe(recipeId: string) {
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyB2grFk9IQj7rP-gMrYVNuLRHpdQiEoVAo",
+        projectId: "chef-ai-nunoy",
+      }
+
+      const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+      const db = getFirestore(app)
+
+      await deleteDoc(doc(db, "ai_recipes", recipeId))
+      setAIRecipes((prev) => prev.filter((r) => r.id !== recipeId))
+      toast.success("Recipe deleted")
+    } catch (error) {
+      console.error("Error deleting recipe:", error)
+      toast.error("Failed to delete recipe")
     }
   }
 
@@ -177,20 +212,30 @@ export function AIRecipesTab() {
                     : "—"}
                 </td>
                 <td className="px-6 py-4">
-                  <Button
-                    onClick={() => handleConvertToRecipePost(recipe)}
-                    disabled={converting === recipe.id}
-                    className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white text-sm py-1 px-3"
-                  >
-                    {converting === recipe.id ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                        Converting...
-                      </>
-                    ) : (
-                      "Convert to Post"
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleConvertToRecipePost(recipe)}
+                      disabled={converting === recipe.id}
+                      className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white text-sm py-1 px-3"
+                    >
+                      {converting === recipe.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                          Converting...
+                        </>
+                      ) : (
+                        "Convert"
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => deleteAIRecipe(recipe.id)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -230,20 +275,30 @@ export function AIRecipesTab() {
                   <p className="font-medium">{recipe.servings || "—"}</p>
                 </div>
               </div>
-              <Button
-                onClick={() => handleConvertToRecipePost(recipe)}
-                disabled={converting === recipe.id}
-                className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white"
-              >
-                {converting === recipe.id ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Converting...
-                  </>
-                ) : (
-                  "Convert to Recipe Post"
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => handleConvertToRecipePost(recipe)}
+                  disabled={converting === recipe.id}
+                  className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white"
+                >
+                  {converting === recipe.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Converting...
+                    </>
+                  ) : (
+                    "Convert to Recipe Post"
+                  )}
+                </Button>
+                <Button
+                  onClick={() => deleteAIRecipe(recipe.id)}
+                  variant="outline"
+                  size="icon"
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
