@@ -18,13 +18,18 @@ export interface AIChefInput {
  */
 export interface RecipeResponse {
   title: string
-  servings: string // "4" or "4-6"
+  description?: string
+  servings: string | number // "4" or 4 or "4-6"
   prepTime: string // "15 minutes"
   cookTime: string // "30 minutes"
+  totalTime?: string // "1 hour"
+  difficulty?: string // "Easy", "Medium", "Hard"
   ingredients: Ingredient[]
   instructions: string[]
   tips?: string[]
   nutritionInfo?: NutritionInfo
+  nutritionPer100g?: NutritionInfo
+  cuisine?: string
 }
 
 /**
