@@ -1,298 +1,241 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Sparkles, ChefHat, Calendar, Trash2 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
-
-interface AIRecipe {
-  id: string
-  title: string
-  servings?: string
-  prepTime?: string
-  cookTime?: string
-  difficulty?: string
-  ingredients?: any[]
-  instructions?: string[]
-  nutritionInfo?: any
-  userInput?: {
-    description: string
-    country: string
-    protein: string
-    taste: string[]
-    ingredients: string[]
-  }
-  createdAt?: any
-  isPublished?: boolean
-  source?: string
-}
+import { useRouter } from "next/navigation"
 
 export function AIRecipesTab() {
-  const [aiRecipes, setAIRecipes] = useState<AIRecipe[]>([])
-  const [loading, setLoading] = useState(false)
-  const [converting, setConverting] = useState<string | null>(null)
+  const [recipes, setRecipes] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isConverting, setIsConverting] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    fetchAIRecipes()
+    async function fetchAiRecipes() {
+      try {
+        const response = await fetch("/api/admin/ai-recipes") // Corrected endpoint
+        if (!response.ok) {
+          throw new Error("Failed to fetch AI recipes")
+        }
+        const data = await response.json()
+        setRecipes(data.recipes)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAiRecipes()
   }, [])
 
-  async function fetchAIRecipes() {
-    setLoading(true);
+  const handleView = (recipe: any) => {
+    setSelectedRecipe(recipe)
+    setIsViewModalOpen(true)
+  }
+
+  const handleDeleteClick = (recipeId: string) => {
+    setRecipeToDelete(recipeId)
+    setIsDeleteConfirmOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!recipeToDelete) return
+    setIsDeleting(true)
     try {
-      const response = await fetch('/api/admin/ai-recipes');
-      if (response.ok) {
-        const recipes = await response.json();
-        setAIRecipes(recipes);
-      } else {
-        throw new Error('Failed to fetch AI recipes');
+      const response = await fetch("/api/admin/ai-recipes/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: recipeToDelete }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete recipe")
       }
-    } catch (error) {
-      console.error("Error fetching AI recipes:", error);
-      toast.error("Failed to load AI recipes");
+
+      setRecipes(recipes.filter(recipe => recipe.id !== recipeToDelete))
+      toast.success("AI recipe deleted successfully.")
+    } catch (err: any) {
+      toast.error(err.message)
     } finally {
-      setLoading(false);
+      setIsDeleting(false)
+      setIsDeleteConfirmOpen(false)
+      setRecipeToDelete(null)
     }
   }
 
-  async function deleteAIRecipe(recipeId: string) {
+  const handleConvertToPost = (recipe: any) => {
+    setIsConverting(true)
+    // Use localStorage to pass the recipe data
+    // This is a simple way to pass data to a new page without using complex state management
     try {
-      const response = await fetch('/api/admin/ai-recipes/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ recipeId }),
-      });
-
-      if (response.ok) {
-        setAIRecipes((prev) => prev.filter((r) => r.id !== recipeId));
-        toast.success("Recipe deleted");
-      } else {
-        throw new Error('Failed to delete recipe');
-      }
+      localStorage.setItem("ai-recipe-to-convert", JSON.stringify(recipe))
+      toast.success(
+        "Redirecting to create new post page with recipe data..."
+      )
+      router.push("/admin/create")
     } catch (error) {
-      console.error("Error deleting recipe:", error);
-      toast.error("Failed to delete recipe");
+      console.error("Failed to save recipe to localStorage", error)
+      toast.error(
+        "Could not prepare recipe for conversion. See console for details."
+      )
+      setIsConverting(false)
     }
-  }
-
-  function handleConvertToRecipePost(recipe: AIRecipe) {
-    // Navigate to recipe creation page with pre-filled data
-    // Format ingredients properly - handle both object and string formats
-    const formatIngredients = (ingredients: any[]): string => {
-      if (!Array.isArray(ingredients)) return ""
-      return ingredients
-        .map((ing: any) => {
-          if (typeof ing === "string") return ing
-          const item = ing.item || ""
-          const amount = ing.amount || ""
-          const unit = ing.unit || ""
-          // Only add amount/unit if they exist
-          if (amount && unit) {
-            return `${item} - ${amount} ${unit}`
-          } else if (amount) {
-            return `${item} - ${amount}`
-          } else if (unit) {
-            return `${item} - ${unit}`
-          }
-          return item
-        })
-        .filter(Boolean)
-        .join("\n")
-    }
-
-    const recipeData = {
-      title: recipe.title,
-      content: Array.isArray(recipe.instructions) ? recipe.instructions.join("\n\n") : recipe.instructions || "",
-      excerpt: recipe.userInput?.description || "",
-      prepTime: recipe.prepTime || "",
-      cookTime: recipe.cookTime || "",
-      servings: recipe.servings || "",
-      difficulty: recipe.difficulty || "Easy",
-      ingredients: formatIngredients(recipe.ingredients || []),
-      tags: [recipe.userInput?.country || "", recipe.userInput?.protein || "", ...recipe.userInput?.taste || []].filter(Boolean),
-      nutrition: recipe.nutritionInfo ? JSON.stringify(recipe.nutritionInfo) : "",
-      aiRecipeId: recipe.id,
-    }
-
-    // Encode and pass via URL state
-    const encodedData = encodeURIComponent(JSON.stringify(recipeData))
-    router.push(`/admin/create?ai=${encodedData}`)
+    // No need to setIsConverting(false) here if navigation is successful
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
       </div>
     )
   }
 
-  if (aiRecipes.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-12">
-          <div className="text-center">
-            <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">No AI-generated recipes yet</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Generate recipes on the AI Chef page and they'll appear here
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    )
+  if (error) {
+    return <p className="text-red-500">Error: {error}</p>
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <ChefHat className="h-6 w-6 text-orange-500" />
-            AI Generated Recipes
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {aiRecipes.length} recipe{aiRecipes.length !== 1 ? "s" : ""} ready to be converted to recipe posts
-          </p>
-        </div>
-      </div>
-
-      {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto border border-gray-200 dark:border-gray-800 rounded-lg">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Recipe Title</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Source</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Prep Time</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Cook Time</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Servings</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Created</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-            {aiRecipes.map((recipe) => (
-              <tr key={recipe.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="font-medium text-foreground">{recipe.title}</div>
-                  <div className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                    {recipe.userInput?.description}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="inline-block px-2 py-1 text-xs font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded">
-                    {recipe.userInput?.country || "—"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-foreground">{recipe.prepTime || "—"}</td>
-                <td className="px-6 py-4 text-sm text-foreground">{recipe.cookTime || "—"}</td>
-                <td className="px-6 py-4 text-sm text-foreground">{recipe.servings || "—"}</td>
-                <td className="px-6 py-4 text-sm text-muted-foreground">
-                  {recipe.createdAt
-                    ? typeof recipe.createdAt === "string"
-                      ? new Date(recipe.createdAt).toLocaleDateString()
-                      : recipe.createdAt.seconds
-                        ? new Date(recipe.createdAt.seconds * 1000).toLocaleDateString()
-                        : "—"
-                    : "—"}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => handleConvertToRecipePost(recipe)}
-                      disabled={converting === recipe.id}
-                      className="bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white text-sm py-1 px-3"
-                    >
-                      {converting === recipe.id ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                          Converting...
-                        </>
-                      ) : (
-                        "Convert"
-                      )}
-                    </Button>
-                    <Button
-                      onClick={() => deleteAIRecipe(recipe.id)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
+      <h3 className="text-lg font-semibold">AI-Generated Recipes</h3>
+      {recipes.length === 0 ? (
+        <p>No AI-generated recipes found.</p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Title</TableHead>
+              <TableHead>Cuisine</TableHead>
+              <TableHead>Created At</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {recipes.map(recipe => (
+              <TableRow key={recipe.id}>
+                <TableCell className="font-medium">{recipe.title}</TableCell>
+                <TableCell>{recipe.cuisine}</TableCell>
+                <TableCell>
+                  {new Date(
+                    recipe.createdAt?._seconds * 1000
+                  ).toLocaleString()}
+                </TableCell>
+                <TableCell className="space-x-2">
+                  <Button variant="outline" size="sm" onClick={() => handleView(recipe)}>
+                    View
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleConvertToPost(recipe)}
+                    disabled={isConverting}
+                  >
+                    {isConverting ? "Converting..." : "Convert to Post"}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteClick(recipe.id)}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      )}
 
-      {/* Mobile Card View */}
-      <div className="md:hidden space-y-4">
-        {aiRecipes.map((recipe) => (
-          <Card key={recipe.id} className="overflow-hidden">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">{recipe.title}</CardTitle>
-                  <CardDescription className="mt-1 line-clamp-2">
-                    {recipe.userInput?.description}
-                  </CardDescription>
-                </div>
-                <span className="ml-2 inline-block px-2 py-1 text-xs font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded">
-                  {recipe.userInput?.country || "—"}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs">Prep Time</p>
-                  <p className="font-medium">{recipe.prepTime || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Cook Time</p>
-                  <p className="font-medium">{recipe.cookTime || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Servings</p>
-                  <p className="font-medium">{recipe.servings || "—"}</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleConvertToRecipePost(recipe)}
-                  disabled={converting === recipe.id}
-                  className="flex-1 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white"
-                >
-                  {converting === recipe.id ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Converting...
-                    </>
-                  ) : (
-                    "Convert to Recipe Post"
-                  )}
-                </Button>
-                <Button
-                  onClick={() => deleteAIRecipe(recipe.id)}
-                  variant="outline"
-                  size="icon"
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* View Recipe Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="max-w-3xl h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{selectedRecipe?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-grow overflow-y-auto pr-4">
+            <h4 className="font-bold mt-4">Ingredients:</h4>
+            <ul className="list-disc pl-6">
+              {selectedRecipe?.ingredients?.map((ing: string, i: number) => (
+                <li key={i}>{ing}</li>
+              ))}
+            </ul>
+            <h4 className="font-bold mt-4">Instructions:</h4>
+            <div
+              className="prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{
+                __html: selectedRecipe?.instructions || "",
+              }}
+            />
+             <h4 className="font-bold mt-4">Meta:</h4>
+            <p><strong>Cuisine:</strong> {selectedRecipe?.cuisine}</p>
+            <p><strong>Diet:</strong> {selectedRecipe?.diet}</p>
+            <p><strong>Method:</strong> {selectedRecipe?.method}</p>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure?</DialogTitle>
+          </DialogHeader>
+          <div>
+            <p>
+              This action cannot be undone. This will permanently delete the
+              AI-generated recipe.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
