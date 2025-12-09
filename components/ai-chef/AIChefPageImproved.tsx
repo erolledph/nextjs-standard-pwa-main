@@ -337,7 +337,7 @@ Return ONLY the JSON object with no additional text.`
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white dark:from-orange-950 dark:to-black">
         <div className="container mx-auto px-4 py-12">
           {/* Hero Section */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 mx-auto max-w-2xl">
             <div className="flex justify-center mb-4">
               <Sparkles className="h-12 w-12 text-orange-500" />
             </div>
@@ -351,7 +351,7 @@ Return ONLY the JSON object with no additional text.`
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto">
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-orange-200 dark:border-orange-800">
               <Database className="h-6 w-6 text-orange-500 mb-2" />
               <p className="text-2xl font-bold text-gray-900 dark:text-white">1000+</p>
@@ -484,7 +484,7 @@ Return ONLY the JSON object with no additional text.`
                   control={control}
                   render={({ field }) => (
                     <>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[300px] overflow-y-auto p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+                      <div className="flex flex-wrap gap-2">
                         {INGREDIENTS_OPTIONS.map((ingredient) => (
                           <button
                             key={ingredient}
@@ -496,10 +496,10 @@ Return ONLY the JSON object with no additional text.`
                                 : [...current, ingredient]
                               field.onChange(updated)
                             }}
-                            className={`px-3 py-1 rounded text-sm font-medium transition-all ${
+                            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                               (field.value || []).includes(ingredient)
                                 ? "bg-orange-500 text-white border border-orange-600"
-                                : "bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 hover:border-orange-400"
                             }`}
                           >
                             {ingredient}
