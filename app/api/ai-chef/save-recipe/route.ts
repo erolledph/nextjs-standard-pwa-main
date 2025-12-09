@@ -1,16 +1,16 @@
 /**
  * Save AI-generated recipe to Firebase
- * On Cloudflare Pages (edge runtime), Firebase Admin is not available
- * This endpoint returns success but doesn't persist to Firebase
+ * Saves the recipe and input data for later conversion to recipe posts
  *
  * POST /api/ai-chef/save-recipe
  * Body: { recipe, input }
  */
 
 import { NextResponse, type NextRequest } from "next/server"
+import { initializeFirebase } from "@/lib/firebase-admin"
 
-// Cloudflare Pages requires edge runtime
-export const runtime = "edge"
+// Use Node.js runtime to access Firebase Admin SDK
+export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   console.log("🔴 [SAVE-1] POST /api/ai-chef/save-recipe received")
@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
       recipe_servings: recipe?.servings,
       recipe_difficulty: recipe?.difficulty,
       recipe_ingredients_count: recipe?.ingredients?.length,
-      recipe_ingredients_first: recipe?.ingredients?.[0],
       recipe_instructions_count: recipe?.instructions?.length,
       input_keys: Object.keys(input || {}),
     })
@@ -40,17 +39,57 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // On Cloudflare Pages, Firebase Admin is not available
-    // Recipe generation succeeded, but persistence to Firebase is not available
-    console.warn("⚠️  [SAVE-3] Firebase not configured on this deployment")
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Recipe generated successfully (Firebase persistence not available on this deployment)",
-        recipeId: null,
-      },
-      { status: 200 }
-    )
+    try {
+      const db = initializeFirebase()
+      const recipeId = `ai-recipe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+      const aiRecipeData = {
+        id: recipeId,
+        title: recipe.title,
+        description: recipe.description,
+        servings: recipe.servings,
+        prepTime: recipe.prepTime,
+        cookTime: recipe.cookTime,
+        totalTime: recipe.totalTime,
+        difficulty: recipe.difficulty,
+        ingredients: recipe.ingredients,
+        instructions: recipe.instructions,
+        nutritionInfo: recipe.nutritionInfo || recipe.nutritionPer100g || null,
+        cuisine: recipe.cuisine,
+        userInput: {
+          description: input.description,
+          country: input.country,
+          protein: input.protein,
+          taste: input.taste,
+          ingredients: input.ingredients,
+        },
+        createdAt: new Date(),
+        isPublished: false,
+        source: "ai-generated",
+      }
+
+      await db.collection("ai_recipes").doc(recipeId).set(aiRecipeData)
+      console.log("✅ [SAVE-4] Recipe saved to Firebase:", recipeId)
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Recipe saved successfully",
+          recipeId,
+        },
+        { status: 200 }
+      )
+    } catch (firebaseError) {
+      console.error("⚠️  [SAVE-5] Firebase error, but recipe generation succeeded:", firebaseError)
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Recipe generated successfully (Firebase save failed but recipe is in memory)",
+          recipeId: null,
+        },
+        { status: 200 }
+      )
+    }
   } catch (error) {
     console.error("🔴 [SAVE-ERROR] Error processing recipe:", error)
 

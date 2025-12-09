@@ -1,22 +1,37 @@
 /**
  * Get all AI-generated recipes from Firebase
- * On Cloudflare Pages (edge runtime), Firebase Admin is not available
- * This endpoint returns an empty array
+ * Fetches unpublished AI recipes for the admin dashboard
  * 
  * GET /api/admin/ai-recipes
  */
 
 import { NextResponse } from "next/server"
+import { initializeFirebase } from "@/lib/firebase-admin"
 
-export const runtime = "edge"
+// Use Node.js runtime to access Firebase Admin SDK
+export const runtime = "nodejs"
 
 export async function GET() {
   console.log("🔴 [API-1] Fetching AI recipes for admin dashboard...")
 
   try {
-    // On Cloudflare Pages, Firebase Admin is not available
-    console.log("⚠️  [API-2] Firebase not configured on this deployment, returning empty list")
-    return NextResponse.json([], {
+    const db = initializeFirebase()
+    
+    const snapshot = await db
+      .collection("ai_recipes")
+      .where("isPublished", "==", false)
+      .orderBy("createdAt", "desc")
+      .get()
+
+    const recipes = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
+    }))
+
+    console.log(`✅ [API-2] Found ${recipes.length} unpublished AI recipes`)
+
+    return NextResponse.json(recipes, {
       headers: {
         "Cache-Control": "no-cache, no-store, must-revalidate",
       },
