@@ -29,9 +29,8 @@ import {
 } from "lucide-react"
 import { RecipeResult } from "./RecipeResult"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
-import { shouldGenerateFreshRecipe, getBestRecipeFromSearch, type SearchResult as LogicSearchResult } from "@/lib/ai-chef-utils"
 
-interface SearchResult extends Partial<LogicSearchResult> {
+interface SearchResult {
   recipePosts: any[]
   cachedResults: any[]
   shouldGenerateNew: boolean
@@ -41,12 +40,14 @@ interface SearchResult extends Partial<LogicSearchResult> {
 
 export function AIChefPageNew() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null)
   const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null)
   const [stage, setStage] = useState<"form" | "results" | "recipe">("form")
   const [formData, setFormData] = useState<AIChefInputType | null>(null)
   const [activeTab, setActiveTab] = useState<"suggestions" | "generated">("suggestions")
+  const [generatedRecipe, setGeneratedRecipe] = useState<any | null>(null)
 
   const {
     control,
@@ -75,7 +76,7 @@ export function AIChefPageNew() {
     setSelectedRecipe(null)
 
     try {
-      // Search for matching recipes
+      // Search for matching recipes (ZERO COST - no AI generation here)
       const response = await fetch("/api/ai-chef/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,24 +107,49 @@ export function AIChefPageNew() {
         }
       }
 
-      let enrichedResponse = null
+      // Show results with BOTH tabs immediately (NO AI generation yet)
+      const results: SearchResult = {
+        ...searchData,
+        freshResponse: null, // Don't generate AI recipe yet - user-initiated only
+      }
 
-      // Determine if we should generate fresh recipe or use cached
-      if (shouldGenerateFreshRecipe(searchData)) {
-        // Generate fresh AI response immediately
-        const { GoogleGenerativeAI } = await import("@google/generative-ai")
-        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      setSearchResults(results)
+      setStage("results")
+      setActiveTab("suggestions")
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Search failed"
+      setError(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-        if (!apiKey) throw new Error("Gemini API key not configured")
+  // Generate fresh AI recipe when user clicks "Fresh Generate"
+  const handleFreshGenerate = async () => {
+    if (!formData) return
 
-        const genAI = new GoogleGenerativeAI(apiKey)
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
+    setIsGeneratingAI(true)
+    setError(null)
 
-        const systemPrompt = `You are a professional chef and recipe generator specializing in ${data.country} cuisine.
+    try {
+      const { GoogleGenerativeAI } = await import("@google/generative-ai")
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+
+      if (!apiKey) throw new Error("Gemini API key not configured")
+
+      const genAI = new GoogleGenerativeAI(apiKey)
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
+
+      const userPrompt = `Generate a delicious authentic ${formData.country} recipe featuring ${formData.protein} with these characteristics:
+- Description: ${formData.description}
+- Taste profile: ${formData.taste.join(", ")}
+- Key ingredients: ${formData.ingredients.slice(0, 5).join(", ")}
+
+Create a creative and appetizing recipe title that describes the dish. Return ONLY the JSON object with no additional text.
 
 CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required fields:
 {
-  "title": "A creative and appetizing recipe name (e.g., 'Spiced Saffron Chicken Biryani' or 'Creamy Garlic Butter Prawns')",
+  "title": "A creative and appetizing recipe name",
   "description": "A short 1-2 sentence description of the dish",
   "servings": 4,
   "prepTime": "15 minutes",
@@ -137,44 +163,26 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
     "First instruction step"
   ],
   "nutritionPer100g": {"calories": 250, "protein": 20, "carbs": 30, "fat": 10},
-  "cuisine": "${data.country}"
-}
+  "cuisine": "${formData.country}"
+}`
 
-DO NOT INCLUDE ANY TEXT BEFORE OR AFTER THE JSON.
-EVERY FIELD IS REQUIRED.
-THE TITLE MUST BE CREATIVE, DESCRIPTIVE, AND APPETIZING.`
+      const generativeResponse = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          temperature: 0,
+          topP: 0.95,
+          topK: 40,
+          maxOutputTokens: 2048,
+          responseMimeType: "application/json",
+        },
+      })
 
-        const userPrompt = `Generate a delicious authentic ${data.country} recipe featuring ${data.protein} with these characteristics:
-- Description: ${data.description}
-- Taste profile: ${data.taste.join(", ")}
-- Key ingredients: ${data.ingredients.slice(0, 5).join(", ")}
-
-Create a creative and appetizing recipe title that describes the dish. Return ONLY the JSON object with no additional text.`
-
-        const generativeResponse = await model.generateContent({
-          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-          generationConfig: {
-            temperature: 0,
-            topP: 0.95,
-            topK: 40,
-            maxOutputTokens: 2048,
-            responseMimeType: "application/json",
-          },
-        })
-
-        const text = generativeResponse.response.text()
-        const cleanText = text
-          .replace(/^```json\n?/, "")
-          .replace(/\n?```$/, "")
-          .trim()
-        const freshResponse = JSON.parse(cleanText)
-
-        // Use the raw response
-        enrichedResponse = freshResponse;
-      } else {
-        // Use cached or exact match result if available
-        enrichedResponse = getBestRecipeFromSearch(searchData);
-      }
+      const text = generativeResponse.response.text()
+      const cleanText = text
+        .replace(/^```json\n?/, "")
+        .replace(/\n?```$/, "")
+        .trim()
+      const freshResponse = JSON.parse(cleanText)
 
       // Helper function to generate creative title if missing
       const generateTitle = (protein: string, country: string, tasteProfiles: string[]) => {
@@ -205,48 +213,40 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
         return `${adj}${countryRef} ${proteinCapitalized} Recipe`
       }
 
-      // Ensure all required fields have proper defaults (apply to both fresh and cached)
-      if (enrichedResponse) {
-        enrichedResponse = {
-          title:
-            enrichedResponse.title?.trim() &&
-            enrichedResponse.title.trim() !== "Recipe Name" &&
-            enrichedResponse.title.trim() !== ""
-              ? enrichedResponse.title.trim()
-              : generateTitle(data.protein, data.country, data.taste),
-          description: enrichedResponse.description?.trim() || "",
-          servings: enrichedResponse.servings || 4,
-          prepTime: (enrichedResponse.prepTime?.toString() || "15 minutes").trim(),
-          cookTime: (enrichedResponse.cookTime?.toString() || "30 minutes").trim(),
-          totalTime: (enrichedResponse.totalTime?.toString() || "45 minutes").trim(),
-          difficulty: (enrichedResponse.difficulty?.trim() || "Medium"),
-          ingredients: (enrichedResponse.ingredients || []).map((ing: any) => ({
-            item: ing.item?.trim() || "",
-            amount: ing.amount?.toString().trim() || "",
-            unit: ing.unit?.trim() || "",
-          })),
-          instructions: (enrichedResponse.instructions || []).map((inst: any) =>
-            typeof inst === "string" ? inst.trim() : inst
-          ),
-          nutritionPer100g: enrichedResponse.nutritionPer100g || null,
-          cuisine: enrichedResponse.cuisine || data.country,
-        }
+      // Ensure all required fields have proper defaults
+      const enrichedResponse = {
+        title:
+          freshResponse.title?.trim() &&
+          freshResponse.title.trim() !== "Recipe Name" &&
+          freshResponse.title.trim() !== ""
+            ? freshResponse.title.trim()
+            : generateTitle(formData.protein, formData.country, formData.taste),
+        description: freshResponse.description?.trim() || "",
+        servings: freshResponse.servings || 4,
+        prepTime: (freshResponse.prepTime?.toString() || "15 minutes").trim(),
+        cookTime: (freshResponse.cookTime?.toString() || "30 minutes").trim(),
+        totalTime: (freshResponse.totalTime?.toString() || "45 minutes").trim(),
+        difficulty: (freshResponse.difficulty?.trim() || "Medium"),
+        ingredients: (freshResponse.ingredients || []).map((ing: any) => ({
+          item: ing.item?.trim() || "",
+          amount: ing.amount?.toString().trim() || "",
+          unit: ing.unit?.trim() || "",
+        })),
+        instructions: (freshResponse.instructions || []).map((inst: any) =>
+          typeof inst === "string" ? inst.trim() : inst
+        ),
+        nutritionPer100g: freshResponse.nutritionPer100g || null,
+        cuisine: freshResponse.cuisine || formData.country,
       }
 
-      // Show results with both tabs immediately
-      const results: SearchResult = {
-        ...searchData,
-        freshResponse: enrichedResponse,
-      }
-
-      setSearchResults(results)
-      setStage("results")
-      setActiveTab("suggestions")
+      // Update search results with generated recipe
+      setGeneratedRecipe(enrichedResponse)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Search failed"
+      const errorMessage = err instanceof Error ? err.message : "Failed to generate recipe"
       setError(errorMessage)
+      console.error("Error generating fresh recipe:", err)
     } finally {
-      setIsLoading(false)
+      setIsGeneratingAI(false)
     }
   }
 
@@ -274,7 +274,7 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
     setSelectedRecipe(normalizedRecipe)
     setStage("recipe")
 
-    if (isFreshAI && formData) {
+    if (isFreshAI && formData && generatedRecipe) {
       try {
         const response = await fetch('/api/ai-chef/save', {
           method: 'POST',
@@ -532,7 +532,7 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
     )
   }
 
-  // STAGE 2: Results with Two Tabs
+  // STAGE 2: Results with Two Tabs - Suggestions + AI Generated Preview
   if (stage === "results" && searchResults) {
     return (
       <div className="min-h-screen bg-background">
@@ -543,6 +543,7 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
               setStage("form")
               setSearchResults(null)
               setSelectedRecipe(null)
+              setGeneratedRecipe(null)
               reset()
             }}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-12"
@@ -557,7 +558,7 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
               Search Results
             </h2>
             <p className="text-muted-foreground">
-              Choose from suggestions below or check the AI-generated recipe
+              Browse our recipe collection or generate a custom recipe with AI
             </p>
           </div>
 
@@ -572,20 +573,18 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Suggestions ({searchResults.recipePosts?.length || 0})
+                Suggestions ({(searchResults.recipePosts?.length || 0) + (searchResults.cachedResults?.length || 0)})
               </button>
-              {searchResults.freshResponse && (
-                <button
-                  onClick={() => setActiveTab("generated")}
-                  className={`pb-3 font-semibold text-sm transition-colors ${
-                    activeTab === "generated"
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  AI Generated Recipe
-                </button>
-              )}
+              <button
+                onClick={() => setActiveTab("generated")}
+                className={`pb-3 font-semibold text-sm transition-colors ${
+                  activeTab === "generated"
+                    ? "text-primary border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                AI Generated Recipe
+              </button>
             </div>
           </div>
 
@@ -620,65 +619,155 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
               ) : (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground mb-4">No matching recipes found in our database</p>
-                  <p className="text-sm text-muted-foreground">Check the AI Generated Recipe tab for a fresh suggestion</p>
+                  <p className="text-sm text-muted-foreground">Try the AI Generated Recipe tab to create a custom recipe</p>
                 </div>
               )}
             </div>
           )}
 
-          {activeTab === "generated" && searchResults.freshResponse && (
-            <div
-              className="cursor-pointer rounded-lg border border-shadow-gray hover:border-primary/50 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 overflow-hidden"
-              onClick={() => handleViewRecipe(searchResults.freshResponse, true)}
-            >
-              {/* Header Section */}
-              <div className="p-6 md:p-8">
-                <div className="flex flex-col gap-2 mb-4">
-                  <span className="inline-block w-fit px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 uppercase tracking-wider">
-                    AI Generated Recipe
-                  </span>
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>
-                    {searchResults.freshResponse.title}
-                  </h3>
-                </div>
-
-                {searchResults.freshResponse.description && (
-                  <p className="text-muted-foreground mb-6 leading-relaxed">
-                    {searchResults.freshResponse.description}
-                  </p>
-                )}
-
-                {/* Quick Info Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 bg-muted/30 p-4 rounded-lg">
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1 font-semibold">Prep Time</p>
-                    <p className="font-bold text-foreground">{searchResults.freshResponse.prepTime || "—"}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1 font-semibold">Cook Time</p>
-                    <p className="font-bold text-foreground">{searchResults.freshResponse.cookTime || "—"}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1 font-semibold">Servings</p>
-                    <p className="font-bold text-foreground">{searchResults.freshResponse.servings || "—"}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-1 font-semibold">Difficulty</p>
-                    <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100">
-                      {searchResults.freshResponse.difficulty || "Moderate"}
+          {activeTab === "generated" && (
+            <div className="space-y-8">
+              {/* Preview Card (Always shown) */}
+              <div className="rounded-lg border border-shadow-gray bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 overflow-hidden">
+                <div className="p-6 md:p-8">
+                  <div className="flex flex-col gap-2 mb-6">
+                    <span className="inline-block w-fit px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 uppercase tracking-wider">
+                      Preview
                     </span>
+                    <h3 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>
+                      Your Custom Recipe
+                    </h3>
                   </div>
-                </div>
 
-                {/* CTA with enhanced styling */}
-                <div className="flex items-center justify-start pt-4 border-t border-shadow-gray">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
-                    <Eye className="w-4 h-4" />
-                    <span>Click to view full recipe</span>
-                    <ChefHat className="w-4 h-4" />
+                  {/* User Input Summary */}
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground mb-2">What you're looking for:</p>
+                      <p className="text-foreground leading-relaxed">{formData?.description || "—"}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">Cuisine</p>
+                        <p className="text-foreground font-medium">{formData?.country || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">Protein</p>
+                        <p className="text-foreground font-medium">{formData?.protein || "—"}</p>
+                      </div>
+                    </div>
+
+                    {formData?.taste && formData.taste.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground mb-2">Taste Profiles</p>
+                        <div className="flex flex-wrap gap-2">
+                          {formData.taste.map((t) => (
+                            <span key={t} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {formData?.ingredients && formData.ingredients.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground mb-2">Key Ingredients</p>
+                        <div className="flex flex-wrap gap-2">
+                          {formData.ingredients.map((ing) => (
+                            <span key={ing} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                              {ing}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Fresh Generate Button */}
+                  <button
+                    onClick={handleFreshGenerate}
+                    disabled={isGeneratingAI}
+                    className="w-full mt-8 pt-8 border-t border-shadow-gray flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingAI ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating Recipe...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Fresh Generate with AI
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
+
+              {/* Generated Recipe Card (Shown after Fresh Generate) */}
+              {generatedRecipe && (
+                <div
+                  className="cursor-pointer rounded-lg border border-shadow-gray hover:border-primary/50 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 overflow-hidden"
+                  onClick={() => handleViewRecipe(generatedRecipe, true)}
+                >
+                  <div className="p-6 md:p-8">
+                    <div className="flex flex-col gap-2 mb-4">
+                      <span className="inline-block w-fit px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 uppercase tracking-wider">
+                        Generated Recipe
+                      </span>
+                      <h3 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>
+                        {generatedRecipe.title}
+                      </h3>
+                    </div>
+
+                    {generatedRecipe.description && (
+                      <p className="text-muted-foreground mb-6 leading-relaxed">
+                        {generatedRecipe.description}
+                      </p>
+                    )}
+
+                    {/* Quick Info Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 bg-muted/30 p-4 rounded-lg">
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground mb-1 font-semibold">Prep Time</p>
+                        <p className="font-bold text-foreground">{generatedRecipe.prepTime || "—"}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground mb-1 font-semibold">Cook Time</p>
+                        <p className="font-bold text-foreground">{generatedRecipe.cookTime || "—"}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground mb-1 font-semibold">Servings</p>
+                        <p className="font-bold text-foreground">{generatedRecipe.servings || "—"}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-muted-foreground mb-1 font-semibold">Difficulty</p>
+                        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100">
+                          {generatedRecipe.difficulty || "Moderate"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* CTA */}
+                    <div className="flex items-center justify-start pt-4 border-t border-shadow-gray">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
+                        <Eye className="w-4 h-4" />
+                        <span>Click to view full recipe</span>
+                        <ChefHat className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Display */}
+              {error && (
+                <div className="flex gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+              )}
             </div>
           )}
         </div>
