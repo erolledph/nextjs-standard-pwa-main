@@ -9,8 +9,8 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { saveAIRecipeToFirebase } from "@/lib/firebase-admin"
 
-// Use Node.js runtime for Firebase Admin SDK access
-export const runtime = "nodejs"
+// Use Edge runtime for Cloudflare Pages compatibility
+export const runtime = "edge"
 
 export async function POST(request: NextRequest) {
   try {
