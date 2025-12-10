@@ -38,91 +38,116 @@ function CreatePostContent() {
     difficulty: "Easy",
   })
 
+  // Helper function to populate form from AI data
+  const populateFormFromAiData = (data: any) => {
+    try {
+      // Track AI recipe ID for marking as converted
+      // Check both aiRecipeId and id (id is used in localStorage object)
+      if (data.aiRecipeId) {
+        setAiRecipeId(data.aiRecipeId)
+      } else if (data.id) {
+        setAiRecipeId(data.id)
+      }
+
+      // Parse ingredients - they come as a formatted string from AIRecipesTab or raw array
+      let parsedIngredients: string[] = [""]
+      if (data.ingredients) {
+        if (typeof data.ingredients === "string") {
+          // String format: "Item - amount unit\nItem2 - amount unit"
+          parsedIngredients = data.ingredients
+            .split("\n")
+            .map((ing: string) => ing.trim())
+            .filter(Boolean)
+        } else if (Array.isArray(data.ingredients)) {
+          // Array format - map to string
+          parsedIngredients = data.ingredients
+            .map((ing: any) => {
+              if (typeof ing === "string") return ing
+              const item = ing.item || ""
+              const amount = ing.amount || ""
+              const unit = ing.unit || ""
+              if (amount && unit) return `${item} - ${amount} ${unit}`
+              if (amount) return `${item} - ${amount}`
+              if (unit) return `${item} - ${unit}`
+              return item
+            })
+            .filter(Boolean)
+        }
+      }
+
+      // Parse tags - can be array or comma-separated string
+      let parsedTags = ""
+      if (data.tags) {
+        if (Array.isArray(data.tags)) {
+          parsedTags = data.tags.join(", ")
+        } else if (typeof data.tags === "string") {
+          parsedTags = data.tags
+        }
+      }
+
+      // Parse instructions - can be array or string
+      let parsedInstructions: string[] = [""]
+      if (data.instructions) {
+        if (Array.isArray(data.instructions)) {
+          parsedInstructions = data.instructions.filter(Boolean)
+        } else if (typeof data.instructions === "string") {
+          parsedInstructions = data.instructions
+            .split("\n")
+            .map((inst: string) => inst.trim())
+            .filter(Boolean)
+        }
+      }
+
+      // Pre-fill form with AI recipe data
+      setFormData(prev => ({
+        ...prev,
+        title: data.title || "",
+        excerpt: data.excerpt || "",
+        prepTime: data.prepTime || "",
+        cookTime: data.cookTime || "",
+        servings: data.servings || "",
+        ingredients: parsedIngredients.length > 0 ? parsedIngredients : [""],
+        instructions: parsedInstructions.length > 0 ? parsedInstructions : [""],
+        difficulty: data.difficulty || "Easy",
+        content: data.content || "",
+        tags: parsedTags,
+      }))
+
+      // Set content type to recipes
+      setContentType("recipes")
+    } catch (error) {
+      console.error("Failed to populate form from AI data:", error)
+    }
+  }
+
   useEffect(() => {
     const type = searchParams.get("type")
     if (type === "recipes") {
       setContentType("recipes")
     }
 
-    // Parse AI recipe data from query parameter
+    // 1. Try to get data from query parameter (legacy/direct link)
     const aiData = searchParams.get("ai")
     if (aiData) {
       try {
         const decodedData = JSON.parse(decodeURIComponent(aiData))
-        
-        // Track AI recipe ID for marking as converted
-        if (decodedData.aiRecipeId) {
-          setAiRecipeId(decodedData.aiRecipeId)
-        }
-        
-        // Parse ingredients - they come as a formatted string from AIRecipesTab
-        let parsedIngredients: string[] = [""]
-        if (decodedData.ingredients) {
-          if (typeof decodedData.ingredients === "string") {
-            // String format: "Item - amount unit\nItem2 - amount unit"
-            parsedIngredients = decodedData.ingredients
-              .split("\n")
-              .map((ing: string) => ing.trim())
-              .filter(Boolean)
-          } else if (Array.isArray(decodedData.ingredients)) {
-            // Array format - map to string
-            parsedIngredients = decodedData.ingredients
-              .map((ing: any) => {
-                if (typeof ing === "string") return ing
-                const item = ing.item || ""
-                const amount = ing.amount || ""
-                const unit = ing.unit || ""
-                if (amount && unit) return `${item} - ${amount} ${unit}`
-                if (amount) return `${item} - ${amount}`
-                if (unit) return `${item} - ${unit}`
-                return item
-              })
-              .filter(Boolean)
-          }
-        }
-        
-        // Parse tags - can be array or comma-separated string
-        let parsedTags = ""
-        if (decodedData.tags) {
-          if (Array.isArray(decodedData.tags)) {
-            parsedTags = decodedData.tags.join(", ")
-          } else if (typeof decodedData.tags === "string") {
-            parsedTags = decodedData.tags
-          }
-        }
-        
-        // Parse instructions - can be array or string
-        let parsedInstructions: string[] = [""]
-        if (decodedData.instructions) {
-          if (Array.isArray(decodedData.instructions)) {
-            parsedInstructions = decodedData.instructions.filter(Boolean)
-          } else if (typeof decodedData.instructions === "string") {
-            parsedInstructions = decodedData.instructions
-              .split("\n")
-              .map((inst: string) => inst.trim())
-              .filter(Boolean)
-          }
-        }
-        
-        // Pre-fill form with AI recipe data
-        setFormData(prev => ({
-          ...prev,
-          title: decodedData.title || "",
-          excerpt: decodedData.excerpt || "",
-          prepTime: decodedData.prepTime || "",
-          cookTime: decodedData.cookTime || "",
-          servings: decodedData.servings || "",
-          ingredients: parsedIngredients,
-          instructions: parsedInstructions,
-          difficulty: decodedData.difficulty || "Easy",
-          content: decodedData.content || "",
-          tags: parsedTags,
-        }))
-        
-        // Set content type to recipes
-        setContentType("recipes")
+        populateFormFromAiData(decodedData)
       } catch (error) {
-        console.error("Failed to parse AI recipe data:", error)
+        console.error("Failed to parse AI recipe data from URL:", error)
+      }
+    } else {
+      // 2. Try to get data from localStorage (from AIRecipesTab convert button)
+      try {
+        const storedRecipe = localStorage.getItem("ai-recipe-to-convert")
+        if (storedRecipe) {
+          const decodedData = JSON.parse(storedRecipe)
+          populateFormFromAiData(decodedData)
+
+          // Clear localStorage so it doesn't persist on refresh/revisit
+          localStorage.removeItem("ai-recipe-to-convert")
+        }
+      } catch (error) {
+        console.error("Failed to parse AI recipe data from localStorage:", error)
       }
     }
   }, [searchParams])
