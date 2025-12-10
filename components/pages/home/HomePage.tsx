@@ -97,18 +97,18 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                     placeholder="pasta, chicken, dessert, articles..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-6 py-4 rounded-lg border border-border bg-background text-foreground placeholder-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    className="w-full px-6 py-4 rounded-md border border-border bg-background text-foreground placeholder-foreground/50 shadow-xs transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                   />
                   <button
                     type="submit"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-muted transition-colors"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-accent transition-colors"
                   >
                     <Search className="w-5 h-5 text-primary" />
                   </button>
                 </div>
                 <button
                   type="submit"
-                  className="px-8 py-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold transition-all hover:shadow-lg active:scale-95 whitespace-nowrap"
+                  className="px-8 py-4 rounded-md bg-primary hover:bg-primary/90 text-white font-semibold transition-all hover:shadow-lg active:scale-95 whitespace-nowrap"
                 >
                   Search
                 </button>
@@ -120,14 +120,14 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
             <Link
               href="/recipes"
-              className="flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold transition-all hover:shadow-lg transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center gap-2 px-8 py-4 rounded-md bg-primary hover:bg-primary/90 text-white font-semibold transition-all hover:shadow-lg transform hover:scale-105 active:scale-95"
             >
               <UtensilsCrossed className="w-5 h-5" />
               Browse Recipes
             </Link>
             <Link
               href="/favorites"
-              className="flex items-center justify-center gap-2 px-8 py-4 rounded-lg border-2 border-primary text-primary bg-background hover:bg-primary/5 font-semibold transition-all hover:shadow-lg transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center gap-2 px-8 py-4 rounded-md border-2 border-primary text-primary bg-background hover:bg-primary/5 font-semibold transition-all hover:shadow-lg transform hover:scale-105 active:scale-95"
             >
               <Heart className="w-5 h-5" />
               My Favorites
@@ -168,7 +168,7 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                       ))}
                 </div>
                 <div className="mt-8 text-center">
-                  <Link href="/blog" className="inline-flex items-center justify-center px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary/5 font-semibold transition-all">
+                  <Link href="/blog" className="inline-flex items-center justify-center px-6 py-3 rounded-md border-2 border-primary text-primary hover:bg-primary/5 font-semibold transition-all">
                     View All Stories →
                   </Link>
                 </div>
@@ -204,7 +204,7 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                       ))}
                 </div>
                 <div className="mt-8 text-center">
-                  <Link href="/recipes" className="inline-flex items-center justify-center px-6 py-3 rounded-lg border-2 border-primary text-primary hover:bg-primary/5 font-semibold transition-all">
+                  <Link href="/recipes" className="inline-flex items-center justify-center px-6 py-3 rounded-md border-2 border-primary text-primary hover:bg-primary/5 font-semibold transition-all">
                     Browse All Recipes →
                   </Link>
                 </div>
