@@ -282,7 +282,6 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
           instructions: (enrichedResponse.instructions || []).map((inst: any) => 
             typeof inst === "string" ? inst.trim() : inst
           ),
-          nutritionInfo: enrichedResponse.nutritionInfo || enrichedResponse.nutritionPer100g || null,
         }
 
         setSelectedRecipe(normalizedRecipe)
@@ -307,7 +306,6 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
           instructions: (enrichedResponse.instructions || []).map((inst: any) => 
             typeof inst === "string" ? inst.trim() : inst
           ),
-          nutritionInfo: enrichedResponse.nutritionInfo || enrichedResponse.nutritionPer100g || null,
         }
 
         setSelectedRecipe(normalizedRecipe)
