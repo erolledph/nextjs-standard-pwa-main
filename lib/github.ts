@@ -165,11 +165,25 @@ function parseMarkdownContent(
     const frontmatterStr = match[1]
     body = match[2]
 
-    // Simple YAML parsing
-    frontmatterStr.split("\n").forEach((line) => {
-      const [key, ...valueParts] = line.split(":")
-      if (key && valueParts.length > 0) {
-        frontmatter[key.trim()] = valueParts.join(":").trim()
+    // Simple YAML parsing with basic multiline support
+    const lines = frontmatterStr.split("\n")
+    let currentKey = ""
+
+    lines.forEach((line) => {
+      if (!line.trim()) return
+
+      // Check for indentation (continuation of previous key)
+      if (line.match(/^\s+/) && currentKey) {
+        frontmatter[currentKey] += "\n" + line.trim()
+      } else {
+        const parts = line.split(":")
+        const key = parts[0]
+        const value = parts.slice(1).join(":")
+
+        if (key) {
+          currentKey = key.trim()
+          frontmatter[currentKey] = value.trim()
+        }
       }
     })
   }
