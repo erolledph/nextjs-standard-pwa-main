@@ -159,7 +159,7 @@ export function AIRecipesTab() {
       toast.success(
         "Redirecting to create new post page with recipe data..."
       )
-      router.push("/admin/create")
+      router.push("/admin/create?type=recipes")
     } catch (error) {
       console.error("Failed to save recipe to localStorage", error)
       toast.error(

@@ -24,6 +24,8 @@ import {
   Loader2,
   Sparkles,
   ArrowLeft,
+  Eye,
+  ChefHat,
 } from "lucide-react"
 import { RecipeResult } from "./RecipeResult"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
@@ -633,10 +635,11 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
 
                 {/* CTA with enhanced styling */}
                 <div className="flex items-center justify-start pt-4 border-t border-shadow-gray">
-                  <p className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
-                    Click to view full recipe
-                    <span className="ml-2 inline-block transition-transform">→</span>
-                  </p>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
+                    <Eye className="w-4 h-4" />
+                    <span>Click to view full recipe</span>
+                    <ChefHat className="w-4 h-4" />
+                  </div>
                 </div>
               </div>
             </div>
