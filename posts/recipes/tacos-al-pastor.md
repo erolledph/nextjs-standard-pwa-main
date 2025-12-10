@@ -10,7 +10,7 @@ cookTime: 20
 servings: 6
 ingredients: 1kg pork shoulder thinly sliced, 1 pineapple, achiote paste, chili powder, vinegar, corn tortillas, onion, cilantro
 instructions:
-  1. Marinate pork in a blend of achiote, chili powder, vinegar, and pineapple juice for at least 4 hours.
+  1. Marinate pork in a blend of achiotechili powder vinegar and pineapple juice for at least 4 hours.
   2. Grill the pork slices on high heat until charred and cooked through.
   3. Grill pineapple slices until caramelized.
   4. Chop the pork and pineapple into small pieces.
