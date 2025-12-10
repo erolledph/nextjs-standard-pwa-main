@@ -131,11 +131,16 @@ export async function POST(request: NextRequest) {
 
     console.log(`🟢 [API-11] Found ${recipePosts.length} recipe posts matching criteria`)
 
-    // Only generate fresh AI recipe if NO similar cached recipes exist (zero-cost design!)
+    // Generate fresh AI recipe when:
+    // 1. No cached recipes found (similarRecipes = 0), OR
+    // 2. Found recipe posts but no cached recipes (new unique query)
+    // Skip only if we have BOTH cached recipes AND recipe posts (high confidence results)
     let freshAIRecipe = null
-    if (similarRecipes.length === 0) {
-      console.log("🟡 [API-13] No cached results found, generating fresh AI recipe...")
+    if (similarRecipes.length === 0 || (recipePosts.length > 0 && similarRecipes.length === 0)) {
+      console.log("🟡 [API-13] Generating fresh AI recipe for unique query...")
       freshAIRecipe = await generateNewRecipe(input, queryHash)
+    } else if (similarRecipes.length > 0 && recipePosts.length > 0) {
+      console.log(`🟢 [API-13] Have both cached (${similarRecipes.length}) and recipe posts (${recipePosts.length}), skipping generation (ZERO COST!)`)
     } else {
       console.log(`🟢 [API-13] Using ${similarRecipes.length} cached recipes, skipping generation (ZERO COST!)`)
     }
