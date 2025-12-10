@@ -726,7 +726,7 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
                         <p className="text-xs font-semibold text-muted-foreground mb-2">Key Ingredients</p>
                         <div className="flex flex-wrap gap-2">
                           {formData.ingredients.map((ing) => (
-                            <span key={ing} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
+                            <span key={ing} className="inline-block px-3 py-1.5 rounded-full text-sm font-medium bg-primary text-primary-foreground">
                               {ing}
                             </span>
                           ))}
