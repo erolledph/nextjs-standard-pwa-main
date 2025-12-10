@@ -57,6 +57,20 @@ export async function POST(request: NextRequest) {
     const input = validationResult.data
     console.log("🟢 [API-4] Input validated successfully")
 
+    // Step 0: Check quota manager before proceeding
+    console.log("🟡 [API-5-QUOTA] Checking API quota...")
+    try {
+      const quotaResponse = await fetch("https://your-domain.com/api/ai-chef/quota-manager", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input, tokensEstimate: 100 }),
+      })
+      const quotaData = await quotaResponse.json()
+      console.log(`🟡 [API-5-QUOTA] Quota check: ${quotaData.reason}`)
+    } catch (quotaError) {
+      console.warn("⚠️ [API-5-QUOTA] Quota manager unavailable, proceeding with search")
+    }
+
     // Generate query hash for caching
     const queryHash = generateQueryHash(input)
     console.log("🟡 [API-5] Query hash generated:", queryHash)

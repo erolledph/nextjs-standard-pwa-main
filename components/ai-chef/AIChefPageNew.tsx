@@ -54,6 +54,8 @@ export function AIChefPageNew() {
     handleSubmit,
     formState: { errors, isValid },
     reset,
+    watch,
+    setValue,
   } = useForm<AIChefInputType>({
     resolver: zodResolver(AIChefInputSchema),
     mode: "onChange",
@@ -323,9 +325,34 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
           <form onSubmit={handleSubmit(onSearch)} className="space-y-8 max-w-2xl mx-auto">
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-base font-semibold text-foreground">
-                What would you like to cook?
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="description" className="text-base font-semibold text-foreground">
+                  What would you like to cook?
+                </Label>
+                <span className={`text-xs font-medium ${(watch("description")?.length || 0) >= 10 ? "text-green-600" : "text-muted-foreground"}`}>
+                  {(watch("description")?.length || 0)}/10 chars
+                </span>
+              </div>
+              
+              {/* Quick Suggestions */}
+              <div className="mb-3 flex flex-wrap gap-2">
+                <p className="text-xs font-semibold text-muted-foreground w-full">Quick ideas:</p>
+                {[
+                  "Quick weeknight dinner with chicken",
+                  "Spicy vegetarian meal for guests",
+                  "Light and healthy salad"
+                ].map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => setValue("description", suggestion)}
+                    className="text-xs px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors border border-orange-200 dark:border-orange-800"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+              
               <Textarea
                 id="description"
                 placeholder="e.g., A quick weeknight dinner, something spicy and filling, a dessert for guests..."
@@ -384,9 +411,14 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
 
             {/* Taste Profiles */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-foreground">
-                Taste profiles (optional)
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold text-foreground">
+                  Taste profiles
+                </Label>
+                <span className={`text-xs font-medium ${(watch("taste")?.length || 0) >= 3 ? "text-green-600" : "text-muted-foreground"}`}>
+                  {watch("taste")?.length || 0}/3
+                </span>
+              </div>
               <Controller
                 name="taste"
                 control={control}
@@ -422,9 +454,14 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
 
             {/* Ingredients */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-foreground">
-                Ingredients (optional)
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold text-foreground">
+                  Ingredients
+                </Label>
+                <span className={`text-xs font-medium ${(watch("ingredients")?.length || 0) >= 3 ? "text-green-600" : "text-muted-foreground"}`}>
+                  {watch("ingredients")?.length || 0}/3
+                </span>
+              </div>
               <Controller
                 name="ingredients"
                 control={control}
