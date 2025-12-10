@@ -150,35 +150,13 @@ async function generateNewRecipe(input: AIChefInputType, queryHash: string) {
   try {
     console.log("🟡 [GEN-1] Generating new recipe with AI...")
 
-    // TODO: Call Gemini API here
-    const recipe = {
-      title: `AI Generated ${input.country} ${input.protein}`,
-      description: input.description,
-      servings: 4,
-      prepTime: "15 minutes",
-      cookTime: "30 minutes",
-      totalTime: "45 minutes",
-      difficulty: "Medium",
-      ingredients: input.ingredients.map((i) => ({
-        item: i,
-        amount: "1",
-        unit: "item",
-      })),
-      instructions: [
-        "Prepare ingredients",
-        "Cook the dish",
-        "Serve and enjoy!",
-      ],
-      nutritionPer100g: {
-        calories: 250,
-        protein: 20,
-        carbs: 30,
-        fat: 10,
-      },
-      cuisine: input.country,
-    }
+    // Import Gemini client
+    const { generateRecipeWithAI } = await import("@/lib/gemini")
+    
+    // Call Gemini API to generate recipe
+    const recipe = await generateRecipeWithAI(input as any)
 
-    console.log("🟢 [GEN-2] Recipe generated successfully")
+    console.log("🟢 [GEN-2] Recipe generated successfully from Gemini API")
 
     // Cache the result
     CACHED_RECIPES_DB[queryHash] = {
