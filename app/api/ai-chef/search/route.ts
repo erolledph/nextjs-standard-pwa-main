@@ -117,6 +117,10 @@ export async function POST(request: NextRequest) {
 
     console.log(`🟢 [API-11] Found ${recipePosts.length} recipe posts matching criteria`)
 
+    // Always generate fresh AI recipe to show as an alternative
+    console.log("🟡 [API-13] Generating fresh AI recipe...")
+    const freshAIRecipe = await generateNewRecipe(input, queryHash)
+
     // Return search results in order
     const response = {
       queryHash,
@@ -126,7 +130,8 @@ export async function POST(request: NextRequest) {
         similarity: r.similarity,
         usageCount: r.usageCount,
       })), // Top 3 cached AI results
-      shouldGenerateNew: similarRecipes.length === 0 && recipePosts.length === 0,
+      shouldGenerateNew: true, // Always true since we generate fresh recipe
+      freshResponse: freshAIRecipe, // Include the generated recipe
       source: "search",
       message: `Found ${recipePosts.length} posts and ${similarRecipes.length} cached recipes`,
     }
