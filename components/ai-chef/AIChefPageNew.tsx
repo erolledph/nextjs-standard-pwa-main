@@ -582,7 +582,6 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
               setStage("form")
               setSearchResults(null)
               setSelectedRecipe(null)
-              setGeneratedRecipe(null)
               reset()
             }}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-12"
