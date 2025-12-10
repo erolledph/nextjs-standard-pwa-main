@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -52,6 +53,66 @@ export function AIRecipesTab() {
 
     fetchAiRecipes()
   }, [])
+
+  // Helper function to safely format date
+  const formatDate = (createdAt: any) => {
+    try {
+      if (!createdAt) return "N/A"
+      // Handle Firestore Timestamp
+      if (typeof createdAt === 'object' && createdAt._seconds) {
+        return new Date(createdAt._seconds * 1000).toLocaleString()
+      }
+      // Handle standard Date string or ISO string
+      return new Date(createdAt).toLocaleString()
+    } catch (e) {
+      return "Invalid Date"
+    }
+  }
+
+  // Helper function to safely render ingredients
+  const renderIngredients = (ingredients: any) => {
+    if (!ingredients) return <p className="text-sm text-gray-500">No ingredients listed</p>
+
+    if (Array.isArray(ingredients)) {
+      return (
+        <ul className="list-disc pl-6">
+          {ingredients.map((ing: any, i: number) => {
+             // Handle if ingredient is object { item, amount, unit } or string
+             const text = typeof ing === 'string' ? ing : `${ing.amount || ''} ${ing.unit || ''} ${ing.item || ''}`.trim()
+             return <li key={i}>{text}</li>
+          })}
+        </ul>
+      )
+    }
+
+    // Fallback for string
+    return <p>{String(ingredients)}</p>
+  }
+
+  // Helper function to safely render instructions
+  const renderInstructions = (instructions: any) => {
+    if (!instructions) return <p className="text-sm text-gray-500">No instructions listed</p>
+
+    if (Array.isArray(instructions)) {
+      return (
+        <ol className="list-decimal pl-6 space-y-2">
+           {instructions.map((step: any, i: number) => (
+             <li key={i}>{String(step)}</li>
+           ))}
+        </ol>
+      )
+    }
+
+    // Fallback for HTML string
+    return (
+      <div
+        className="prose prose-sm max-w-none"
+        dangerouslySetInnerHTML={{
+          __html: String(instructions),
+        }}
+      />
+    )
+  }
 
   const handleView = (recipe: any) => {
     setSelectedRecipe(recipe)
@@ -144,9 +205,7 @@ export function AIRecipesTab() {
                 <TableCell className="font-medium">{recipe.title}</TableCell>
                 <TableCell>{recipe.cuisine}</TableCell>
                 <TableCell>
-                  {new Date(
-                    recipe.createdAt?._seconds * 1000
-                  ).toLocaleString()}
+                  {formatDate(recipe.createdAt)}
                 </TableCell>
                 <TableCell className="space-x-2">
                   <Button variant="outline" size="sm" onClick={() => handleView(recipe)}>
@@ -182,22 +241,28 @@ export function AIRecipesTab() {
           </DialogHeader>
           <div className="flex-grow overflow-y-auto pr-4">
             <h4 className="font-bold mt-4">Ingredients:</h4>
-            <ul className="list-disc pl-6">
-              {selectedRecipe?.ingredients?.map((ing: string, i: number) => (
-                <li key={i}>{ing}</li>
-              ))}
-            </ul>
+            {renderIngredients(selectedRecipe?.ingredients)}
+
             <h4 className="font-bold mt-4">Instructions:</h4>
-            <div
-              className="prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{
-                __html: selectedRecipe?.instructions || "",
-              }}
-            />
+            {renderInstructions(selectedRecipe?.instructions)}
+
              <h4 className="font-bold mt-4">Meta:</h4>
-            <p><strong>Cuisine:</strong> {selectedRecipe?.cuisine}</p>
-            <p><strong>Diet:</strong> {selectedRecipe?.diet}</p>
-            <p><strong>Method:</strong> {selectedRecipe?.method}</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+                {selectedRecipe?.cuisine && <Badge variant="outline">Cuisine: {selectedRecipe.cuisine}</Badge>}
+                {selectedRecipe?.diet && <Badge variant="outline">Diet: {selectedRecipe.diet}</Badge>}
+                {selectedRecipe?.difficulty && <Badge variant="outline">Difficulty: {selectedRecipe.difficulty}</Badge>}
+            </div>
+
+            {selectedRecipe?.userInput && (
+                <div className="mt-6 p-4 bg-muted rounded-md text-sm">
+                    <h5 className="font-semibold mb-2">Generated from Request:</h5>
+                    <p><strong>Description:</strong> {selectedRecipe.userInput.description}</p>
+                    <p><strong>Protein:</strong> {selectedRecipe.userInput.protein}</p>
+                    {selectedRecipe.userInput.ingredients && (
+                         <p><strong>Must Include:</strong> {selectedRecipe.userInput.ingredients.join(', ')}</p>
+                    )}
+                </div>
+            )}
           </div>
           <DialogFooter>
             <DialogClose asChild>
