@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/Badge"
 import {
   Dialog,
   DialogContent,
@@ -248,9 +248,9 @@ export function AIRecipesTab() {
 
              <h4 className="font-bold mt-4">Meta:</h4>
             <div className="flex flex-wrap gap-2 mt-2">
-                {selectedRecipe?.cuisine && <Badge variant="outline">Cuisine: {selectedRecipe.cuisine}</Badge>}
-                {selectedRecipe?.diet && <Badge variant="outline">Diet: {selectedRecipe.diet}</Badge>}
-                {selectedRecipe?.difficulty && <Badge variant="outline">Difficulty: {selectedRecipe.difficulty}</Badge>}
+                {selectedRecipe?.cuisine && <Badge variant="info">Cuisine: {selectedRecipe.cuisine}</Badge>}
+                {selectedRecipe?.diet && <Badge variant="info">Diet: {selectedRecipe.diet}</Badge>}
+                {selectedRecipe?.difficulty && <Badge variant="info">Difficulty: {selectedRecipe.difficulty}</Badge>}
             </div>
 
             {selectedRecipe?.userInput && (

@@ -7,18 +7,10 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server"
-import { initializeApp, getApps } from "firebase/app"
-import { getFirestore, collection, addDoc, Timestamp } from "firebase/firestore"
+import { saveAIRecipeToFirebase } from "@/lib/firebase-admin"
 
-// Initialize Firebase (client-side compatible)
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-}
-
-// Use Edge runtime for Cloudflare Pages compatibility
-export const runtime = "edge"
+// Use Node.js runtime for Firebase Admin SDK access
+export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,14 +24,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Return success message indicating client should save directly to Firestore
-    // This endpoint is edge-compatible and provides guidance for client-side saving
+    // Save to Firebase using the REST API
+    const docId = await saveAIRecipeToFirebase(recipe, input)
+
+    if (!docId) {
+      return NextResponse.json(
+        { error: "Failed to save recipe to Firebase" },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json(
       {
         success: true,
-        message: "Recipe data validated. Use client-side Firestore to save.",
+        message: "Recipe saved successfully",
         data: {
-          id: `ai-recipe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: docId,
           title: recipe.title,
           description: recipe.description,
         },
@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     )
   } catch (error) {
-    console.error("Error processing recipe:", error)
+    console.error("Error saving recipe:", error)
     return NextResponse.json(
-      { error: "Failed to process recipe" },
+      { error: "Failed to save recipe" },
       { status: 500 }
     )
   }
