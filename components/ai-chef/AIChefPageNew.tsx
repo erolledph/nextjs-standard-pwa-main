@@ -407,7 +407,7 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
                     key={suggestion}
                     type="button"
                     onClick={() => setValue("description", suggestion)}
-                    className="text-xs px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors border border-orange-200 dark:border-orange-800"
+                    className="text-xs px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-800/40 transition-colors border border-orange-300 dark:border-orange-700"
                   >
                     {suggestion}
                   </button>
@@ -760,9 +760,9 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
 
               {/* Error Display */}
               {error && (
-                <div className="flex gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-amber-800 dark:text-amber-200">{error}</p>
+                <div className="flex gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-orange-800 dark:text-orange-200">{error}</p>
                 </div>
               )}
             </div>
