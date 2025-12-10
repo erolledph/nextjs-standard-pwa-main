@@ -117,9 +117,14 @@ export async function POST(request: NextRequest) {
 
     console.log(`🟢 [API-11] Found ${recipePosts.length} recipe posts matching criteria`)
 
-    // Always generate fresh AI recipe to show as an alternative
-    console.log("🟡 [API-13] Generating fresh AI recipe...")
-    const freshAIRecipe = await generateNewRecipe(input, queryHash)
+    // Only generate fresh AI recipe if NO similar cached recipes exist (zero-cost design!)
+    let freshAIRecipe = null
+    if (similarRecipes.length === 0) {
+      console.log("🟡 [API-13] No cached results found, generating fresh AI recipe...")
+      freshAIRecipe = await generateNewRecipe(input, queryHash)
+    } else {
+      console.log(`🟢 [API-13] Using ${similarRecipes.length} cached recipes, skipping generation (ZERO COST!)`)
+    }
 
     // Return search results in order
     const response = {
@@ -130,8 +135,8 @@ export async function POST(request: NextRequest) {
         similarity: r.similarity,
         usageCount: r.usageCount,
       })), // Top 3 cached AI results
-      shouldGenerateNew: true, // Always true since we generate fresh recipe
-      freshResponse: freshAIRecipe, // Include the generated recipe
+      shouldGenerateNew: similarRecipes.length === 0 && recipePosts.length === 0,
+      freshResponse: freshAIRecipe, // Include generated recipe only if created
       source: "search",
       message: `Found ${recipePosts.length} posts and ${similarRecipes.length} cached recipes`,
     }
