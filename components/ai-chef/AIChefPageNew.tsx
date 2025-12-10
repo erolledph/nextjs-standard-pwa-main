@@ -27,8 +27,9 @@ import {
 } from "lucide-react"
 import { RecipeResult } from "./RecipeResult"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
+import { shouldGenerateFreshRecipe, getBestRecipeFromSearch, type SearchResult as LogicSearchResult } from "@/lib/ai-chef-utils"
 
-interface SearchResult {
+interface SearchResult extends Partial<LogicSearchResult> {
   recipePosts: any[]
   cachedResults: any[]
   shouldGenerateNew: boolean
@@ -85,19 +86,36 @@ export function AIChefPageNew() {
       }
 
       if (response.ok) {
-        searchData = await response.json()
+        const jsonData = await response.json()
+
+        // Handle exact cache match structure which differs
+        if (jsonData.source === "cache_exact") {
+          searchData = {
+             recipePosts: [],
+             cachedResults: [],
+             shouldGenerateNew: false,
+             queryHash: "", // Not available in exact match
+             ...jsonData // Merges recipe and source
+          }
+        } else {
+          searchData = jsonData
+        }
       }
 
-      // Generate fresh AI response immediately
-      const { GoogleGenerativeAI } = await import("@google/generative-ai")
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      let enrichedResponse = null
 
-      if (!apiKey) throw new Error("Gemini API key not configured")
+      // Determine if we should generate fresh recipe or use cached
+      if (shouldGenerateFreshRecipe(searchData)) {
+        // Generate fresh AI response immediately
+        const { GoogleGenerativeAI } = await import("@google/generative-ai")
+        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
 
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
+        if (!apiKey) throw new Error("Gemini API key not configured")
 
-      const systemPrompt = `You are a professional chef and recipe generator specializing in ${data.country} cuisine.
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
+
+        const systemPrompt = `You are a professional chef and recipe generator specializing in ${data.country} cuisine.
 
 CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required fields:
 {
@@ -122,30 +140,37 @@ DO NOT INCLUDE ANY TEXT BEFORE OR AFTER THE JSON.
 EVERY FIELD IS REQUIRED.
 THE TITLE MUST BE CREATIVE, DESCRIPTIVE, AND APPETIZING.`
 
-      const userPrompt = `Generate a delicious authentic ${data.country} recipe featuring ${data.protein} with these characteristics:
+        const userPrompt = `Generate a delicious authentic ${data.country} recipe featuring ${data.protein} with these characteristics:
 - Description: ${data.description}
 - Taste profile: ${data.taste.join(", ")}
 - Key ingredients: ${data.ingredients.slice(0, 5).join(", ")}
 
 Create a creative and appetizing recipe title that describes the dish. Return ONLY the JSON object with no additional text.`
 
-      const generativeResponse = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0,
-          topP: 0.95,
-          topK: 40,
-          maxOutputTokens: 2048,
-          responseMimeType: "application/json",
-        },
-      })
+        const generativeResponse = await model.generateContent({
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          generationConfig: {
+            temperature: 0,
+            topP: 0.95,
+            topK: 40,
+            maxOutputTokens: 2048,
+            responseMimeType: "application/json",
+          },
+        })
 
-      const text = generativeResponse.response.text()
-      const cleanText = text
-        .replace(/^```json\n?/, "")
-        .replace(/\n?```$/, "")
-        .trim()
-      const freshResponse = JSON.parse(cleanText)
+        const text = generativeResponse.response.text()
+        const cleanText = text
+          .replace(/^```json\n?/, "")
+          .replace(/\n?```$/, "")
+          .trim()
+        const freshResponse = JSON.parse(cleanText)
+
+        // Use the raw response
+        enrichedResponse = freshResponse;
+      } else {
+        // Use cached or exact match result if available
+        enrichedResponse = getBestRecipeFromSearch(searchData);
+      }
 
       // Helper function to generate creative title if missing
       const generateTitle = (protein: string, country: string, tasteProfiles: string[]) => {
@@ -176,30 +201,32 @@ Create a creative and appetizing recipe title that describes the dish. Return ON
         return `${adj}${countryRef} ${proteinCapitalized} Recipe`
       }
 
-      // Ensure all required fields have proper defaults
-      const enrichedResponse = {
-        title:
-          freshResponse.title?.trim() &&
-          freshResponse.title.trim() !== "Recipe Name" &&
-          freshResponse.title.trim() !== ""
-            ? freshResponse.title.trim()
-            : generateTitle(data.protein, data.country, data.taste),
-        description: freshResponse.description?.trim() || "",
-        servings: freshResponse.servings || 4,
-        prepTime: (freshResponse.prepTime?.toString() || "15 minutes").trim(),
-        cookTime: (freshResponse.cookTime?.toString() || "30 minutes").trim(),
-        totalTime: (freshResponse.totalTime?.toString() || "45 minutes").trim(),
-        difficulty: (freshResponse.difficulty?.trim() || "Medium"),
-        ingredients: (freshResponse.ingredients || []).map((ing: any) => ({
-          item: ing.item?.trim() || "",
-          amount: ing.amount?.toString().trim() || "",
-          unit: ing.unit?.trim() || "",
-        })),
-        instructions: (freshResponse.instructions || []).map((inst: any) => 
-          typeof inst === "string" ? inst.trim() : inst
-        ),
-        nutritionPer100g: freshResponse.nutritionPer100g || null,
-        cuisine: freshResponse.cuisine || data.country,
+      // Ensure all required fields have proper defaults (apply to both fresh and cached)
+      if (enrichedResponse) {
+        enrichedResponse = {
+          title:
+            enrichedResponse.title?.trim() &&
+            enrichedResponse.title.trim() !== "Recipe Name" &&
+            enrichedResponse.title.trim() !== ""
+              ? enrichedResponse.title.trim()
+              : generateTitle(data.protein, data.country, data.taste),
+          description: enrichedResponse.description?.trim() || "",
+          servings: enrichedResponse.servings || 4,
+          prepTime: (enrichedResponse.prepTime?.toString() || "15 minutes").trim(),
+          cookTime: (enrichedResponse.cookTime?.toString() || "30 minutes").trim(),
+          totalTime: (enrichedResponse.totalTime?.toString() || "45 minutes").trim(),
+          difficulty: (enrichedResponse.difficulty?.trim() || "Medium"),
+          ingredients: (enrichedResponse.ingredients || []).map((ing: any) => ({
+            item: ing.item?.trim() || "",
+            amount: ing.amount?.toString().trim() || "",
+            unit: ing.unit?.trim() || "",
+          })),
+          instructions: (enrichedResponse.instructions || []).map((inst: any) =>
+            typeof inst === "string" ? inst.trim() : inst
+          ),
+          nutritionPer100g: enrichedResponse.nutritionPer100g || null,
+          cuisine: enrichedResponse.cuisine || data.country,
+        }
       }
 
       // Show results with both tabs immediately
