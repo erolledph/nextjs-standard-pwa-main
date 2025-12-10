@@ -713,7 +713,7 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
                         <p className="text-xs font-semibold text-muted-foreground mb-2">Taste Profiles</p>
                         <div className="flex flex-wrap gap-2">
                           {formData.taste.map((t) => (
-                            <span key={t} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-primary text-primary-foreground">
+                            <span key={t} className="inline-block px-3 py-1.5 rounded-full text-sm font-medium bg-primary text-primary-foreground">
                               {t}
                             </span>
                           ))}
