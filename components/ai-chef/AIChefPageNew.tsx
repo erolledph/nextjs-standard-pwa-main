@@ -47,7 +47,6 @@ export function AIChefPageNew() {
   const [stage, setStage] = useState<"form" | "results" | "recipe">("form")
   const [formData, setFormData] = useState<AIChefInputType | null>(null)
   const [activeTab, setActiveTab] = useState<"suggestions" | "generated">("suggestions")
-  const [generatedRecipe, setGeneratedRecipe] = useState<any | null>(null)
 
   const {
     control,
@@ -239,8 +238,81 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
         cuisine: freshResponse.cuisine || formData.country,
       }
 
-      // Update search results with generated recipe
-      setGeneratedRecipe(enrichedResponse)
+      // Save to Firebase and open recipe view immediately
+      try {
+        const response = await fetch('/api/ai-chef/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            recipe: enrichedResponse,
+            userInput: {
+              description: formData.description,
+              country: formData.country,
+              protein: formData.protein,
+              taste: formData.taste,
+              ingredients: formData.ingredients,
+            },
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to save recipe to Firebase')
+        }
+
+        const result = await response.json()
+        console.log("✅ Recipe saved to Firebase:", result.recipeId)
+
+        // Normalize and display the recipe immediately
+        const normalizedRecipe = {
+          ...enrichedResponse,
+          title: enrichedResponse.title?.toString().trim() || "AI Generated Recipe",
+          description: enrichedResponse.description?.toString().trim() || "",
+          difficulty: enrichedResponse.difficulty?.toString().trim() || "Moderate",
+          servings: enrichedResponse.servings || 4,
+          prepTime: (enrichedResponse.prepTime?.toString().trim() || "15 minutes"),
+          cookTime: (enrichedResponse.cookTime?.toString().trim() || "30 minutes"),
+          totalTime: enrichedResponse.totalTime?.toString().trim() || "",
+          ingredients: (enrichedResponse.ingredients || []).map((ing: any) => ({
+            item: ing.item?.toString().trim() || ing.name?.toString().trim() || "",
+            amount: ing.amount?.toString().trim() || ing.qty?.toString().trim() || "",
+            unit: ing.unit?.toString().trim() || ing.unit_of_measurement?.toString().trim() || "",
+          })),
+          instructions: (enrichedResponse.instructions || []).map((inst: any) => 
+            typeof inst === "string" ? inst.trim() : inst
+          ),
+          nutritionInfo: enrichedResponse.nutritionInfo || enrichedResponse.nutritionPer100g || null,
+        }
+
+        setSelectedRecipe(normalizedRecipe)
+        setStage("recipe")
+      } catch (saveErr) {
+        console.error("Error saving recipe to Firebase:", saveErr)
+        // Still show the recipe even if save fails
+        const normalizedRecipe = {
+          ...enrichedResponse,
+          title: enrichedResponse.title?.toString().trim() || "AI Generated Recipe",
+          description: enrichedResponse.description?.toString().trim() || "",
+          difficulty: enrichedResponse.difficulty?.toString().trim() || "Moderate",
+          servings: enrichedResponse.servings || 4,
+          prepTime: (enrichedResponse.prepTime?.toString().trim() || "15 minutes"),
+          cookTime: (enrichedResponse.cookTime?.toString().trim() || "30 minutes"),
+          totalTime: enrichedResponse.totalTime?.toString().trim() || "",
+          ingredients: (enrichedResponse.ingredients || []).map((ing: any) => ({
+            item: ing.item?.toString().trim() || ing.name?.toString().trim() || "",
+            amount: ing.amount?.toString().trim() || ing.qty?.toString().trim() || "",
+            unit: ing.unit?.toString().trim() || ing.unit_of_measurement?.toString().trim() || "",
+          })),
+          instructions: (enrichedResponse.instructions || []).map((inst: any) => 
+            typeof inst === "string" ? inst.trim() : inst
+          ),
+          nutritionInfo: enrichedResponse.nutritionInfo || enrichedResponse.nutritionPer100g || null,
+        }
+
+        setSelectedRecipe(normalizedRecipe)
+        setStage("recipe")
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate recipe"
       setError(errorMessage)
@@ -626,19 +698,10 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
           )}
 
           {activeTab === "generated" && (
-            <div className="space-y-8">
-              {/* Preview Card (Always shown) */}
+            <div className="space-y-6">
+              {/* Preview Card (Simplified - no heading) */}
               <div className="rounded-lg border border-shadow-gray bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 overflow-hidden">
                 <div className="p-6 md:p-8">
-                  <div className="flex flex-col gap-2 mb-6">
-                    <span className="inline-block w-fit px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 uppercase tracking-wider">
-                      Preview
-                    </span>
-                    <h3 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>
-                      Your Custom Recipe
-                    </h3>
-                  </div>
-
                   {/* User Input Summary */}
                   <div className="space-y-4 mb-6">
                     <div>
@@ -705,62 +768,6 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
                 </div>
               </div>
 
-              {/* Generated Recipe Card (Shown after Fresh Generate) */}
-              {generatedRecipe && (
-                <div
-                  className="cursor-pointer rounded-lg border border-shadow-gray hover:border-primary/50 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 overflow-hidden"
-                  onClick={() => handleViewRecipe(generatedRecipe, true)}
-                >
-                  <div className="p-6 md:p-8">
-                    <div className="flex flex-col gap-2 mb-4">
-                      <span className="inline-block w-fit px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 uppercase tracking-wider">
-                        Generated Recipe
-                      </span>
-                      <h3 className="text-2xl md:text-3xl font-bold text-foreground" style={{ fontFamily: 'Georgia, serif' }}>
-                        {generatedRecipe.title}
-                      </h3>
-                    </div>
-
-                    {generatedRecipe.description && (
-                      <p className="text-muted-foreground mb-6 leading-relaxed">
-                        {generatedRecipe.description}
-                      </p>
-                    )}
-
-                    {/* Quick Info Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 bg-muted/30 p-4 rounded-lg">
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1 font-semibold">Prep Time</p>
-                        <p className="font-bold text-foreground">{generatedRecipe.prepTime || "—"}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1 font-semibold">Cook Time</p>
-                        <p className="font-bold text-foreground">{generatedRecipe.cookTime || "—"}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1 font-semibold">Servings</p>
-                        <p className="font-bold text-foreground">{generatedRecipe.servings || "—"}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-muted-foreground mb-1 font-semibold">Difficulty</p>
-                        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100">
-                          {generatedRecipe.difficulty || "Moderate"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* CTA */}
-                    <div className="flex items-center justify-start pt-4 border-t border-shadow-gray">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
-                        <Eye className="w-4 h-4" />
-                        <span>Click to view full recipe</span>
-                        <ChefHat className="w-4 h-4" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Error Display */}
               {error && (
                 <div className="flex gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
@@ -783,13 +790,15 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
           {/* Back Button */}
           <button
             onClick={() => {
-              setStage("results")
+              setStage("form")
+              setSearchResults(null)
               setSelectedRecipe(null)
+              reset()
             }}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to results
+            Back to search
           </button>
 
           {/* Recipe Content */}
