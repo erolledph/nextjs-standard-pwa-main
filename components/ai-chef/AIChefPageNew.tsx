@@ -313,7 +313,29 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate recipe"
-      setError(errorMessage)
+      
+      // Check if it's a quota exceeded error
+      if (errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("rate limit")) {
+        const now = new Date()
+        const tomorrow = new Date(now)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        tomorrow.setHours(0, 0, 0, 0)
+        
+        const timeRemaining = Math.ceil((tomorrow.getTime() - now.getTime()) / (1000 * 60))
+        const hours = Math.floor(timeRemaining / 60)
+        const minutes = timeRemaining % 60
+        
+        let timeStr = ""
+        if (hours > 0) {
+          timeStr = `${hours}h ${minutes}m`
+        } else {
+          timeStr = `${minutes}m`
+        }
+        
+        setError(`🎯 Daily recipe limit reached (20 per day). Please try again in ${timeStr} or check back tomorrow!`)
+      } else {
+        setError(errorMessage)
+      }
       console.error("Error generating fresh recipe:", err)
     } finally {
       setIsGeneratingAI(false)
@@ -704,7 +726,7 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
                         <p className="text-xs font-semibold text-muted-foreground mb-2">Key Ingredients</p>
                         <div className="flex flex-wrap gap-2">
                           {formData.ingredients.map((ing) => (
-                            <span key={ing} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground">
+                            <span key={ing} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
                               {ing}
                             </span>
                           ))}
@@ -714,31 +736,33 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
                   </div>
 
                   {/* Fresh Generate Button */}
-                  <button
-                    onClick={handleFreshGenerate}
-                    disabled={isGeneratingAI}
-                    className="w-full mt-8 pt-8 border-t border-shadow-gray flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isGeneratingAI ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Generating Recipe...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4" />
-                        Fresh Generate with AI
-                      </>
-                    )}
-                  </button>
+                  <div className="flex gap-2 mt-6 pt-6 border-t border-shadow-gray">
+                    <button
+                      onClick={handleFreshGenerate}
+                      disabled={isGeneratingAI}
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingAI ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Fresh Generate
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Error Display */}
               {error && (
-                <div className="flex gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-destructive">{error}</p>
+                <div className="flex gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-800 dark:text-amber-200">{error}</p>
                 </div>
               )}
             </div>
