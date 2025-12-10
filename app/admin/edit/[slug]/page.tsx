@@ -37,6 +37,7 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
     cookTime: "",
     servings: "",
     ingredients: [""],
+    instructions: [""],
     difficulty: "Easy",
   })
 
@@ -73,6 +74,7 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
           cookTime: content.cookTime || "",
           servings: content.servings || "",
           ingredients: content.ingredients || [""],
+          instructions: content.instructions || [""],
           difficulty: content.difficulty || "Easy",
         })
       } else {
@@ -87,6 +89,7 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
           cookTime: "",
           servings: "",
           ingredients: [""],
+          instructions: [""],
           difficulty: "Easy",
         })
       }
@@ -159,6 +162,7 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
         cookTime: formData.cookTime,
         servings: formData.servings,
         ingredients: formData.ingredients.filter(ing => ing.trim().length > 0),
+        instructions: formData.instructions.filter(inst => inst.trim().length > 0),
         difficulty: formData.difficulty,
       } : {
         slug,
@@ -364,6 +368,54 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">Add each ingredient on a separate line</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Instructions</Label>
+                    <div className="space-y-2">
+                      {formData.instructions.map((instruction, index) => (
+                        <div key={index} className="flex gap-2">
+                          <div className="flex-shrink-0 flex items-center justify-center w-8 h-10 bg-muted rounded text-sm font-medium">
+                            {index + 1}
+                          </div>
+                          <Textarea
+                            placeholder={`Step ${index + 1} (e.g., Preheat oven to 350°F)`}
+                            value={instruction}
+                            onChange={(e) => {
+                              const newInstructions = [...formData.instructions]
+                              newInstructions[index] = e.target.value
+                              setFormData({ ...formData, instructions: newInstructions })
+                            }}
+                            rows={2}
+                            className="resize-none"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const newInstructions = formData.instructions.filter((_, i) => i !== index)
+                              setFormData({ ...formData, instructions: newInstructions.length > 0 ? newInstructions : [""] })
+                            }}
+                            disabled={formData.instructions.length === 1}
+                            className="flex-shrink-0 h-10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setFormData({ ...formData, instructions: [...formData.instructions, ""] })}
+                        className="w-full"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Instruction
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Add each instruction step in order</p>
                   </div>
                 </>
               )}
