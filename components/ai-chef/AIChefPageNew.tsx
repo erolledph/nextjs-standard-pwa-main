@@ -343,37 +343,6 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
 
     setSelectedRecipe(normalizedRecipe)
     setStage("recipe")
-
-    if (isFreshAI && formData && generatedRecipe) {
-      try {
-        const response = await fetch('/api/ai-chef/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipe: normalizedRecipe,
-            userInput: {
-              description: formData.description,
-              country: formData.country,
-              protein: formData.protein,
-              taste: formData.taste,
-              ingredients: formData.ingredients,
-            },
-          }),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log("✅ Recipe saved to Firebase:", result.recipeId);
-        } else {
-          console.error("Error saving recipe to Firebase:", await response.text());
-        }
-      } catch (err) {
-        console.error("Error saving recipe to Firebase:", err);
-        // Don't block UI if save fails
-      }
-    }
   }
 
   // STAGE 1: Form
