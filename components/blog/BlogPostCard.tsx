@@ -56,7 +56,8 @@ export function BlogPostCard({
           {image ? (
             <img
               src={image}
-              alt={title}
+              alt={`${title} - World Food Recipes Blog`}
+              title={title}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
               loading="lazy"
             />

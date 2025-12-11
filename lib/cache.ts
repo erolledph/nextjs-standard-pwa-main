@@ -21,9 +21,39 @@ export interface CacheConfig {
   maxSize?: number
 }
 
+/**
+ * Content-type specific TTL configurations
+ * Different content has different volatility and generation costs
+ */
+export const CACHE_TTL = {
+  // User-generated content - volatile, frequently updated
+  USER_CONTENT: 3 * 60 * 1000, // 3 minutes
+  // Regular blog posts - relatively stable
+  BLOG_POSTS: 30 * 60 * 1000, // 30 minutes
+  // Recipes - stable, manually curated
+  RECIPES: 60 * 60 * 1000, // 1 hour
+  // AI-generated content - expensive to generate, cache longer
+  AI_GENERATED: 2 * 60 * 60 * 1000, // 2 hours
+  // Search results - dynamic, shorter TTL
+  SEARCH_RESULTS: 5 * 60 * 1000, // 5 minutes
+  // Static data (tags, categories) - very stable
+  STATIC_DATA: 24 * 60 * 60 * 1000, // 24 hours
+  // YouTube API data - relatively stable
+  YOUTUBE_DATA: 2 * 60 * 60 * 1000, // 2 hours
+  // GitHub content - stable unless updated
+  GITHUB_CONTENT: 30 * 60 * 1000, // 30 minutes
+}
+
 const DEFAULT_CONFIG: Required<CacheConfig> = {
-  ttl: 5 * 60 * 1000, // 5 minutes default
+  ttl: CACHE_TTL.BLOG_POSTS, // 30 minutes default
   maxSize: 100
+}
+
+/**
+ * Get appropriate TTL for content type
+ */
+export function getCacheTtl(contentType: keyof typeof CACHE_TTL): number {
+  return CACHE_TTL[contentType] || DEFAULT_CONFIG.ttl
 }
 
 /**
@@ -136,7 +166,26 @@ export function cleanExpiredCache(): number {
 }
 
 /**
- * Cached fetch helper
+ * Cached fetch helper with content-type aware TTL
+ * 
+ * @example
+ * // Cache blog post with 30-minute TTL
+ * const post = await cachedFetch<BlogPost>(url, {
+ *   cacheKey: `blog:${slug}`,
+ *   cacheTtl: getCacheTtl('BLOG_POSTS')
+ * })
+ * 
+ * // Cache recipe with 1-hour TTL
+ * const recipe = await cachedFetch<Recipe>(url, {
+ *   cacheKey: `recipe:${id}`,
+ *   cacheTtl: getCacheTtl('RECIPES')
+ * })
+ * 
+ * // Cache AI-generated content with 2-hour TTL
+ * const aiContent = await cachedFetch<AIContent>(url, {
+ *   cacheKey: `ai:${prompt}`,
+ *   cacheTtl: getCacheTtl('AI_GENERATED')
+ * })
  */
 export async function cachedFetch<T>(
   url: string,
