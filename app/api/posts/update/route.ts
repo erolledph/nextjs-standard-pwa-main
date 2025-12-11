@@ -3,8 +3,6 @@ import { isAdminAuthenticated } from "@/lib/auth"
 import { validateBlogPost } from "@/lib/validation"
 import { clearCacheByNamespace } from "@/lib/cache"
 
-export const runtime = 'edge'
-
 export async function PUT(request: Request) {
   try {
     const authenticated = await isAdminAuthenticated()
@@ -147,3 +145,4 @@ ${content}
     return NextResponse.json({ error: "Failed to update post" }, { status: 500 })
   }
 }
+

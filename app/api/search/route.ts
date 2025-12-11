@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server"
 import { fetchContentFromGitHub } from "@/lib/github"
 
-export const runtime = 'edge'
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -48,3 +46,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Failed to search posts" }, { status: 500 })
   }
 }
+

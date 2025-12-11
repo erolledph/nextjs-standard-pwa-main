@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { saveAIRecipeToFirebase } from "@/lib/firebase-admin";
 
-export const runtime = 'edge';
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -33,3 +31,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

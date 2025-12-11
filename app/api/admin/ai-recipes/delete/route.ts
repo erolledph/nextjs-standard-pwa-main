@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { deleteAIRecipe } from "@/lib/firebase-admin";
 import { isAdminAuthenticated } from "@/lib/auth";
 
-export const runtime = 'edge';
-
 export async function POST(request: NextRequest) {
   try {
     const isAuthenticated = await isAdminAuthenticated();

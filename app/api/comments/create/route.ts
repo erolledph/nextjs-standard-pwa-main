@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { firestoreAdd } from '@/lib/firebase-admin'
 import { checkRateLimit } from '@/lib/rateLimiter'
 
-export const runtime = 'edge'
-
 function isValidEmail(email: string): boolean {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return regex.test(email) && email.length <= 254
@@ -94,3 +92,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

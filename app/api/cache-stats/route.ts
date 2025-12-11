@@ -1,8 +1,6 @@
 import { getCacheStats, cleanExpiredCache } from '@/lib/cache'
 import { NextResponse } from 'next/server'
 
-export const runtime = 'edge'
-
 export async function GET() {
   try {
     // Clean expired entries first
@@ -69,3 +67,4 @@ export async function POST(request: Request) {
     )
   }
 }
+

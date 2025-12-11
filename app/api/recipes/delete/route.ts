@@ -3,8 +3,6 @@ import { isAdminAuthenticated } from "@/lib/auth"
 import { validateSlug } from "@/lib/validation"
 import { clearCacheByNamespace } from "@/lib/cache"
 
-export const runtime = 'edge'
-
 export async function DELETE(request: Request) {
   try {
     const authenticated = await isAdminAuthenticated()
@@ -84,3 +82,4 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Failed to delete recipe" }, { status: 500 })
   }
 }
+

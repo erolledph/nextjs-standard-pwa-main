@@ -3,8 +3,6 @@ import { isAdminAuthenticated } from "@/lib/auth"
 import { validateSlug } from "@/lib/validation"
 import { clearCacheByNamespace } from "@/lib/cache"
 
-export const runtime = 'edge'
-
 export async function PUT(request: Request) {
   try {
     const authenticated = await isAdminAuthenticated()
@@ -164,3 +162,4 @@ ${content}
     return NextResponse.json({ error: "Failed to update recipe" }, { status: 500 })
   }
 }
+
