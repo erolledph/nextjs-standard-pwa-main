@@ -23,7 +23,9 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
   const [fetchingPost, setFetchingPost] = useState(true)
   const [error, setError] = useState("")
   const [showPreview, setShowPreview] = useState(false)
-  const [contentType, setContentType] = useState<"blog" | "recipes">("blog")
+  const [contentType, setContentType] = useState<"blog" | "recipes">(() => {
+    return searchParams.get("type") === "recipes" ? "recipes" : "blog"
+  })
   
   const [formData, setFormData] = useState({
     title: "",
@@ -45,6 +47,8 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
     const type = searchParams.get("type")
     if (type === "recipes") {
       setContentType("recipes")
+    } else {
+      setContentType("blog")
     }
   }, [searchParams])
 
