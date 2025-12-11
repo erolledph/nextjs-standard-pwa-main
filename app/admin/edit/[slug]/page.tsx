@@ -60,7 +60,6 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
     try {
       const endpoint = contentType === "recipes" ? `/api/recipes?slug=${slug}` : `/api/posts/${slug}`
       const response = await fetch(endpoint)
-<<<<<<< HEAD
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error || `Failed to fetch ${contentType === "recipes" ? "recipe" : "post"}`)
@@ -69,13 +68,6 @@ function EditContentInner({ params }: { params: Promise<{ slug: string }> }) {
       
       // Response should be single object for slug query, not array
       const content = data
-=======
-      if (!response.ok) throw new Error(`Failed to fetch ${contentType === "recipes" ? "recipe" : "post"}`)
-      const data = await response.json()
-      
-      // Handle array response (for recipes)
-      const content = Array.isArray(data) ? data[0] : data
->>>>>>> 5f4eae8c208402e3a2c2d3a70c653a959455f4c6
       
       if (contentType === "recipes") {
         setFormData({

@@ -213,7 +213,6 @@ function parseMarkdownContent(
     const servings = frontmatter.servings || ""
     const difficulty = frontmatter.difficulty || "Medium"
     
-<<<<<<< HEAD
     // Parse ingredients - try JSON array first, then comma-separated
     let ingredients: string[] = []
     if (frontmatter.ingredients) {
@@ -245,28 +244,6 @@ function parseMarkdownContent(
         } else if (Array.isArray(frontmatter.instructions)) {
           instructions = frontmatter.instructions
         }
-=======
-    // Parse ingredients (can be comma-separated or newline in frontmatter)
-    let ingredients: string[] = []
-    if (frontmatter.ingredients) {
-      ingredients = frontmatter.ingredients
-        .split(",")
-        .map((i) => i.trim())
-        .filter((i) => i.length > 0)
-    }
-
-    // Parse instructions (can be newline-separated numbered steps)
-    let instructions: string[] = []
-    if (frontmatter.instructions) {
-      if (typeof frontmatter.instructions === 'string') {
-        // Remove numbering like "1. ", "2. " etc and split by newlines
-        instructions = frontmatter.instructions
-          .split("\n")
-          .map((inst: string) => inst.replace(/^\d+\.\s*/, '').trim())
-          .filter((inst: string) => inst.length > 0)
-      } else if (Array.isArray(frontmatter.instructions)) {
-        instructions = frontmatter.instructions
->>>>>>> 5f4eae8c208402e3a2c2d3a70c653a959455f4c6
       }
     }
 
