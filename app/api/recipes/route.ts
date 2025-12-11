@@ -32,6 +32,19 @@ export async function GET(request: Request) {
     console.log("[GET /api/recipes] Fetching recipes from GitHub...")
     const recipes = await fetchContentFromGitHub(owner, repo, token, "recipes")
     console.log("[GET /api/recipes] Successfully fetched", recipes.length, "recipes")
+
+    // Support slug query parameter for fetching a single recipe
+    const url = new URL(request.url)
+    const slug = url.searchParams.get('slug')
+
+    if (slug) {
+      const recipe = recipes.find((r: any) => r.slug === slug)
+      if (!recipe) {
+        return NextResponse.json({ error: "Recipe not found" }, { status: 404 })
+      }
+      return NextResponse.json(recipe)
+    }
+
     return NextResponse.json(recipes)
   } catch (error) {
     console.error("[GET /api/recipes] Error:", error)
@@ -110,15 +123,15 @@ export async function POST(request: Request) {
     const date = new Date().toISOString().split("T")[0]
     const filename = `${slug}.md`
 
-    // Build ingredients list
-    const ingredientsList = Array.isArray(ingredients) 
-      ? ingredients.join(", ") 
-      : ingredients || ""
+    // Build ingredients list as JSON array
+    const ingredientsList = Array.isArray(ingredients)
+      ? JSON.stringify(ingredients)
+      : "[]"
 
-    // Build instructions list
+    // Build instructions list as JSON array
     const instructionsList = Array.isArray(instructions)
-      ? instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join("\n")
-      : instructions || ""
+      ? JSON.stringify(instructions)
+      : "[]"
 
     const frontmatter = `---
 title: ${title}
