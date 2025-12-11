@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Deny all access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Cached recipes collection (AI recipe cache)
+    // Server-side writes via Admin SDK for caching API responses
+    match /cached_recipes/{queryHash} {
+      // Allow reads for anyone (cached recipes are public)
+      allow get, list: if true;
+
+      // Server-side writes only (Admin SDK from /api/ai-chef routes)
+      // Frontend cannot write directly to cache
+      allow create, update, delete: if false;
+    }
+
+    // Recipes collection - read-only access for public queries
+    // Admin SDK has full access regardless of these rules
+    match /recipes/{recipeId} {
+      // Allow reading any recipe (cache hits are public)
+      allow get: if request.auth != null || true;
+
+      // Writing is only allowed via backend (Admin SDK)
+      // Frontend should not write directly to Firestore
+      allow create, update, delete: if false;
+    }
+
+    // AI-generated recipes collection
+    // Server-side writes via Admin SDK only
+    // Used for storing fresh AI-generated recipes before conversion to recipe posts
+    match /ai_recipes/{recipeId} {
+      // Public read-only for published recipes
+      allow get, list: if resource.data.isPublished == true;
+
+      // Allow reading unpublished recipes if user is authenticated (admins)
+      allow get: if request.auth != null;
+
+      // Allow listing published recipes only
+      allow list: if query.where('isPublished', '==', true);
+
+      // Server-side writes only (Admin SDK from /api/ai-chef/save-recipe)
+      // Frontend cannot write directly - all AI recipe saves go through Node.js endpoint
+      allow create, update, delete: if false;
+    }
+  }
+}
