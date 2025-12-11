@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Deny all access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==========================================
+    // CACHED_RECIPES Collection
+    // Purpose: Cache AI recipe API responses
+    // ==========================================
+    match /cached_recipes/{recipeId} {
+      // Public read - caching layer
+      allow get, list: if true;
+      
+      // Server-side writes only
+      allow create, update, delete: if false;
+    }
+
+    // ==========================================
+    // RECIPES Collection
+    // Purpose: Cache recipe posts from GitHub
+    // ==========================================
+    match /recipes/{recipeId} {
+      // Authenticated users can read cached recipes
+      allow get, list: if request.auth != null;
+      
+      // Server-side writes only (Admin SDK)
+      allow create, update, delete: if false;
+    }
+
+    // ==========================================
+    // AI_RECIPES Collection
+    // Purpose: Store AI-generated recipes for admin review
+    // ==========================================
+    match /ai_recipes/{recipeId} {
+      // Published recipes: public read access
+      allow get, list: if resource.data.isPublished == true;
+      
+      // Unpublished recipes: authenticated users only
+      allow get: if request.auth != null && resource.data.isPublished == false;
+      allow list: if request.auth != null;
+      
+      // Server-side writes only (Node.js Admin SDK)
+      // - Saving fresh AI recipes from /api/ai-chef/save-recipe
+      // - Marking as converted from /api/recipes
+      // - Publishing via admin operations
+      allow create, update, delete: if false;
+    }
+
+    // ==========================================
+    // SUBSCRIBERS Collection
+    // Purpose: Email newsletter subscribers
+    // ==========================================
+    match /subscribers/{subscriberId} {
+      // Anyone can subscribe
+      allow create: if request.resource.data.email is string
+        && request.resource.data.email.size() > 0
+        && request.resource.data.email.size() <= 254;
+      
+      // Admin read-only via API (not exposed here)
+      allow get, list: if false;
+      
+      // Admin-only updates/deletes
+      allow update, delete: if false;
+    }
+
+    // ==========================================
+    // COMMENTS Collection
+    // Purpose: User comments on blog posts
+    // ==========================================
+    match /comments/{commentId} {
+      // Anyone can read approved comments
+      allow get: if resource.data.approved == true;
+      allow list: if resource.data.approved == true;
+      
+      // Anyone can create comments
+      allow create: if request.resource.data.postSlug is string
+        && request.resource.data.postSlug.size() > 0
+        && request.resource.data.author is string
+        && request.resource.data.author.size() > 0
+        && request.resource.data.author.size() <= 100
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 2000
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.approved is bool;
+      
+      // Admin-only updates/deletes
+      allow update, delete: if false;
+    }
+  }
+}
+
