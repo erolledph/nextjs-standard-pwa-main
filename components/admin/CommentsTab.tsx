@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Check, X, Trash2 } from 'lucide-react'
+import { Check, Trash2, MessageSquare } from 'lucide-react'
 import type { Comment } from '@/types/comments'
 
-export default function AdminCommentsPage() {
+export function CommentsTab() {
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -81,63 +81,67 @@ export default function AdminCommentsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-center text-muted-foreground">Loading comments...</p>
-        </div>
+      <div className="text-center py-12">
+        <div className="inline-block w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+        <p className="text-sm text-muted-foreground mt-3">Loading comments...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="mx-auto max-w-4xl space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Comments</h1>
-          <p className="text-muted-foreground">Moderate and manage user comments</p>
-        </div>
+    <div className="space-y-8">
+      {/* Pending Comments */}
+      <section>
+        <h2 className="mb-4 text-xl font-bold flex items-center gap-2">
+            Pending Approval
+            <span className="text-sm font-normal text-muted-foreground">({pendingComments.length})</span>
+        </h2>
+        {pendingComments.length === 0 ? (
+          <Card>
+             <CardContent className="py-8 text-center text-muted-foreground">
+                No pending comments
+             </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {pendingComments.map((comment) => (
+              <AdminCommentCard
+                key={comment.id}
+                comment={comment}
+                onApprove={() => approveComment(comment.id)}
+                onDelete={() => deleteComment(comment.id)}
+                isPending={true}
+              />
+            ))}
+          </div>
+        )}
+      </section>
 
-        {/* Pending Comments */}
-        <section>
-          <h2 className="mb-4 text-2xl font-bold">
-            Pending Approval ({pendingComments.length})
-          </h2>
-          {pendingComments.length === 0 ? (
-            <p className="text-muted-foreground">No pending comments</p>
-          ) : (
-            <div className="space-y-4">
-              {pendingComments.map((comment) => (
-                <AdminCommentCard
-                  key={comment.id}
-                  comment={comment}
-                  onApprove={() => approveComment(comment.id)}
-                  onDelete={() => deleteComment(comment.id)}
-                  isPending={true}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Approved Comments */}
-        <section>
-          <h2 className="mb-4 text-2xl font-bold">Approved ({approvedComments.length})</h2>
-          {approvedComments.length === 0 ? (
-            <p className="text-muted-foreground">No approved comments</p>
-          ) : (
-            <div className="space-y-4">
-              {approvedComments.map((comment) => (
-                <AdminCommentCard
-                  key={comment.id}
-                  comment={comment}
-                  onDelete={() => deleteComment(comment.id)}
-                  isPending={false}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
+      {/* Approved Comments */}
+      <section>
+        <h2 className="mb-4 text-xl font-bold flex items-center gap-2">
+            Approved
+            <span className="text-sm font-normal text-muted-foreground">({approvedComments.length})</span>
+        </h2>
+        {approvedComments.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center text-muted-foreground">
+                No approved comments
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {approvedComments.map((comment) => (
+              <AdminCommentCard
+                key={comment.id}
+                comment={comment}
+                onDelete={() => deleteComment(comment.id)}
+                isPending={false}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
@@ -162,15 +166,20 @@ function AdminCommentCard({
             <p className="text-sm text-muted-foreground">{comment.email}</p>
             <p className="text-xs text-muted-foreground">Post: {comment.postSlug}</p>
           </div>
-          {comment.isAdmin && (
-            <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">
-              Admin
+          <div className="flex items-center gap-2">
+            {comment.isAdmin && (
+                <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">
+                Admin
+                </span>
+            )}
+            <span className="text-xs text-muted-foreground">
+                {new Date(comment.createdAt).toLocaleDateString()}
             </span>
-          )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-foreground">{comment.content}</p>
+        <p className="text-foreground whitespace-pre-wrap">{comment.content}</p>
 
         <div className="flex gap-2">
           {isPending && onApprove && (

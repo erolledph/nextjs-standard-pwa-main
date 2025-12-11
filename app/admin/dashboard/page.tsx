@@ -10,6 +10,8 @@ import { toast } from "sonner"
 import { CacheStatsCard } from "@/components/admin/CacheStatsCard"
 import { YouTubeQuotaCard } from "@/components/admin/YouTubeQuotaCard"
 import { AIRecipesTab } from "@/components/admin/AIRecipesTab"
+import { CommentsTab } from "@/components/admin/CommentsTab"
+import { SubscribersTab } from "@/components/admin/SubscribersTab"
 
 interface BlogPost {
   id: string
@@ -50,7 +52,7 @@ export default function AdminDashboard() {
     // Check for tab query parameter
     const searchParams = new URLSearchParams(window.location.search)
     const tab = searchParams.get('tab')
-    if (tab && ['overview', 'content', 'recipes', 'ai-recipes', 'stats', 'youtube'].includes(tab)) {
+    if (tab && ['overview', 'content', 'recipes', 'ai-recipes', 'comments', 'subscribers', 'stats', 'youtube'].includes(tab)) {
       setActiveTab(tab)
     }
   }, [])
@@ -267,6 +269,26 @@ export default function AdminDashboard() {
               }`}
             >
               AI Generated
+            </button>
+            <button
+              onClick={() => setActiveTab("comments")}
+              className={`pb-3 px-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === "comments"
+                  ? "text-foreground border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Comments
+            </button>
+            <button
+              onClick={() => setActiveTab("subscribers")}
+              className={`pb-3 px-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === "subscribers"
+                  ? "text-foreground border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Subscribers
             </button>
             <button
               onClick={() => setActiveTab("stats")}
@@ -646,6 +668,14 @@ export default function AdminDashboard() {
 
         {activeTab === "ai-recipes" && (
           <AIRecipesTab />
+        )}
+
+        {activeTab === "comments" && (
+          <CommentsTab />
+        )}
+
+        {activeTab === "subscribers" && (
+          <SubscribersTab />
         )}
 
         {activeTab === "youtube" && (
