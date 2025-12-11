@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = 'edge'
 
-export const runtime = "edge"
-
 const BING_API_URL = "https://ssl.bing.com/webmaster/api.svc/json/SubmitUrlbatch"
 const BING_API_KEY = process.env.BING_WEBMASTER_API_KEY || ""
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ""

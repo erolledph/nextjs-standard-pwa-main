@@ -12,8 +12,6 @@ import { fetchContentFromGitHub, type Recipe } from "@/lib/github"
 
 export const runtime = 'edge'
 
-export const runtime = "edge"
-
 // Mock cached recipes (in production, this would come from Firebase)
 const CACHED_RECIPES_DB: Record<string, any> = {}
 
@@ -182,11 +180,7 @@ async function generateNewRecipe(input: AIChefInputType, queryHash: string) {
     console.log("🟡 [GEN-1] Generating new recipe with AI...")
 
     // Import Gemini client
-
-export const runtime = 'edge'
     const { generateRecipeWithAI } = await import("@/lib/gemini")
-
-export const runtime = 'edge'
     
     // Call Gemini API to generate recipe
     const recipe = await generateRecipeWithAI(input as any)

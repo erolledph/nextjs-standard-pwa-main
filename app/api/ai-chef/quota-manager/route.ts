@@ -13,8 +13,6 @@ import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = 'edge'
 
-export const runtime = "edge"
-
 // In-memory quota tracker (resets daily at UTC midnight)
 interface QuotaData {
   requestCount: number

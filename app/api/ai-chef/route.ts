@@ -15,8 +15,6 @@ import { setCached, getCached } from "@/lib/cache"
 
 export const runtime = 'edge'
 
-export const runtime = "edge"
-
 /**
  * Simple hash function for cache key (compatible with edge runtime)
  */
