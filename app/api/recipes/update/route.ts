@@ -24,6 +24,7 @@ export async function PUT(request: Request) {
       cookTime, 
       servings, 
       ingredients, 
+      instructions,
       difficulty 
     } = await request.json()
 
@@ -95,8 +96,13 @@ export async function PUT(request: Request) {
 
     // Create frontmatter with recipe metadata and existing date
     const tagsStr = tags && Array.isArray(tags) ? tags.join(", ") : ""
-    const ingredientsStr = Array.isArray(ingredients) ? ingredients.join("\n  - ") : ""
+    const ingredientsStr = Array.isArray(ingredients) ? ingredients.join(", ") : ""
     
+    // Format instructions as a numbered list with indentation for the custom parser
+    const instructionsStr = Array.isArray(instructions)
+      ? "\n" + instructions.map((inst: string, idx: number) => `  ${idx + 1}. ${inst}`).join("\n")
+      : ""
+
     const frontmatter = `---
 title: ${title}
 date: ${existingDate}
@@ -107,8 +113,8 @@ image: ${image || ""}
 prepTime: ${prepTime || ""}
 cookTime: ${cookTime || ""}
 servings: ${servings || ""}
-ingredients:
-  - ${ingredientsStr}
+ingredients: ${ingredientsStr}
+instructions:${instructionsStr}
 difficulty: ${difficulty || "Easy"}
 ---
 
