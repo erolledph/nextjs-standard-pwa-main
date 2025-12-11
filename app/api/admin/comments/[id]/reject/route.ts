@@ -14,9 +14,10 @@ if (!adminApp && serviceAccount.project_id) {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params
     // Verify admin session
     const cookieStore = await cookies()
     const sessionCookie = cookieStore.get('admin-session')
@@ -36,7 +37,7 @@ export async function PATCH(
     }
 
     const db = getFirestore(adminApp)
-    const commentId = params.id
+    const commentId = resolvedParams.id
 
     // Soft reject - set approved to false
     await db.collection('comments').doc(commentId).update({

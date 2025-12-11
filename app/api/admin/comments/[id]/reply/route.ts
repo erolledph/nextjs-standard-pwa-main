@@ -14,9 +14,10 @@ if (!adminApp && serviceAccount.project_id) {
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await params
     // Verify admin session
     const cookieStore = await cookies()
     const sessionCookie = cookieStore.get('admin-session')
@@ -45,7 +46,7 @@ export async function POST(
     }
 
     const db = getAdminFirestore(adminApp)
-    const commentId = params.id
+    const commentId = resolvedParams.id
     const replyId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
     // Create reply
