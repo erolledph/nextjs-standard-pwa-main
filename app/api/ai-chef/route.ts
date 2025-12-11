@@ -13,6 +13,8 @@ import { verifyCSRFToken } from "@/lib/csrf"
 import { checkRateLimit } from "@/lib/rateLimiter"
 import { setCached, getCached } from "@/lib/cache"
 
+export const runtime = 'edge'
+
 export const runtime = "edge"
 
 /**

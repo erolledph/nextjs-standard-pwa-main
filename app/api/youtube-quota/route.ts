@@ -1,6 +1,8 @@
 import { getQuotaStatus } from '@/lib/youtube'
 import { NextResponse } from 'next/server'
 
+export const runtime = 'edge'
+
 export async function GET() {
   try {
     const quotaStatus = getQuotaStatus()

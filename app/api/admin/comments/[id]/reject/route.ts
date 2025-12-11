@@ -1,16 +1,7 @@
-import { initializeApp, cert, getApps } from 'firebase-admin/app'
-import { getFirestore } from 'firebase-admin/firestore'
 import { cookies } from 'next/headers'
+import { firestoreUpdate } from '@/lib/firebase-admin'
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_SDK_KEY || '{}')
-
-let adminApp = getApps().length > 0 ? getApps()[0] : null
-
-if (!adminApp && serviceAccount.project_id) {
-  adminApp = initializeApp({
-    credential: cert(serviceAccount),
-  })
-}
+export const runtime = 'edge'
 
 export async function PATCH(
   request: Request,
@@ -29,18 +20,10 @@ export async function PATCH(
       })
     }
 
-    if (!adminApp) {
-      return new Response(JSON.stringify({ error: 'Firebase not configured' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-
-    const db = getFirestore(adminApp)
     const commentId = resolvedParams.id
 
-    // Soft reject - set approved to false
-    await db.collection('comments').doc(commentId).update({
+    // Soft reject - set approved to false using REST API wrapper
+    await firestoreUpdate('comments', commentId, {
       approved: false,
     })
 

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAIRecipes } from "@/lib/firebase-admin";
 import { isAdminAuthenticated } from "@/lib/auth";
 
+export const runtime = 'edge'
+
 export async function GET(request: NextRequest) {
   try {
     const isAuthenticated = await isAdminAuthenticated();

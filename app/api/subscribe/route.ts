@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { firestoreQuery, firestoreAdd } from '@/lib/firebase-admin'
 import { checkRateLimit } from '@/lib/rateLimiter'
 
+export const runtime = 'edge'
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting: 5 subscriptions per hour per IP

@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server"
 import { setAdminSession, verifyPassword } from "@/lib/auth"
 import { checkRateLimit } from "@/lib/rateLimiter"
 
+export const runtime = 'edge'
+
 export async function POST(request: NextRequest) {
   try {
     // Get client IP for rate limiting

@@ -9,6 +9,8 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { saveAIRecipeToFirebase } from "@/lib/firebase-admin"
 
+export const runtime = 'edge'
+
 // Use Edge runtime for Cloudflare Pages compatibility
 export const runtime = "edge"
 

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { fetchPostsFromGitHub } from "@/lib/github"
 import { isAdminAuthenticated } from "@/lib/auth"
 
+export const runtime = 'edge'
+
 export async function GET(request: Request) {
   try {
     // For Cloudflare Pages Edge Runtime, use globalThis or request context

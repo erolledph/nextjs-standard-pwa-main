@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { clearAdminSession } from "@/lib/auth"
 
+export const runtime = 'edge'
+
 export async function POST() {
   try {
     await clearAdminSession()

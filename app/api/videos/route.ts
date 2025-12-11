@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchYouTubeVideos, getQuotaStatus } from '@/lib/youtube';
 
+export const runtime = 'edge'
+
 // Configure for Cloudflare Pages Edge Runtime
 export async function GET(request: NextRequest) {
   try {

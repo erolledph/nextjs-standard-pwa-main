@@ -1,16 +1,7 @@
-import { initializeApp, cert, getApps } from 'firebase-admin/app'
-import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore'
 import { cookies } from 'next/headers'
+import { firestoreAdd } from '@/lib/firebase-admin'
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_SDK_KEY || '{}')
-
-let adminApp = getApps().length > 0 ? getApps()[0] : null
-
-if (!adminApp && serviceAccount.project_id) {
-  adminApp = initializeApp({
-    credential: cert(serviceAccount),
-  })
-}
+export const runtime = 'edge'
 
 export async function POST(
   request: Request,
@@ -38,19 +29,11 @@ export async function POST(
       })
     }
 
-    if (!adminApp) {
-      return new Response(JSON.stringify({ error: 'Firebase not configured' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
-
-    const db = getAdminFirestore(adminApp)
     const commentId = resolvedParams.id
     const replyId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-    // Create reply
-    await db.collection('comments').doc(replyId).set({
+    // Create reply using REST API wrapper
+    await firestoreAdd('comments', {
       id: replyId,
       author: 'Admin',
       email: 'admin@example.com',

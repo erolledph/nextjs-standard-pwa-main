@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { firestoreQuery } from '@/lib/firebase-admin'
 import type { Comment } from '@/types/comments'
 
+export const runtime = 'edge'
+
 export async function GET(req: NextRequest) {
   try {
     // Verify admin session via cookie

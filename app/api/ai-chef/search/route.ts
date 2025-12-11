@@ -10,6 +10,8 @@ import { AIChefInputSchema, type AIChefInputType } from "@/lib/ai-chef-schema"
 import { generateQueryHash, calculateQuerySimilarity, findBestMatches } from "@/lib/fuzzy-match"
 import { fetchContentFromGitHub, type Recipe } from "@/lib/github"
 
+export const runtime = 'edge'
+
 export const runtime = "edge"
 
 // Mock cached recipes (in production, this would come from Firebase)
@@ -180,7 +182,11 @@ async function generateNewRecipe(input: AIChefInputType, queryHash: string) {
     console.log("🟡 [GEN-1] Generating new recipe with AI...")
 
     // Import Gemini client
+
+export const runtime = 'edge'
     const { generateRecipeWithAI } = await import("@/lib/gemini")
+
+export const runtime = 'edge'
     
     // Call Gemini API to generate recipe
     const recipe = await generateRecipeWithAI(input as any)
