@@ -7,6 +7,8 @@ import { AuthorCard } from "@/components/ui/author-card"
 import { SocialShare } from "@/components/ui/social-share"
 import { RelatedPosts } from "@/components/blog/RelatedPosts"
 import { AnchorLink } from "@/components/blog/AnchorLink"
+import { CommentSection } from "@/components/blog/CommentSection"
+import { SubscribeForm } from "@/components/blog/SubscribeForm"
 import { calculateReadingTime } from "@/lib/utils"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -282,6 +284,21 @@ export function BlogPost({ post, siteUrl }: BlogPostProps) {
           <aside aria-label="Author information">
             <AuthorCard name={post.author || 'Anonymous'} image="/avatar.svg" />
           </aside>
+
+          <section aria-label="Subscribe" className="my-16 py-12 border-t border-b border-shadow-gray">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Subscribe to the newsletter</h2>
+              <p className="text-muted-foreground mb-6">Get notified when we publish new posts and updates.</p>
+              <SubscribeForm />
+            </div>
+          </section>
+
+          <section aria-label="Comments" className="my-16 py-12">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-2xl font-bold text-foreground mb-6">Comments</h2>
+              <CommentSection postSlug={post.slug} />
+            </div>
+          </section>
         </div>
 
         <section aria-label="Recommended Posts" className="mt-16 pt-12 pb-16 md:pb-24 border-t border-shadow-gray">

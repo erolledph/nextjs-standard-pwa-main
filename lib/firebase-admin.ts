@@ -244,3 +244,121 @@ export async function markAIRecipeAsConverted() {
     console.error("markAIRecipeAsConverted is not implemented for Edge runtime");
     return false;
 }
+
+// Firebase functions for comments and subscribers
+
+export async function firestoreQuery(collection: string, filters?: any[]) {
+    try {
+        const accessToken = await getAccessToken();
+        const url = `${firestoreApiUrl}/${collection}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+            },
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(`Failed to query collection: ${JSON.stringify(error)}`);
+        }
+
+        const data = await response.json();
+        if (!data.documents) return [];
+        
+        return data.documents.map(fromFirestoreDocument);
+    } catch (error) {
+        console.error(`Error querying ${collection}:`, error);
+        return [];
+    }
+}
+
+export async function firestoreAdd(collection: string, data: any) {
+    try {
+        const accessToken = await getAccessToken();
+        const url = `${firestoreApiUrl}/${collection}`;
+
+        const body = {
+            fields: Object.fromEntries(
+                Object.entries(data).map(([key, value]) => [key, toFirestoreValue(value)])
+            ),
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(`Failed to add document: ${JSON.stringify(error)}`);
+        }
+
+        const result = await response.json();
+        return result.name.split('/').pop();
+    } catch (error) {
+        console.error(`Error adding document to ${collection}:`, error);
+        return null;
+    }
+}
+
+export async function firestoreDelete(collection: string, docId: string) {
+    try {
+        const accessToken = await getAccessToken();
+        const url = `${firestoreApiUrl}/${collection}/${docId}`;
+
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+            },
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(`Failed to delete document: ${JSON.stringify(error)}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(`Error deleting from ${collection}:`, error);
+        return false;
+    }
+}
+
+export async function firestoreUpdate(collection: string, docId: string, data: any) {
+    try {
+        const accessToken = await getAccessToken();
+        const url = `${firestoreApiUrl}/${collection}/${docId}`;
+
+        const body = {
+            fields: Object.fromEntries(
+                Object.entries(data).map(([key, value]) => [key, toFirestoreValue(value)])
+            ),
+        };
+
+        const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(`Failed to update document: ${JSON.stringify(error)}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(`Error updating ${collection}:`, error);
+        return false;
+    }
+}

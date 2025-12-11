@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 const ADMIN_SESSION_TOKEN = "admin-session"
-const protectedRoutes = ["/admin/dashboard", "/admin/create"]
+const protectedRoutes = ["/admin/dashboard", "/admin/create", "/admin/comments", "/admin/subscribers"]
 const publicAdminRoutes = ["/admin/login"]
 
 export async function middleware(request: NextRequest) {
