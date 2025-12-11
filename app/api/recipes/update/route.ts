@@ -96,9 +96,18 @@ export async function PUT(request: Request) {
 
     // Create frontmatter with recipe metadata and existing date
     const tagsStr = tags && Array.isArray(tags) ? tags.join(", ") : ""
+<<<<<<< HEAD
     // Store as JSON arrays for reliable parsing
     const ingredientsStr = Array.isArray(ingredients) ? JSON.stringify(ingredients) : "[]"
     const instructionsStr = Array.isArray(instructions) ? JSON.stringify(instructions) : "[]"
+=======
+    const ingredientsStr = Array.isArray(ingredients) ? ingredients.join(", ") : ""
+    
+    // Format instructions as a numbered list with indentation for the custom parser
+    const instructionsStr = Array.isArray(instructions)
+      ? "\n" + instructions.map((inst: string, idx: number) => `  ${idx + 1}. ${inst}`).join("\n")
+      : ""
+>>>>>>> 5f4eae8c208402e3a2c2d3a70c653a959455f4c6
 
     const frontmatter = `---
 title: ${title}
@@ -152,12 +161,20 @@ ${content}
       return NextResponse.json({ error: "Failed to update recipe on GitHub" }, { status: 500 })
     }
 
+<<<<<<< HEAD
     // Invalidate all relevant caches when recipe is updated
     clearCacheByNamespace("github")
     clearCacheByNamespace("recipes")
 
     const result = await updateResponse.json()
     console.log("[PUT /api/recipes/update] Recipe updated successfully:", slug)
+=======
+    // Invalidate cache when recipe is updated
+    clearCacheByNamespace("github")
+
+    const result = await updateResponse.json()
+    console.log("[PUT /api/recipes/update] Recipe updated successfully")
+>>>>>>> 5f4eae8c208402e3a2c2d3a70c653a959455f4c6
     return NextResponse.json({ success: true, data: result, message: "Recipe updated successfully" })
   } catch (error) {
     console.error("[PUT /api/recipes/update] Error:", error)

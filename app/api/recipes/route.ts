@@ -32,6 +32,7 @@ export async function GET(request: Request) {
     console.log("[GET /api/recipes] Fetching recipes from GitHub...")
     const recipes = await fetchContentFromGitHub(owner, repo, token, "recipes")
     console.log("[GET /api/recipes] Successfully fetched", recipes.length, "recipes")
+<<<<<<< HEAD
     
     // Support slug query parameter for fetching a single recipe
     const url = new URL(request.url)
@@ -45,6 +46,8 @@ export async function GET(request: Request) {
       return NextResponse.json(recipe)
     }
     
+=======
+>>>>>>> 5f4eae8c208402e3a2c2d3a70c653a959455f4c6
     return NextResponse.json(recipes)
   } catch (error) {
     console.error("[GET /api/recipes] Error:", error)
@@ -123,6 +126,7 @@ export async function POST(request: Request) {
     const date = new Date().toISOString().split("T")[0]
     const filename = `${slug}.md`
 
+<<<<<<< HEAD
     // Build ingredients list as JSON array
     const ingredientsList = Array.isArray(ingredients) 
       ? JSON.stringify(ingredients)
@@ -132,6 +136,17 @@ export async function POST(request: Request) {
     const instructionsList = Array.isArray(instructions)
       ? JSON.stringify(instructions)
       : "[]"
+=======
+    // Build ingredients list
+    const ingredientsList = Array.isArray(ingredients) 
+      ? ingredients.join(", ") 
+      : ingredients || ""
+
+    // Build instructions list
+    const instructionsList = Array.isArray(instructions)
+      ? instructions.map((inst, idx) => `${idx + 1}. ${inst}`).join("\n")
+      : instructions || ""
+>>>>>>> 5f4eae8c208402e3a2c2d3a70c653a959455f4c6
 
     const frontmatter = `---
 title: ${title}
