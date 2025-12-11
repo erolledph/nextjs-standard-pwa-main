@@ -18,6 +18,7 @@ export function CommentsTab({ adminEmail }: CommentsTabProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyContent, setReplyContent] = useState('')
   const [submittingReply, setSubmittingReply] = useState(false)
+  const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending')
 
   useEffect(() => {
     fetchComments()
@@ -124,6 +125,7 @@ export function CommentsTab({ adminEmail }: CommentsTabProps) {
 
   const pendingComments = comments.filter((c) => !c.approved && !c.parentId)
   const approvedComments = comments.filter((c) => c.approved && !c.parentId)
+  const displayedComments = activeTab === 'pending' ? pendingComments : approvedComments
 
   function formatDate(date: Date | string): string {
     const now = new Date()
@@ -145,68 +147,58 @@ export function CommentsTab({ adminEmail }: CommentsTabProps) {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Pending Comments */}
-      {pendingComments.length > 0 && (
-        <div>
-          <div className="mb-6 pb-4 border-b border-border">
-            <h3 className="text-lg font-semibold text-foreground">Pending Comments</h3>
-            <p className="text-sm text-muted-foreground mt-1">({pendingComments.length})</p>
-          </div>
-          <div className="space-y-6">
-            {pendingComments.map((comment) => (
-              <CommentCard
-                key={comment.id}
-                comment={comment}
-                allComments={comments}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                onDelete={handleDelete}
-                onReply={() => setReplyingTo(comment.id)}
-                replyingTo={replyingTo}
-                replyContent={replyContent}
-                setReplyContent={setReplyContent}
-                onSubmitReply={() => handleSubmitReply(comment.id)}
-                submittingReply={submittingReply}
-                formatDate={formatDate}
-                getAvatarUrl={getAvatarUrl}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+    <div className="space-y-6">
+      {/* Tabs */}
+      <div className="flex border-b border-border gap-4">
+        <button
+          onClick={() => setActiveTab('pending')}
+          className={`px-4 py-2 font-medium text-sm transition-colors ${
+            activeTab === 'pending'
+              ? 'border-b-2 border-primary text-foreground -mb-1'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Pending ({pendingComments.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('approved')}
+          className={`px-4 py-2 font-medium text-sm transition-colors ${
+            activeTab === 'approved'
+              ? 'border-b-2 border-primary text-foreground -mb-1'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Approved ({approvedComments.length})
+        </button>
+      </div>
 
-      {/* Approved Comments */}
-      {approvedComments.length > 0 && (
-        <div>
-          <div className="mb-6 pb-4 border-b border-border">
-            <h3 className="text-lg font-semibold text-foreground">Approved Comments</h3>
-            <p className="text-sm text-muted-foreground mt-1">({approvedComments.length})</p>
-          </div>
-          <div className="space-y-6">
-            {approvedComments.map((comment) => (
-              <CommentCard
-                key={comment.id}
-                comment={comment}
-                allComments={comments}
-                onDelete={handleDelete}
-                onReply={() => setReplyingTo(comment.id)}
-                replyingTo={replyingTo}
-                replyContent={replyContent}
-                setReplyContent={setReplyContent}
-                onSubmitReply={() => handleSubmitReply(comment.id)}
-                submittingReply={submittingReply}
-                formatDate={formatDate}
-                getAvatarUrl={getAvatarUrl}
-              />
-            ))}
-          </div>
+      {/* Comments List */}
+      {displayedComments.length > 0 ? (
+        <div className="space-y-6">
+          {displayedComments.map((comment) => (
+            <CommentCard
+              key={comment.id}
+              comment={comment}
+              allComments={comments}
+              onApprove={activeTab === 'pending' ? handleApprove : undefined}
+              onReject={activeTab === 'pending' ? handleReject : undefined}
+              onDelete={handleDelete}
+              onReply={() => setReplyingTo(comment.id)}
+              replyingTo={replyingTo}
+              replyContent={replyContent}
+              setReplyContent={setReplyContent}
+              onSubmitReply={() => handleSubmitReply(comment.id)}
+              submittingReply={submittingReply}
+              formatDate={formatDate}
+              getAvatarUrl={getAvatarUrl}
+            />
+          ))}
         </div>
-      )}
-
-      {comments.length === 0 && (
+      ) : (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No comments yet</p>
+          <p className="text-muted-foreground">
+            {activeTab === 'pending' ? 'No pending comments' : 'No approved comments'}
+          </p>
         </div>
       )}
     </div>

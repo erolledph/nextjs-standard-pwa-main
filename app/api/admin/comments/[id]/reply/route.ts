@@ -1,6 +1,3 @@
-export const runtime = 'edge'
-
-import { getFirestore, collection, doc, setDoc, getDoc } from 'firebase/firestore'
 import { initializeApp, cert, getApps } from 'firebase-admin/app'
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore'
 import { cookies } from 'next/headers'
