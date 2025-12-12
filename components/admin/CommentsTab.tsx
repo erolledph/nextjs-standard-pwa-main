@@ -19,6 +19,7 @@ export function CommentsTab({ adminEmail }: CommentsTabProps) {
   const [replyContent, setReplyContent] = useState('')
   const [submittingReply, setSubmittingReply] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved'>('pending')
+  const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null)
 
   useEffect(() => {
     fetchComments()
@@ -126,7 +127,14 @@ export function CommentsTab({ adminEmail }: CommentsTabProps) {
   const pendingComments = comments.filter((c) => !c.approved && !c.parentId)
   const approvedComments = comments.filter((c) => c.approved && !c.parentId)
   const allComments = comments.filter((c) => !c.parentId)
-  const displayedComments = activeTab === 'pending' ? pendingComments : activeTab === 'approved' ? approvedComments : allComments
+  
+  // Filter by status tab first
+  let filteredByStatus = activeTab === 'pending' ? pendingComments : activeTab === 'approved' ? approvedComments : allComments
+  
+  // Then filter by post slug if selected
+  const displayedComments = selectedPostSlug 
+    ? filteredByStatus.filter((c) => c.postSlug === selectedPostSlug)
+    : filteredByStatus
 
   // Get unique posts for filter
   const postSlugs = Array.from(new Set(comments.map((c) => c.postSlug))).filter(Boolean)
@@ -212,16 +220,38 @@ export function CommentsTab({ adminEmail }: CommentsTabProps) {
           <div className="border-t border-muted pt-4 mt-4">
             <h3 className="text-sm font-semibold text-foreground mb-3">Filter by Post</h3>
             <div className="space-y-1">
+              {postSlugs.length > 0 && (
+                <button
+                  onClick={() => setSelectedPostSlug(null)}
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                    selectedPostSlug === null
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted text-muted-foreground'
+                  }`}
+                >
+                  <span className="flex items-center justify-between">
+                    <span>All Posts</span>
+                    <span className="text-xs font-semibold">{allComments.length}</span>
+                  </span>
+                </button>
+              )}
               {postSlugs.map((slug) => (
                 <button
                   key={slug}
-                  className="w-full text-left px-3 py-2 rounded-md text-sm transition-colors hover:bg-muted text-muted-foreground"
+                  onClick={() => setSelectedPostSlug(slug)}
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                    selectedPostSlug === slug
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted text-muted-foreground'
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="truncate text-xs" title={slug}>
                       {slug}
                     </span>
-                    <span className="text-xs opacity-70 flex-shrink-0">({postCommentCounts[slug]})</span>
+                    <span className={`text-xs flex-shrink-0 ${selectedPostSlug === slug ? 'font-semibold' : 'opacity-70'}`}>
+                      ({postCommentCounts[slug]})
+                    </span>
                   </div>
                 </button>
               ))}
