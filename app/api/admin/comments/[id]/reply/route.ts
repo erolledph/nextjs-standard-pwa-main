@@ -1,43 +1,47 @@
-import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
 import { firestoreAdd } from '@/lib/firebase-admin'
+import { sanitizeComment } from '@/lib/sanitize'
+import logger from '@/lib/logger-pino'
 
 export const runtime = 'edge'
 
 export async function POST(
-  request: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  
   try {
-    const resolvedParams = await params
     // Verify admin session
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('admin-session')
-
-    if (!sessionCookie?.value) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      })
+    const sessionCookie = req.cookies.get('admin-session')?.value
+    if (!sessionCookie || sessionCookie !== 'true') {
+      logger.warn('Unauthorized comment reply attempt', { requestId })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { content, postSlug } = await request.json()
+    const { content, postSlug, adminEmail } = await req.json()
 
     if (!content?.trim()) {
-      return new Response(JSON.stringify({ error: 'Reply content is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      logger.warn('Empty reply content submitted', { requestId })
+      return NextResponse.json({ error: 'Reply content is required' }, { status: 400 })
     }
 
-    const commentId = resolvedParams.id
+    // Sanitize reply content
+    const sanitizedContent = sanitizeComment(content)
+    if (!sanitizedContent) {
+      logger.warn('Reply content failed sanitization', { requestId, original: content.length })
+      return NextResponse.json({ error: 'Reply contains invalid content' }, { status: 400 })
+    }
+
+    const commentId = (await params).id
     const replyId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-    // Create reply using REST API wrapper
+    // Create reply
     await firestoreAdd('comments', {
       id: replyId,
       author: 'Admin',
-      email: 'admin@example.com',
-      content: content.trim(),
+      email: adminEmail || 'admin@worldfoodrecipes.sbs',
+      content: sanitizedContent,
       postSlug: postSlug || 'unknown',
       parentId: commentId,
       approved: true,
@@ -45,21 +49,13 @@ export async function POST(
       createdAt: new Date().toISOString(),
     })
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        replyId,
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    )
-  } catch (error) {
-    console.error('Error posting reply:', error)
-    return new Response(JSON.stringify({ error: 'Failed to post reply' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
+    logger.info('Admin reply posted successfully', { requestId, replyId, commentId })
+    return NextResponse.json({
+      success: true,
+      replyId,
     })
+  } catch (error) {
+    logger.error('Error posting reply', error, { requestId })
+    return NextResponse.json({ error: 'Failed to post reply' }, { status: 500 })
   }
 }
