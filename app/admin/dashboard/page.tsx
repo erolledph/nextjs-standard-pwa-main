@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, Check, Eye, Pencil, Copy, Trash2, ChefHat } from "lucide-react"
+import { FileText, Check, Eye, Pencil, Copy, Trash2, ChefHat, MessageSquare, Mail, TrendingUp } from "lucide-react"
 import { toast } from "sonner"
 import { CacheStatsCard } from "@/components/admin/CacheStatsCard"
 import { YouTubeQuotaCard } from "@/components/admin/YouTubeQuotaCard"
 import { AIRecipesTab } from "@/components/admin/AIRecipesTab"
 import { CommentsTab } from "@/components/admin/CommentsTab"
 import { SubscribersTab } from "@/components/admin/SubscribersTab"
+import { PaginatedTable } from "@/components/admin/PaginatedTable"
+import type { Column } from "@/components/admin/PaginatedTable"
 
 interface BlogPost {
   id: string
@@ -37,6 +39,10 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [totalPosts, setTotalPosts] = useState(0)
   const [totalRecipes, setTotalRecipes] = useState(0)
+  const [totalComments, setTotalComments] = useState(0)
+  const [totalSubscribers, setTotalSubscribers] = useState(0)
+  const [recentPosts, setRecentPosts] = useState<BlogPost[]>([])
+  const [recentRecipes, setRecentRecipes] = useState<Recipe[]>([])
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [loadingPosts, setLoadingPosts] = useState(false)
@@ -71,12 +77,26 @@ export default function AdminDashboard() {
       if (postsResponse.ok) {
         const posts = await postsResponse.json()
         setTotalPosts(posts.length)
+        setRecentPosts(posts.slice(0, 5))
       }
 
       const recipesResponse = await fetch("/api/recipes")
       if (recipesResponse.ok) {
         const recipes = await recipesResponse.json()
         setTotalRecipes(recipes.length)
+        setRecentRecipes(recipes.slice(0, 5))
+      }
+
+      const commentsResponse = await fetch("/api/admin/comments")
+      if (commentsResponse.ok) {
+        const comments = await commentsResponse.json()
+        setTotalComments(Array.isArray(comments) ? comments.length : 0)
+      }
+
+      const subscribersResponse = await fetch("/api/admin/subscribers")
+      if (subscribersResponse.ok) {
+        const subscribers = await subscribersResponse.json()
+        setTotalSubscribers(Array.isArray(subscribers) ? subscribers.length : 0)
       }
     } catch (error) {
       console.error("Failed to fetch stats:", error)
@@ -317,27 +337,155 @@ export default function AdminDashboard() {
       <div className="container px-4 sm:px-8 mx-auto xl:px-5 max-w-screen-lg py-6 sm:py-12">
         {activeTab === "overview" && (
           <>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 mb-12">
-              <Card>
+            {/* Stats Cards */}
+            <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4 mb-8">
+              <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Blog Posts</CardTitle>
-                    <FileText className="w-4 h-4 text-muted-foreground" />
+                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Stories</CardTitle>
+                    <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div className="text-3xl font-bold text-foreground">{totalPosts}</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground mt-2">{totalPosts}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Published articles</p>
                 </CardHeader>
               </Card>
-              <Card>
+
+              <Card className="border-0 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Recipes</CardTitle>
-                    <FileText className="w-4 h-4 text-muted-foreground" />
+                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Recipes</CardTitle>
+                    <ChefHat className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                   </div>
-                  <div className="text-3xl font-bold text-foreground">{totalRecipes}</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground mt-2">{totalRecipes}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Shared recipes</p>
+                </CardHeader>
+              </Card>
+
+              <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Comments</CardTitle>
+                    <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground mt-2">{totalComments}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Community feedback</p>
+                </CardHeader>
+              </Card>
+
+              <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Subscribers</CardTitle>
+                    <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground mt-2">{totalSubscribers}</div>
+                  <p className="text-xs text-muted-foreground mt-1">Email subscribers</p>
                 </CardHeader>
               </Card>
             </div>
 
+            {/* Recent Content Section */}
+            <div className="grid gap-6 lg:grid-cols-2 mb-8">
+              {/* Recent Posts */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Recent Stories</CardTitle>
+                      <CardDescription>Your latest published articles</CardDescription>
+                    </div>
+                    <Link href="/admin/dashboard?tab=content">
+                      <Button variant="outline" size="sm">View All</Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {recentPosts.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-muted-foreground mb-4">No stories yet</p>
+                      <Link href="/admin/create">
+                        <Button variant="outline" size="sm">Create First Story</Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentPosts.map((post) => (
+                        <div key={post.id} className="flex items-start justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm text-foreground line-clamp-1">{post.title}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(post.date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                            <Link href={`/blog/${post.slug}`} target="_blank">
+                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                                <Eye className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Recipes */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Recent Recipes</CardTitle>
+                      <CardDescription>Your latest shared recipes</CardDescription>
+                    </div>
+                    <Link href="/admin/dashboard?tab=recipes">
+                      <Button variant="outline" size="sm">View All</Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {recentRecipes.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-muted-foreground mb-4">No recipes yet</p>
+                      <Link href="/admin/create?type=recipes">
+                        <Button variant="outline" size="sm">Create First Recipe</Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentRecipes.map((recipe) => (
+                        <div key={recipe.id} className="flex items-start justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm text-foreground line-clamp-1">{recipe.title}</h4>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(recipe.date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                            <Link href={`/recipes/${recipe.slug}`} target="_blank">
+                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                                <Eye className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
             <div className="mb-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold text-foreground">Quick Actions</h2>
@@ -345,39 +493,39 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+              <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-2">
                 <Link href="/admin/create">
-                  <Button variant="outline" className="w-full justify-start h-auto py-4">
+                  <Button variant="outline" className="w-full justify-start h-auto py-3 sm:py-4 text-xs sm:text-sm">
                     <div className="text-left">
-                      <div className="font-semibold mb-1">Create New Story</div>
-                      <div className="text-sm text-muted-foreground">Start writing your next article</div>
+                      <div className="font-semibold mb-0.5 sm:mb-1">Create Story</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Write article</div>
                     </div>
                   </Button>
                 </Link>
 
                 <Link href="/blog">
-                  <Button variant="outline" className="w-full justify-start h-auto py-4">
+                  <Button variant="outline" className="w-full justify-start h-auto py-3 sm:py-4 text-xs sm:text-sm">
                     <div className="text-left">
-                      <div className="font-semibold mb-1">View All Stories</div>
-                      <div className="text-sm text-muted-foreground">Browse published articles</div>
+                      <div className="font-semibold mb-0.5 sm:mb-1">All Stories</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Browse articles</div>
                     </div>
                   </Button>
                 </Link>
 
                 <Link href="/admin/create?type=recipes">
-                  <Button variant="outline" className="w-full justify-start h-auto py-4">
+                  <Button variant="outline" className="w-full justify-start h-auto py-3 sm:py-4 text-xs sm:text-sm">
                     <div className="text-left">
-                      <div className="font-semibold mb-1">Create New Recipe</div>
-                      <div className="text-sm text-muted-foreground">Share a delicious recipe</div>
+                      <div className="font-semibold mb-0.5 sm:mb-1">Create Recipe</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Share recipe</div>
                     </div>
                   </Button>
                 </Link>
 
                 <Link href="/recipes">
-                  <Button variant="outline" className="w-full justify-start h-auto py-4">
+                  <Button variant="outline" className="w-full justify-start h-auto py-3 sm:py-4 text-xs sm:text-sm">
                     <div className="text-left">
-                      <div className="font-semibold mb-1">View All Recipes</div>
-                      <div className="text-sm text-muted-foreground">Browse published recipes</div>
+                      <div className="font-semibold mb-0.5 sm:mb-1">All Recipes</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Browse recipes</div>
                     </div>
                   </Button>
                 </Link>
@@ -394,27 +542,24 @@ export default function AdminDashboard() {
                 <p className="text-sm text-muted-foreground mt-3">Loading posts...</p>
               </div>
             ) : (
-              <>
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          Blog Posts
-                          <span className="text-sm font-normal text-muted-foreground">
-                            ({posts.length})
-                          </span>
-                        </CardTitle>
-                        <CardDescription>Manage your blog content</CardDescription>
-                      </div>
-                      <Link href="/admin/create">
-                        <Button>
-                          Create New Post
-                        </Button>
-                      </Link>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        Blog Posts
+                        <span className="text-sm font-normal text-muted-foreground">
+                          ({posts.length})
+                        </span>
+                      </CardTitle>
+                      <CardDescription>Manage your blog content</CardDescription>
                     </div>
-                  </CardHeader>
-                  <CardContent>
+                    <Link href="/admin/create">
+                      <Button>Create New Post</Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
                   {posts.length === 0 ? (
                     <div className="text-center py-16">
                       <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -424,102 +569,92 @@ export default function AdminDashboard() {
                       </Link>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-shadow-gray bg-muted/30">
-                            <th className="text-left px-4 py-3 font-semibold text-foreground w-24">Image</th>
-                            <th className="text-left px-4 py-3 font-semibold text-foreground">Title</th>
-                            <th className="text-left px-4 py-3 font-semibold text-foreground w-32">Date</th>
-                            <th className="text-center px-4 py-3 font-semibold text-foreground w-32">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {posts.map((post) => (
-                            <tr key={post.id} className="border-b border-shadow-gray hover:bg-muted/20 transition-colors">
-                              <td className="px-4 py-3">
-                                {post.image ? (
-                                  <img
-                                    src={post.image}
-                                    alt={post.title}
-                                    className="w-16 h-16 object-cover rounded"
-                                  />
+                    <PaginatedTable
+                      data={posts}
+                      columns={[
+                        {
+                          key: "image",
+                          header: "Image",
+                          hideOnMobile: false,
+                          render: (post) => (
+                            post.image ? (
+                              <img src={post.image} alt={post.title} className="w-12 h-12 object-cover rounded" />
+                            ) : (
+                              <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                                <FileText className="w-4 h-4 text-muted-foreground" />
+                              </div>
+                            )
+                          ),
+                        },
+                        {
+                          key: "title",
+                          header: "Title",
+                          render: (post) => (
+                            <div>
+                              <p className="font-medium text-foreground line-clamp-1">{post.title}</p>
+                              {post.excerpt && (
+                                <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{post.excerpt}</p>
+                              )}
+                            </div>
+                          ),
+                        },
+                        {
+                          key: "date",
+                          header: "Date",
+                          hideOnMobile: true,
+                          render: (post) => new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                        },
+                        {
+                          key: "actions",
+                          header: "Actions",
+                          render: (post) => (
+                            <div className="flex items-center justify-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                title="Copy post URL"
+                                onClick={() => handleCopyPostUrl(post.slug)}
+                              >
+                                {copiedSlug === post.slug ? (
+                                  <Check className="w-4 h-4 text-primary" />
                                 ) : (
-                                  <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
-                                    <FileText className="w-6 h-6 text-muted-foreground" />
-                                  </div>
+                                  <Copy className="w-4 h-4" />
                                 )}
-                              </td>
-                              <td className="px-4 py-3">
-                                <div>
-                                  <p className="font-medium text-foreground line-clamp-1">{post.title}</p>
-                                  {post.excerpt && (
-                                    <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{post.excerpt}</p>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 text-muted-foreground">
-                                {new Date(post.date).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="flex items-center justify-center gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0"
-                                    title="Copy post URL"
-                                    onClick={() => handleCopyPostUrl(post.slug)}
-                                  >
-                                    {copiedSlug === post.slug ? (
-                                      <Check className="w-4 h-4 text-primary" />
-                                    ) : (
-                                      <Copy className="w-4 h-4" />
-                                    )}
-                                  </Button>
-                                  <Link href={`/blog/${post.slug}`} target="_blank">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 w-8 p-0"
-                                      title="View post"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </Button>
-                                  </Link>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0"
-                                    title="Edit post"
-                                    onClick={() => handleEditPost(post.slug)}
-                                  >
-                                    <Pencil className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                                    title="Delete post"
-                                    onClick={() => handleDeletePost(post.slug, post.title)}
-                                    disabled={deletingPost === post.slug}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                              </Button>
+                              <Link href={`/blog/${post.slug}`} target="_blank">
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" title="View post">
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </Link>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                title="Edit post"
+                                onClick={() => handleEditPost(post.slug)}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                                title="Delete post"
+                                onClick={() => handleDeletePost(post.slug, post.title)}
+                                disabled={deletingPost === post.slug}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ),
+                        },
+                      ]}
+                      pageSize={10}
+                    />
                   )}
                 </CardContent>
               </Card>
-              </>
             )}
           </div>
         )}
@@ -532,27 +667,24 @@ export default function AdminDashboard() {
                 <p className="text-sm text-muted-foreground mt-3">Loading recipes...</p>
               </div>
             ) : (
-              <>
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          Recipes
-                          <span className="text-sm font-normal text-muted-foreground">
-                            ({recipes.length})
-                          </span>
-                        </CardTitle>
-                        <CardDescription>Manage your recipes</CardDescription>
-                      </div>
-                      <Link href="/admin/create?type=recipes">
-                        <Button>
-                          Create New Recipe
-                        </Button>
-                      </Link>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        Recipes
+                        <span className="text-sm font-normal text-muted-foreground">
+                          ({recipes.length})
+                        </span>
+                      </CardTitle>
+                      <CardDescription>Manage your recipes</CardDescription>
                     </div>
-                  </CardHeader>
-                  <CardContent>
+                    <Link href="/admin/create?type=recipes">
+                      <Button>Create New Recipe</Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
                   {recipes.length === 0 ? (
                     <div className="text-center py-16">
                       <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -562,102 +694,92 @@ export default function AdminDashboard() {
                       </Link>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-shadow-gray bg-muted/30">
-                            <th className="text-left px-4 py-3 font-semibold text-foreground w-24">Image</th>
-                            <th className="text-left px-4 py-3 font-semibold text-foreground">Title</th>
-                            <th className="text-left px-4 py-3 font-semibold text-foreground w-32">Date</th>
-                            <th className="text-center px-4 py-3 font-semibold text-foreground w-32">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {recipes.map((recipe) => (
-                            <tr key={recipe.id} className="border-b border-shadow-gray hover:bg-muted/20 transition-colors">
-                              <td className="px-4 py-3">
-                                {recipe.image ? (
-                                  <img
-                                    src={recipe.image}
-                                    alt={recipe.title}
-                                    className="w-16 h-16 object-cover rounded"
-                                  />
+                    <PaginatedTable
+                      data={recipes}
+                      columns={[
+                        {
+                          key: "image",
+                          header: "Image",
+                          hideOnMobile: false,
+                          render: (recipe) => (
+                            recipe.image ? (
+                              <img src={recipe.image} alt={recipe.title} className="w-12 h-12 object-cover rounded" />
+                            ) : (
+                              <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                                <FileText className="w-4 h-4 text-muted-foreground" />
+                              </div>
+                            )
+                          ),
+                        },
+                        {
+                          key: "title",
+                          header: "Title",
+                          render: (recipe) => (
+                            <div>
+                              <p className="font-medium text-foreground line-clamp-1">{recipe.title}</p>
+                              {recipe.excerpt && (
+                                <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{recipe.excerpt}</p>
+                              )}
+                            </div>
+                          ),
+                        },
+                        {
+                          key: "date",
+                          header: "Date",
+                          hideOnMobile: true,
+                          render: (recipe) => new Date(recipe.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                        },
+                        {
+                          key: "actions",
+                          header: "Actions",
+                          render: (recipe) => (
+                            <div className="flex items-center justify-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                title="Copy recipe URL"
+                                onClick={() => handleCopyRecipeUrl(recipe.slug)}
+                              >
+                                {copiedSlug === recipe.slug ? (
+                                  <Check className="w-4 h-4 text-primary" />
                                 ) : (
-                                  <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
-                                    <FileText className="w-6 h-6 text-muted-foreground" />
-                                  </div>
+                                  <Copy className="w-4 h-4" />
                                 )}
-                              </td>
-                              <td className="px-4 py-3">
-                                <div>
-                                  <p className="font-medium text-foreground line-clamp-1">{recipe.title}</p>
-                                  {recipe.excerpt && (
-                                    <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{recipe.excerpt}</p>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 text-muted-foreground">
-                                {new Date(recipe.date).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="flex items-center justify-center gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0"
-                                    title="Copy recipe URL"
-                                    onClick={() => handleCopyRecipeUrl(recipe.slug)}
-                                  >
-                                    {copiedSlug === recipe.slug ? (
-                                      <Check className="w-4 h-4 text-primary" />
-                                    ) : (
-                                      <Copy className="w-4 h-4" />
-                                    )}
-                                  </Button>
-                                  <Link href={`/recipes/${recipe.slug}`} target="_blank">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 w-8 p-0"
-                                      title="View recipe"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </Button>
-                                  </Link>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0"
-                                    title="Edit recipe"
-                                    onClick={() => handleEditRecipe(recipe.slug)}
-                                  >
-                                    <Pencil className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                                    title="Delete recipe"
-                                    onClick={() => handleDeleteRecipe(recipe.slug, recipe.title)}
-                                    disabled={deletingRecipe === recipe.slug}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                              </Button>
+                              <Link href={`/recipes/${recipe.slug}`} target="_blank">
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" title="View recipe">
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </Link>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                title="Edit recipe"
+                                onClick={() => handleEditRecipe(recipe.slug)}
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                                title="Delete recipe"
+                                onClick={() => handleDeleteRecipe(recipe.slug, recipe.title)}
+                                disabled={deletingRecipe === recipe.slug}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ),
+                        },
+                      ]}
+                      pageSize={10}
+                    />
                   )}
                 </CardContent>
               </Card>
-              </>
             )}
           </div>
         )}
