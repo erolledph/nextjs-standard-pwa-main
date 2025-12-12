@@ -2,14 +2,17 @@ import { NextResponse } from "next/server"
 import { isAdminAuthenticated } from "@/lib/auth"
 import { validateSlug } from "@/lib/validation"
 import { clearCacheByNamespace } from "@/lib/cache"
+import { handleApiError, ApiError } from "@/lib/api-error-handler"
 
 export const runtime = 'edge'
 
 export async function PUT(request: Request) {
+  const requestId = crypto.randomUUID()
+
   try {
     const authenticated = await isAdminAuthenticated()
     if (!authenticated) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      throw new ApiError(401, "Unauthorized", "UNAUTHORIZED")
     }
 
     const { 
@@ -28,29 +31,18 @@ export async function PUT(request: Request) {
       difficulty 
     } = await request.json()
 
-    console.log("[PUT /api/recipes/update] Received data:", {
-      slug,
-      titleLength: title?.length,
-      contentLength: content?.length,
-      prepTimeLength: prepTime?.length,
-      cookTimeLength: cookTime?.length,
-      servingsLength: servings?.length,
-      ingredientsLength: Array.isArray(ingredients) ? ingredients.length : 0,
-      difficulty,
-    })
-
     // Validate slug format to prevent path traversal
     const validation = validateSlug(slug)
     if (!validation.valid) {
-      console.error("[PUT /api/recipes/update] Validation errors:", validation.errors)
-      return NextResponse.json(
-        { error: "Validation failed", details: validation.errors },
-        { status: 400 }
+      throw new ApiError(
+        400,
+        validation.errors.join("; "),
+        "VALIDATION_FAILED"
       )
     }
 
     if (!title || !content) {
-      return NextResponse.json({ error: "Title and content are required" }, { status: 400 })
+      throw new ApiError(400, "Title and content are required", "MISSING_FIELDS")
     }
 
     const owner = process.env.GITHUB_OWNER || ""
@@ -58,7 +50,7 @@ export async function PUT(request: Request) {
     const token = process.env.GITHUB_TOKEN || ""
 
     if (!owner || !repo || !token) {
-      return NextResponse.json({ error: "GitHub configuration missing" }, { status: 500 })
+      throw new ApiError(500, "GitHub configuration missing", "CONFIG_ERROR")
     }
 
     const filename = `${slug}.md`
@@ -74,9 +66,9 @@ export async function PUT(request: Request) {
 
     if (!getResponse.ok) {
       if (getResponse.status === 404) {
-        return NextResponse.json({ error: "Recipe not found" }, { status: 404 })
+        throw new ApiError(404, "Recipe not found", "NOT_FOUND")
       }
-      return NextResponse.json({ error: "Failed to fetch recipe from GitHub" }, { status: 500 })
+      throw new ApiError(500, "Failed to fetch recipe from GitHub", "GITHUB_ERROR")
     }
 
     const fileData = await getResponse.json()
@@ -147,9 +139,7 @@ ${content}
     })
 
     if (!updateResponse.ok) {
-      const error = await updateResponse.json()
-      console.error("[PUT /api/recipes/update] GitHub API error:", error)
-      return NextResponse.json({ error: "Failed to update recipe on GitHub" }, { status: 500 })
+      throw new ApiError(500, "Failed to update recipe on GitHub", "GITHUB_ERROR")
     }
 
     // Invalidate all relevant caches when recipe is updated
@@ -157,11 +147,9 @@ ${content}
     clearCacheByNamespace("recipes")
 
     const result = await updateResponse.json()
-    console.log("[PUT /api/recipes/update] Recipe updated successfully:", slug)
     return NextResponse.json({ success: true, data: result, message: "Recipe updated successfully" })
   } catch (error) {
-    console.error("[PUT /api/recipes/update] Error:", error)
-    return NextResponse.json({ error: "Failed to update recipe" }, { status: 500 })
+    return handleApiError(error, requestId)
   }
 }
 

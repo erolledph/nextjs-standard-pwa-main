@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       email,
       content,
       createdAt: new Date(),
-      approved: true, // Auto-approve all comments
+      approved: false, // Require manual admin approval
       ...(parentId && { parentId }),
     })
 

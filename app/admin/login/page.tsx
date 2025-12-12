@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,9 +10,18 @@ import { Label } from "@/components/ui/label"
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("")
+  const [csrfToken, setCsrfToken] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    // Fetch CSRF token on mount
+    fetch("/api/auth/login")
+      .then(res => res.json())
+      .then(data => setCsrfToken(data.csrfToken))
+      .catch(err => setError("Failed to initialize login form"))
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -23,7 +32,7 @@ export default function AdminLoginPage() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, csrfToken }),
       })
 
       const data = await response.json()
@@ -66,12 +75,17 @@ export default function AdminLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoFocus
+                  disabled={!csrfToken}
                 />
               </div>
 
               {error && <p className="text-sm text-destructive">{error}</p>}
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading || !csrfToken}
+              >
                 {loading ? "Logging in..." : "Login"}
               </Button>
             </form>

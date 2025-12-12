@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { firestoreQuery, firestoreAdd } from '@/lib/firebase-admin'
 import { checkRateLimit } from '@/lib/rateLimiter'
+import { handleApiError, ApiError, validateRequiredFields } from '@/lib/api-error-handler'
 
 export const runtime = 'edge'
 
+function isValidEmail(email: string): boolean {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return regex.test(email)
+}
+
 export async function POST(request: NextRequest) {
+  const requestId = crypto.randomUUID()
+
   try {
     // Rate limiting: 5 subscriptions per hour per IP
     const ip =
@@ -19,34 +27,31 @@ export async function POST(request: NextRequest) {
     })
 
     if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: 'Too many subscription attempts. Please try again later.' },
-        { status: 429 }
+      throw new ApiError(
+        429,
+        'Too many subscription attempts. Please try again later.',
+        'RATE_LIMIT_EXCEEDED'
       )
     }
 
     const { email, source, postSlug } = await request.json()
 
     // Validation
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'email is required' },
-        { status: 400 }
-      )
+    const required = validateRequiredFields({ email }, ['email'])
+    if (!required.valid) {
+      throw new ApiError(400, required.errors.join('; '), 'MISSING_FIELDS')
+    }
+
+    if (typeof email !== 'string') {
+      throw new ApiError(400, 'email must be a string', 'INVALID_TYPE')
     }
 
     if (!isValidEmail(email)) {
-      return NextResponse.json(
-        { error: 'invalid email format' },
-        { status: 400 }
-      )
+      throw new ApiError(400, 'Invalid email format', 'INVALID_EMAIL')
     }
 
     if (email.length > 254) {
-      return NextResponse.json(
-        { error: 'email is too long' },
-        { status: 400 }
-      )
+      throw new ApiError(400, 'email is too long', 'INVALID_EMAIL')
     }
 
     // Check for duplicates
@@ -56,9 +61,10 @@ export async function POST(request: NextRequest) {
     )
 
     if (emailExists) {
-      return NextResponse.json(
-        { error: 'You are already subscribed' },
-        { status: 409 }
+      throw new ApiError(
+        409,
+        'You are already subscribed',
+        'DUPLICATE_EMAIL'
       )
     }
 
@@ -73,10 +79,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!subscriberId) {
-      return NextResponse.json(
-        { error: 'Failed to subscribe' },
-        { status: 500 }
-      )
+      throw new ApiError(500, 'Failed to subscribe', 'DATABASE_ERROR')
     }
 
     return NextResponse.json(
@@ -87,16 +90,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('Error subscribing:', error)
-    return NextResponse.json(
-      { error: 'Failed to subscribe' },
-      { status: 500 }
-    )
+    return handleApiError(error, requestId)
   }
-}
-
-function isValidEmail(email: string): boolean {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return regex.test(email)
 }
 
