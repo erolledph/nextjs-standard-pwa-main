@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Download } from 'lucide-react'
+import { PaginatedTable } from '@/components/admin/PaginatedTable'
+import type { Column } from '@/components/admin/PaginatedTable'
 import type { Subscriber } from '@/types/subscribers'
 
 export function SubscribersTab() {
@@ -90,45 +92,59 @@ export function SubscribersTab() {
               No subscribers yet
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/30">
-                    <th className="px-4 py-3 text-left font-semibold text-foreground">Email</th>
-                    <th className="px-4 py-3 text-left font-semibold text-foreground">Subscribed</th>
-                    <th className="px-4 py-3 text-left font-semibold text-foreground">Blog Post</th>
-                    <th className="px-4 py-3 text-left font-semibold text-foreground">Source</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subscribers.map((subscriber) => (
-                    <tr key={subscriber.id} className="border-b hover:bg-muted/20 transition-colors">
-                      <td className="px-4 py-3 text-sm">{subscriber.email}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {new Date(subscriber.subscribedAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {subscriber.postSlug ? (
-                          <a
-                            href={`/blog/${subscriber.postSlug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline"
-                          >
-                            {subscriber.postSlug}
-                          </a>
-                        ) : (
-                          'N/A'
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {subscriber.source || 'website'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <PaginatedTable
+              data={subscribers}
+              columns={[
+                {
+                  key: "email",
+                  header: "Email",
+                  hideOnMobile: false,
+                  render: (subscriber) => (
+                    <span className="text-sm font-medium">{subscriber.email}</span>
+                  ),
+                },
+                {
+                  key: "subscribedAt",
+                  header: "Subscribed",
+                  hideOnMobile: true,
+                  render: (subscriber) => (
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(subscriber.subscribedAt).toLocaleDateString()}
+                    </span>
+                  ),
+                },
+                {
+                  key: "postSlug",
+                  header: "Blog Post",
+                  hideOnMobile: true,
+                  render: (subscriber) => (
+                    subscriber.postSlug ? (
+                      <a
+                        href={`/blog/${subscriber.postSlug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-sm"
+                      >
+                        {subscriber.postSlug}
+                      </a>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">N/A</span>
+                    )
+                  ),
+                },
+                {
+                  key: "source",
+                  header: "Source",
+                  hideOnMobile: true,
+                  render: (subscriber) => (
+                    <span className="text-sm text-muted-foreground">
+                      {subscriber.source || 'website'}
+                    </span>
+                  ),
+                },
+              ]}
+              pageSize={20}
+            />
           )}
         </CardContent>
       </Card>

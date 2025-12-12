@@ -1,14 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/Badge"
 import {
@@ -22,6 +14,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { Eye, ArrowRight, Trash2 } from "lucide-react"
+import { PaginatedTable } from "@/components/admin/PaginatedTable"
+import type { Column } from "@/components/admin/PaginatedTable"
 
 export function AIRecipesTab() {
   const [recipes, setRecipes] = useState<any[]>([])
@@ -190,47 +185,73 @@ export function AIRecipesTab() {
       {recipes.length === 0 ? (
         <p>No AI-generated recipes found.</p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Cuisine</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recipes.map(recipe => (
-              <TableRow key={recipe.id}>
-                <TableCell className="font-medium">{recipe.title}</TableCell>
-                <TableCell>{recipe.cuisine}</TableCell>
-                <TableCell>
+        <PaginatedTable
+          data={recipes}
+          columns={[
+            {
+              key: "title",
+              header: "Title",
+              render: (recipe) => (
+                <div className="font-medium text-foreground line-clamp-1">{recipe.title}</div>
+              ),
+            },
+            {
+              key: "cuisine",
+              header: "Cuisine",
+              hideOnMobile: true,
+              render: (recipe) => (
+                <span className="text-muted-foreground">{recipe.cuisine || "—"}</span>
+              ),
+            },
+            {
+              key: "createdAt",
+              header: "Created",
+              hideOnMobile: true,
+              render: (recipe) => (
+                <span className="text-sm text-muted-foreground">
                   {formatDate(recipe.createdAt)}
-                </TableCell>
-                <TableCell className="space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => handleView(recipe)}>
-                    View
+                </span>
+              ),
+            },
+            {
+              key: "actions",
+              header: "Actions",
+              render: (recipe) => (
+                <div className="flex items-center justify-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                    title="View recipe"
+                    onClick={() => handleView(recipe)}
+                  >
+                    <Eye className="w-4 h-4" />
                   </Button>
                   <Button
-                    variant="default"
                     size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0"
+                    title="Convert to post"
                     onClick={() => handleConvertToPost(recipe)}
                     disabled={isConverting}
                   >
-                    {isConverting ? "Converting..." : "Convert to Post"}
+                    <ArrowRight className="w-4 h-4" />
                   </Button>
                   <Button
-                    variant="destructive"
                     size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                    title="Delete recipe"
                     onClick={() => handleDeleteClick(recipe.id)}
                   >
-                    Delete
+                    <Trash2 className="w-4 h-4" />
                   </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </div>
+              ),
+            },
+          ]}
+          pageSize={10}
+        />
       )}
 
       {/* View Recipe Modal */}
