@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -89,31 +89,32 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
 
           {/* Enhanced Search Bar */}
           <form onSubmit={handleSearch} className="mb-12 mt-12">
-            <div className="relative">
-              <div className="flex gap-3 flex-col sm:flex-row items-center">
-                {/* Search Input */}
-                <div className="flex-1 w-full relative">
-                  <input
-                    type="text"
-                    placeholder="pasta, chicken, dessert, articles..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full px-6 py-4 rounded-lg border border-input bg-background text-foreground placeholder-foreground/50 ${interactive.transition} focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent`}
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-accent transition-colors"
-                  >
-                    <Search className="w-5 h-5 text-primary" />
-                  </button>
-                </div>
+            <div className="w-full flex gap-2 items-stretch">
+              {/* Search Input */}
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="pasta, chicken, dessert, articles..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`w-full px-6 py-4 rounded-lg border border-input bg-background text-foreground placeholder-foreground/50 ${interactive.transition} focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent`}
+                />
                 <button
                   type="submit"
-                  className="px-8 py-4 rounded-md bg-primary hover:bg-primary/90 text-white font-semibold transition-all hover:shadow-lg active:scale-95 whitespace-nowrap"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-accent transition-colors"
+                  aria-label="Search"
                 >
-                  Search
+                  <Search className="w-5 h-5 text-primary" />
                 </button>
               </div>
+              {/* Search Button - responsive text */}
+              <button
+                type="submit"
+                className="px-4 sm:px-8 py-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold transition-all hover:shadow-lg active:scale-95 flex items-center justify-center whitespace-nowrap"
+              >
+                <span className="hidden sm:inline">Search</span>
+                <span className="sm:hidden">Go</span>
+              </button>
             </div>
           </form>
 
@@ -170,7 +171,7 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                 </div>
                 <div className="mt-8 text-center">
                   <Link href="/blog" className="inline-flex items-center justify-center px-6 py-3 rounded-md border-2 border-primary text-primary hover:bg-primary/5 font-semibold transition-all">
-                    View All Stories →
+                    View All Stories 
                   </Link>
                 </div>
               </div>
@@ -206,7 +207,7 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                 </div>
                 <div className="mt-8 text-center">
                   <Link href="/recipes" className="inline-flex items-center justify-center px-6 py-3 rounded-md border-2 border-primary text-primary hover:bg-primary/5 font-semibold transition-all">
-                    Browse All Recipes →
+                    Browse All Recipes 
                   </Link>
                 </div>
               </div>
@@ -217,4 +218,3 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
     </main>
   )
 }
-

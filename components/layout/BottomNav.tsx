@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
@@ -31,16 +31,11 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
-              className="flex flex-col items-center justify-center py-2 px-4 gap-1 transition-all duration-200 hover:opacity-80"
+              className={`flex flex-col items-center justify-center py-2 px-4 gap-1 transition-all duration-200 hover:opacity-80 ${active ? 'text-primary' : 'text-muted-foreground'}`}
               aria-label={label}
             >
-              <Icon
-                className="w-6 h-6 transition-all"
-                style={{
-                  color: active ? "#FF7518" : "#8b8078",
-                }}
-              />
-              <span className={`text-xs font-medium transition-colors`} style={{ color: active ? "#FF7518" : "#8b8078" }}>
+              <Icon className="w-6 h-6 transition-all" />
+              <span className="text-xs font-medium transition-colors">
                 {label}
               </span>
             </Link>

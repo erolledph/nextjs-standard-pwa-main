@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
@@ -90,22 +90,22 @@ export function Header() {
       <div className="mx-auto max-w-7xl px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
 
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-          <UtensilsCrossed className="w-6 h-6" style={{ color: '#FF7518' }} />
-          <span className="hidden sm:inline text-lg font-bold tracking-tight" style={{ color: '#FF7518', fontFamily: 'Georgia, serif' }}>World Food Recipes</span>
-          <span className="sm:hidden text-sm font-bold tracking-tight" style={{ color: '#FF7518', fontFamily: 'Georgia, serif' }}>WFR</span>
+          <UtensilsCrossed className="w-6 h-6 text-primary" />
+          <span className="hidden sm:inline text-lg font-bold tracking-tight text-primary" style={{ fontFamily: 'Georgia, serif' }}>World Food Recipes</span>
+          <span className="sm:hidden text-sm font-bold tracking-tight text-primary" style={{ fontFamily: 'Georgia, serif' }}>WFR</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/recipes" className="text-sm font-medium transition-colors" style={{ color: '#8b8078' }} onMouseEnter={(e) => e.currentTarget.style.color = '#FF7518'} onMouseLeave={(e) => e.currentTarget.style.color = '#8b8078'}>
+          <Link href="/recipes" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded px-2 py-1">
             Recipes
           </Link>
-          <Link href="/videos" className="text-sm font-medium transition-colors" style={{ color: '#8b8078' }} onMouseEnter={(e) => e.currentTarget.style.color = '#FF7518'} onMouseLeave={(e) => e.currentTarget.style.color = '#8b8078'}>
+          <Link href="/videos" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded px-2 py-1">
             Videos
           </Link>
-          <Link href="/blog" className="text-sm font-medium transition-colors" style={{ color: '#8b8078' }} onMouseEnter={(e) => e.currentTarget.style.color = '#FF7518'} onMouseLeave={(e) => e.currentTarget.style.color = '#8b8078'}>
+          <Link href="/blog" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded px-2 py-1">
             Blog
           </Link>
-          <Link href="/favorites" className="text-sm font-medium transition-colors" style={{ color: '#8b8078' }} onMouseEnter={(e) => e.currentTarget.style.color = '#FF7518'} onMouseLeave={(e) => e.currentTarget.style.color = '#8b8078'}>
+          <Link href="/favorites" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded px-2 py-1">
             Favorites
           </Link>
         </nav>
@@ -116,10 +116,7 @@ export function Header() {
               {/* Desktop: Show button with text */}
               <button
                 onClick={handleInstallClick}
-                className="hidden md:inline-flex items-center gap-2 font-bold py-2 px-4 rounded transition-colors"
-                style={{ backgroundColor: '#FF7518', color: '#ffffff' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E66A0F'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF7518'}
+                className="hidden md:inline-flex items-center gap-2 font-bold py-2 px-4 rounded bg-primary hover:bg-primary/90 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
                 aria-label="Install app"
               >
                 <Download className="w-4 h-4" />
@@ -129,10 +126,7 @@ export function Header() {
               {/* Mobile: Show button with text and icon */}
               <button
                 onClick={handleInstallClick}
-                className="md:hidden flex items-center gap-2 font-bold py-2 px-3 rounded transition-colors"
-                style={{ backgroundColor: '#FF7518', color: '#ffffff' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E66A0F'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF7518'}
+                className="md:hidden flex items-center gap-2 font-bold py-2 px-3 rounded bg-primary hover:bg-primary/90 text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
                 aria-label="Install app"
               >
                 <Download className="w-4 h-4" />
@@ -143,7 +137,7 @@ export function Header() {
           
           <button
             onClick={toggleTheme}
-            className="flex items-center justify-center text-sm text-foreground/50 hover:text-foreground/70 transition-colors p-2 rounded-md hover:bg-muted"
+            className="flex items-center justify-center text-sm text-foreground/50 hover:text-foreground/70 transition-colors p-2 rounded-md hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             aria-label="Toggle theme"
             suppressHydrationWarning
           >
@@ -162,4 +156,3 @@ export function Header() {
     </header>
   )
 }
-
