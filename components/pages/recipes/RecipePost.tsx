@@ -35,6 +35,17 @@ interface RecipePostProps {
   recipe: RecipeData
 }
 
+// Helper: Convert time string like "15 minutes" to ISO 8601 format "PT15M"
+function convertToISO8601Time(timeStr: string | undefined): string | undefined {
+  if (!timeStr) return undefined
+  
+  const match = timeStr.match(/(\d+)/)
+  if (!match) return undefined
+  
+  const minutes = match[1]
+  return `PT${minutes}M`
+}
+
 export function RecipePost({ recipe }: RecipePostProps) {
   const { isFavorited, toggleFavorite, mounted } = useFavorites()
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
@@ -67,8 +78,8 @@ export function RecipePost({ recipe }: RecipePostProps) {
       "@type": "Person",
       "name": recipe.author || "World Food Recipes"
     },
-    ...(recipe.prepTime && { "prepTime": recipe.prepTime.replace(/\s+/g, '').toLowerCase().includes('min') ? `PT${recipe.prepTime.match(/(\d+)/)?.[1]}M` : recipe.prepTime }),
-    ...(recipe.cookTime && { "cookTime": recipe.cookTime.replace(/\s+/g, '').toLowerCase().includes('min') ? `PT${recipe.cookTime.match(/(\d+)/)?.[1]}M` : recipe.cookTime }),
+    ...(recipe.prepTime && { "prepTime": convertToISO8601Time(recipe.prepTime) }),
+    ...(recipe.cookTime && { "cookTime": convertToISO8601Time(recipe.cookTime) }),
     ...(recipe.servings && { "recipeYield": recipe.servings }),
     "recipeIngredient": recipe.ingredients || [],
     "recipeInstructions": recipe.instructions && recipe.instructions.length > 0 
