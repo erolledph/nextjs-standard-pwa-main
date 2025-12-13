@@ -1,18 +1,40 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+export interface InputProps extends React.ComponentProps<"input"> {
+  error?: string
+  helperText?: string
+  label?: string
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, error, helperText, label, ...props }, ref) => {
     return (
-      <input
-        type={type}
-        className={cn(
-          "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-          className,
+      <div className="w-full space-y-1.5">
+        {label && (
+          <label className="block text-sm font-medium text-foreground">
+            {label}
+          </label>
         )}
-        ref={ref}
-        {...props}
-      />
+        <input
+          type={type}
+          className={cn(
+            "flex h-10 w-full rounded-lg border border-input bg-background px-4 py-2 text-base placeholder:text-muted-foreground transition-all duration-200",
+            "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
+            error && "border-destructive focus:ring-destructive/50",
+            className,
+          )}
+          ref={ref}
+          {...props}
+        />
+        {(error || helperText) && (
+          <p className={cn("text-xs", error ? "text-destructive" : "text-muted-foreground")}>
+            {error || helperText}
+          </p>
+        )}
+      </div>
     )
   },
 )

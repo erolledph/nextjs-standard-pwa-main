@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { BlogListClient } from "./BlogListClient"
 import { fetchContentFromGitHub } from "@/lib/github"
 import { breadcrumbSchema, collectionPageSchema, siteConfig, getCanonicalUrl } from "@/lib/seo"
+import { responsive, typography, spacing } from "@/lib/design-system"
 
 interface BlogPost {
   id: string
@@ -33,9 +34,9 @@ export async function BlogListServer() {
   if (error) {
     return (
       <main className="min-h-screen bg-background">
-        <div className="container px-4 sm:px-8 mx-auto xl:px-5 max-w-screen-lg py-16 md:py-24">
+        <div className={responsive.pageContainer}>
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground">{error}</h1>
+            <h1 className={`${typography.heading.h1} text-foreground`}>{error}</h1>
           </div>
           <div className="text-center">
             <Link href="/">

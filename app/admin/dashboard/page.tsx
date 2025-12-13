@@ -13,6 +13,7 @@ import { AIRecipesTab } from "@/components/admin/AIRecipesTab"
 import { CommentsTab } from "@/components/admin/CommentsTab"
 import { SubscribersTab } from "@/components/admin/SubscribersTab"
 import { PaginatedTable } from "@/components/admin/PaginatedTable"
+import { typography, responsive, spacing, gradients, interactive } from "@/lib/design-system"
 import type { Column } from "@/components/admin/PaginatedTable"
 
 interface BlogPost {

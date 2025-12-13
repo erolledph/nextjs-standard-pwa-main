@@ -1,6 +1,7 @@
 import { RecipePost } from "@/components/pages/recipes/RecipePost"
 import { fetchContentFromGitHub } from "@/lib/github"
 import type { Metadata } from "next"
+import { responsive, typography } from "@/lib/design-system"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ""
 
@@ -86,8 +87,8 @@ export default async function RecipePostPage({ params }: { params: Promise<{ slu
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Recipe Not Found</h1>
-          <p className="text-gray-600 mb-8">The recipe you're looking for doesn't exist.</p>
+          <h1 className={typography.heading.h1}>Recipe Not Found</h1>
+          <p className="text-muted-foreground mb-8 mt-4">The recipe you're looking for doesn't exist.</p>
           <a href="/recipes" className="text-primary hover:underline font-semibold">
             ← Back to Recipes
           </a>

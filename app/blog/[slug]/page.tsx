@@ -1,6 +1,7 @@
 import { BlogPost } from "@/components/pages/blog/BlogPost"
 import { fetchPostsFromGitHub } from "@/lib/github"
 import type { Metadata } from "next"
+import { responsive, typography } from "@/lib/design-system"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ""
 
@@ -81,9 +82,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   if (!post) {
     return (
       <main className="min-h-screen bg-background px-4 py-12">
-        <div className="mx-auto max-w-4xl">
+        <div className={responsive.pageContainer}>
           <div className="mb-8 text-center">
-            <h1 className="text-2xl font-bold text-foreground">Post not found</h1>
+            <h1 className={typography.heading.h1}>Post not found</h1>
           </div>
         </div>
       </main>

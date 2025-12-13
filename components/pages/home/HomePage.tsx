@@ -8,6 +8,7 @@ import { BlogPostCard } from "@/components/blog/BlogPostCard"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
 import { BlogPostCardSkeleton } from "@/components/blog/BlogPostCardSkeleton"
 import { RecipePostCardSkeleton } from "@/components/blog/RecipePostCardSkeleton"
+import { typography, responsive, gradients, spacing, interactive } from "@/lib/design-system"
 
 interface Post {
   id: string
@@ -62,17 +63,17 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative w-full min-h-screen flex flex-col items-center justify-center px-6 py-12 overflow-hidden">
+      <div className={`relative w-full min-h-screen flex flex-col items-center justify-center ${spacing.pageX} ${spacing.pageY} overflow-hidden`}>
         {/* Background Gradient and Decorative Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/5 -z-10" />
+        <div className={`absolute inset-0 ${gradients.heroVertical} -z-10`} />
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10" />
         
-        <div className="w-full max-w-4xl">
+        <div className={`w-full ${spacing.container.lg}`}>
  
           {/* Main Headline */}
           <div className="text-center mb-8">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6" style={{ fontFamily: 'Georgia, serif' }}>
+            <h1 className={`${typography.display.lg} mb-6`}>
               <span className="bg-gradient-to-r from-foreground via-primary to-primary bg-clip-text text-transparent">
                 Cook Something
               </span>
@@ -81,7 +82,7 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                 Amazing Today
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className={`${typography.body.lg} text-muted-foreground max-w-2xl mx-auto`}>
               Discover thousands of delicious recipes from cuisines around the world. Easy, fresh, and inspiring.
             </p>
           </div>
@@ -97,7 +98,7 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                     placeholder="pasta, chicken, dessert, articles..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-6 py-4 rounded-md border border-border bg-background text-foreground placeholder-foreground/50 shadow-xs transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    className={`w-full px-6 py-4 rounded-lg border border-input bg-background text-foreground placeholder-foreground/50 ${interactive.transition} focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent`}
                   />
                   <button
                     type="submit"
