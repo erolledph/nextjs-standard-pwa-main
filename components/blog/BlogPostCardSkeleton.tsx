@@ -22,44 +22,41 @@ export function BlogPostCardSkeleton({
   }
 
   return (
-    <article className="border-b border-shadow-gray pb-12 last:border-b-0">
-      <div className="flex flex-col sm:flex-row sm:gap-8 gap-4 items-start">
-        <div className="flex-1 w-full">
-          <div className="flex items-center gap-3 mb-4">
-            <Skeleton
-              className={`${avatarSizeClasses[titleSize === "small" ? "small" : "medium"]} rounded-full`}
-            />
-            <div className="flex-1">
-              <Skeleton className="h-4 w-24" />
-            </div>
-          </div>
+    <article className="group rounded-lg overflow-hidden border border-shadow-gray bg-background hover:bg-muted/50">
+      {/* Image Skeleton */}
+      <Skeleton className="w-full h-48 md:h-56" />
 
-          <Skeleton
-            className={`${titleHeightClasses[titleSize]} w-full mb-3`}
-          />
-          <Skeleton className={`${titleHeightClasses[titleSize]} w-3/4 mb-4`} />
-
-          <div className="space-y-2 mb-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/3" />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-1" />
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-1" />
-            <Skeleton className="h-6 w-16 rounded-full" />
-            <Skeleton className="h-6 w-16 rounded-full" />
-          </div>
+      {/* Content Skeleton */}
+      <div className="p-5 md:p-6 flex flex-col min-h-[280px]">
+        {/* Title Skeleton */}
+        <div className="space-y-2 mb-3">
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-5 w-4/5" />
         </div>
 
-        {showImage && (
-          <div className="hidden sm:block w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
-            <Skeleton className="w-full h-full rounded-sm" />
+        {/* Excerpt Skeleton */}
+        <div className="space-y-2 mb-3 flex-1">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+
+        {/* Tags Skeleton */}
+        <div className="flex flex-wrap gap-2 mb-3">
+          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+
+        {/* Footer Skeleton */}
+        <div className="flex items-center gap-1 text-xs text-muted-foreground pt-3 border-t border-border mt-auto flex-wrap">
+          <div className="flex items-center gap-1">
+            <Skeleton className="h-5 w-5 rounded-full" />
+            <Skeleton className="h-3 w-16" />
           </div>
-        )}
+          <Skeleton className="h-3 w-1" />
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-3 w-1" />
+          <Skeleton className="h-3 w-16" />
+        </div>
       </div>
     </article>
   )

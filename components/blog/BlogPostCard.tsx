@@ -70,20 +70,20 @@ export function BlogPostCard({
         </div>
 
         {/* Blog Info */}
-        <div className="flex-1 p-5 md:p-6 flex flex-col">
+        <div className="flex-1 p-5 md:p-6 flex flex-col min-h-[280px]">
           <h3 className="text-lg md:text-xl font-bold text-foreground dark:text-white mb-2 line-clamp-2 group-hover:text-primary transition-colors" style={{ fontFamily: 'Georgia, serif' }}>
             {title}
           </h3>
 
           {excerpt && (
-            <p className="text-sm md:text-base text-muted-foreground mb-4 line-clamp-2 leading-relaxed flex-1">
+            <p className="text-sm md:text-base text-muted-foreground mb-3 line-clamp-2 leading-relaxed flex-1">
               {excerpt}
             </p>
           )}
 
           {/* Tags */}
           {tags && tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-3">
               {tags.slice(0, 2).map((tag) => (
                 <span key={tag} className="text-xs font-medium tracking-wider uppercase px-2 py-1 rounded-full bg-muted text-foreground">
                   {tag}
@@ -93,7 +93,7 @@ export function BlogPostCard({
           )}
 
           {/* Metadata */}
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground pt-4 border-t border-shadow-gray mt-auto">
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground pt-3 border-t border-shadow-gray mt-auto">
             <div className="flex items-center gap-1">
               <img
                 src="/avatar.svg"

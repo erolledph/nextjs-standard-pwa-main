@@ -99,7 +99,7 @@ export function RecipePostCard({
         </div>
 
         {/* Recipe Info */}
-        <div className="flex-1 p-5 md:p-6 flex flex-col">
+        <div className="flex-1 p-5 md:p-6 flex flex-col min-h-[280px]">
           <h3 className="text-lg md:text-xl font-bold text-foreground dark:text-white mb-2 line-clamp-2 group-hover:text-primary transition-colors" style={{ fontFamily: 'Georgia, serif' }}>
             {title}
           </h3>
