@@ -38,10 +38,18 @@ interface SearchResult {
   freshResponse?: any
 }
 
+interface ErrorState {
+  type: "quota" | "network" | "validation" | "generic"
+  title: string
+  message: string
+  icon: string
+  timeRemaining?: string
+}
+
 export function AIChefPageNew() {
   const [isLoading, setIsLoading] = useState(false)
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ErrorState | null>(null)
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null)
   const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null)
   const [stage, setStage] = useState<"form" | "results" | "recipe">("form")
@@ -117,7 +125,12 @@ export function AIChefPageNew() {
       setActiveTab("suggestions")
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Search failed"
-      setError(errorMessage)
+      setError({
+        type: "generic",
+        title: "Search Failed",
+        message: "We couldn't search for recipes. Please try again.",
+        icon: "🔍"
+      })
     } finally {
       setIsLoading(false)
     }
@@ -131,122 +144,53 @@ export function AIChefPageNew() {
     setError(null)
 
     try {
-      const { GoogleGenerativeAI } = await import("@google/generative-ai")
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-
-      if (!apiKey) throw new Error("Gemini API key not configured")
-
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" })
-
-      const userPrompt = `Generate a delicious authentic ${formData.country} recipe featuring ${formData.protein} with these characteristics:
-- Description: ${formData.description}
-- Taste profile: ${formData.taste.join(", ")}
-- Key ingredients: ${formData.ingredients.slice(0, 5).join(", ")}
-
-Create a creative and appetizing recipe title that describes the dish. Return ONLY the JSON object with no additional text.
-
-CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required fields:
-{
-  "title": "A creative and appetizing recipe name",
-  "description": "A short 1-2 sentence description of the dish",
-  "servings": 4,
-  "prepTime": "15 minutes",
-  "cookTime": "45 minutes",
-  "totalTime": "1 hour",
-  "difficulty": "Medium",
-  "ingredients": [
-    {"item": "ingredient name", "amount": "2", "unit": "cups"}
-  ],
-  "instructions": [
-    "First instruction step"
-  ],
-  "nutritionPer100g": {"calories": 250, "protein": 20, "carbs": 30, "fat": 10},
-  "cuisine": "${formData.country}"
-}`
-
-      const generativeResponse = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0,
-          topP: 0.95,
-          topK: 40,
-          maxOutputTokens: 2048,
-          responseMimeType: "application/json",
+      // Call backend API to generate recipe using Groq
+      const response = await fetch("/api/ai-chef/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          description: formData.description,
+          country: formData.country,
+          protein: formData.protein,
+          taste: formData.taste,
+          ingredients: formData.ingredients,
+        }),
       })
 
-      const text = generativeResponse.response.text()
-      const cleanText = text
-        .replace(/^```json\n?/, "")
-        .replace(/\n?```$/, "")
-        .trim()
-      const freshResponse = JSON.parse(cleanText)
-
-      // Helper function to generate creative title if missing
-      const generateTitle = (protein: string, country: string, tasteProfiles: string[]) => {
-        const adjectives = {
-          spicy: ["Spiced", "Fiery", "Zesty"],
-          savory: ["Savory", "Rich", "Umami-Packed"],
-          sweet: ["Sweet", "Honey-Glazed", "Caramelized"],
-          tangy: ["Tangy", "Citrus-Kissed", "Tangy"],
-          creamy: ["Creamy", "Silky", "Luxurious"],
-          light: ["Light", "Fresh", "Refreshing"],
-        }
-
-        const tasteAdj = tasteProfiles[0]?.toLowerCase() || "delicious"
-        const adjList = adjectives[tasteAdj as keyof typeof adjectives] || [
-          "Delicious",
-          "Authentic",
-          "Aromatic",
-        ]
-        const adj = adjList[Math.floor(Math.random() * adjList.length)]
-
-        // Capitalize protein
-        const proteinCapitalized =
-          protein.charAt(0).toUpperCase() + protein.slice(1).toLowerCase()
-
-        // Add country reference if it's a specific cuisine
-        const countryRef = country && country !== "International" ? ` ${country}` : ""
-
-        return `${adj}${countryRef} ${proteinCapitalized} Recipe`
+      if (!response.ok) {
+        throw new Error(`Failed to generate recipe: ${response.statusText}`)
       }
 
-      // Ensure all required fields have proper defaults
-      const enrichedResponse = {
-        title:
-          freshResponse.title?.trim() &&
-          freshResponse.title.trim() !== "Recipe Name" &&
-          freshResponse.title.trim() !== ""
-            ? freshResponse.title.trim()
-            : generateTitle(formData.protein, formData.country, formData.taste),
-        description: freshResponse.description?.trim() || "",
-        servings: freshResponse.servings || 4,
-        prepTime: (freshResponse.prepTime?.toString() || "15 minutes").trim(),
-        cookTime: (freshResponse.cookTime?.toString() || "30 minutes").trim(),
-        totalTime: (freshResponse.totalTime?.toString() || "45 minutes").trim(),
-        difficulty: (freshResponse.difficulty?.trim() || "Medium"),
-        ingredients: (freshResponse.ingredients || []).map((ing: any) => ({
-          item: ing.item?.trim() || "",
-          amount: ing.amount?.toString().trim() || "",
-          unit: ing.unit?.trim() || "",
-        })),
-        instructions: (freshResponse.instructions || []).map((inst: any) =>
-          typeof inst === "string" ? inst.trim() : inst
-        ),
-        nutritionPer100g: freshResponse.nutritionPer100g || null,
-        cuisine: freshResponse.cuisine || formData.country,
+      const data = await response.json()
+      
+      // Handle different response structures:
+      // 1. freshResponse key (normal generation response from search endpoint)
+      // 2. source: "cache_exact" (exact cache hit - recipe at top level)
+      // 3. recipe key (cached response)
+      let freshResponse = data.freshResponse || data.freshRecipe || data.recipe
+      
+      if (!freshResponse && data.source === "cache_exact") {
+        // Recipe properties are at top level for exact cache hits
+        const { source, recipePosts, cachedResults, queryHash, shouldGenerateNew, message, ...recipeData } = data
+        freshResponse = recipeData
+      }
+      
+      if (!freshResponse) {
+        console.error("Response structure:", data)
+        throw new Error("No fresh recipe generated")
       }
 
       // Save to Firebase and open recipe view immediately
       try {
-        const response = await fetch('/api/ai-chef/save', {
+        const saveResponse = await fetch('/api/ai-chef/save', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            recipe: enrichedResponse,
+            recipe: freshResponse,
             userInput: {
               description: formData.description,
               country: formData.country,
@@ -257,65 +201,27 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
           }),
         })
 
-        if (!response.ok) {
+        if (!saveResponse.ok) {
           throw new Error('Failed to save recipe to Firebase')
         }
 
-        const result = await response.json()
+        const result = await saveResponse.json()
         console.log("✅ Recipe saved to Firebase:", result.recipeId)
 
-        // Normalize and display the recipe immediately
-        const normalizedRecipe = {
-          ...enrichedResponse,
-          title: enrichedResponse.title?.toString().trim() || "AI Generated Recipe",
-          description: enrichedResponse.description?.toString().trim() || "",
-          difficulty: enrichedResponse.difficulty?.toString().trim() || "Moderate",
-          servings: enrichedResponse.servings || 4,
-          prepTime: (enrichedResponse.prepTime?.toString().trim() || "15 minutes"),
-          cookTime: (enrichedResponse.cookTime?.toString().trim() || "30 minutes"),
-          totalTime: enrichedResponse.totalTime?.toString().trim() || "",
-          ingredients: (enrichedResponse.ingredients || []).map((ing: any) => ({
-            item: ing.item?.toString().trim() || ing.name?.toString().trim() || "",
-            amount: ing.amount?.toString().trim() || ing.qty?.toString().trim() || "",
-            unit: ing.unit?.toString().trim() || ing.unit_of_measurement?.toString().trim() || "",
-          })),
-          instructions: (enrichedResponse.instructions || []).map((inst: any) => 
-            typeof inst === "string" ? inst.trim() : inst
-          ),
-        }
-
-        setSelectedRecipe(normalizedRecipe)
+        // Display the recipe immediately
+        setSelectedRecipe(freshResponse)
         setStage("recipe")
       } catch (saveErr) {
         console.error("Error saving recipe to Firebase:", saveErr)
         // Still show the recipe even if save fails
-        const normalizedRecipe = {
-          ...enrichedResponse,
-          title: enrichedResponse.title?.toString().trim() || "AI Generated Recipe",
-          description: enrichedResponse.description?.toString().trim() || "",
-          difficulty: enrichedResponse.difficulty?.toString().trim() || "Moderate",
-          servings: enrichedResponse.servings || 4,
-          prepTime: (enrichedResponse.prepTime?.toString().trim() || "15 minutes"),
-          cookTime: (enrichedResponse.cookTime?.toString().trim() || "30 minutes"),
-          totalTime: enrichedResponse.totalTime?.toString().trim() || "",
-          ingredients: (enrichedResponse.ingredients || []).map((ing: any) => ({
-            item: ing.item?.toString().trim() || ing.name?.toString().trim() || "",
-            amount: ing.amount?.toString().trim() || ing.qty?.toString().trim() || "",
-            unit: ing.unit?.toString().trim() || ing.unit_of_measurement?.toString().trim() || "",
-          })),
-          instructions: (enrichedResponse.instructions || []).map((inst: any) => 
-            typeof inst === "string" ? inst.trim() : inst
-          ),
-        }
-
-        setSelectedRecipe(normalizedRecipe)
+        setSelectedRecipe(freshResponse)
         setStage("recipe")
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate recipe"
       
       // Check if it's a quota exceeded error
-      if (errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("rate limit")) {
+      if (errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("rate limit") || errorMessage.includes("exhausted")) {
         const now = new Date()
         const tomorrow = new Date(now)
         tomorrow.setDate(tomorrow.getDate() + 1)
@@ -332,9 +238,34 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
           timeStr = `${minutes}m`
         }
         
-        setError(`🎯 Daily recipe limit reached (20 per day). Please try again in ${timeStr} or check back tomorrow!`)
+        setError({
+          type: "quota",
+          title: "Daily Recipe Limit Reached",
+          message: `You've used up today's recipe generation limit. New recipes will be available tomorrow!`,
+          timeRemaining: timeStr,
+          icon: "⏰"
+        })
+      } else if (errorMessage.includes("network") || errorMessage.includes("fetch") || errorMessage.includes("ECONNREFUSED")) {
+        setError({
+          type: "network",
+          title: "Connection Error",
+          message: "We couldn't connect to the server. Please check your internet connection and try again.",
+          icon: "🌐"
+        })
+      } else if (errorMessage.includes("invalid") || errorMessage.includes("validation")) {
+        setError({
+          type: "validation",
+          title: "Please Complete All Fields",
+          message: "Make sure you've selected a cuisine, protein, taste profile, and ingredients.",
+          icon: "✓"
+        })
       } else {
-        setError(errorMessage)
+        setError({
+          type: "generic",
+          title: "Something Went Wrong",
+          message: "We couldn't generate your recipe right now. Please try again in a moment.",
+          icon: "🎯"
+        })
       }
       console.error("Error generating fresh recipe:", err)
     } finally {
@@ -562,9 +493,43 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
 
             {/* Error Message */}
             {error && (
-              <div className="flex gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-destructive">{error}</p>
+              <div className={`p-4 rounded-lg border ${
+                error.type === "quota"
+                  ? "bg-orange-50 border-orange-300 dark:bg-orange-950 dark:border-orange-700"
+                  : error.type === "network"
+                  ? "bg-red-50 border-red-300 dark:bg-red-950 dark:border-red-700"
+                  : "bg-amber-50 border-amber-300 dark:bg-amber-950 dark:border-amber-700"
+              }`}>
+                <div className="flex gap-3">
+                  <span className="text-2xl">{error.icon}</span>
+                  <div className="flex-1">
+                    <h3 className={`font-semibold mb-1 ${
+                      error.type === "quota"
+                        ? "text-orange-900 dark:text-orange-100"
+                        : error.type === "network"
+                        ? "text-red-900 dark:text-red-100"
+                        : "text-amber-900 dark:text-amber-100"
+                    }`}>
+                      {error.title}
+                    </h3>
+                    <p className={`text-sm ${
+                      error.type === "quota"
+                        ? "text-orange-800 dark:text-orange-200"
+                        : error.type === "network"
+                        ? "text-red-800 dark:text-red-200"
+                        : "text-amber-800 dark:text-amber-200"
+                    }`}>
+                      {error.message}
+                    </p>
+                    {error.type === "quota" && error.timeRemaining && (
+                      <p className={`text-sm font-semibold mt-2 ${
+                        "text-orange-700 dark:text-orange-300"
+                      }`}>
+                        ⏰ Back tomorrow or in {error.timeRemaining}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -760,9 +725,43 @@ CRITICAL: You MUST return ONLY valid JSON in this EXACT format with ALL required
 
               {/* Error Display */}
               {error && (
-                <div className="flex gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-orange-800 dark:text-orange-200">{error}</p>
+                <div className={`p-4 rounded-lg border ${
+                  error.type === "quota"
+                    ? "bg-orange-50 border-orange-300 dark:bg-orange-950 dark:border-orange-700"
+                    : error.type === "network"
+                    ? "bg-red-50 border-red-300 dark:bg-red-950 dark:border-red-700"
+                    : "bg-amber-50 border-amber-300 dark:bg-amber-950 dark:border-amber-700"
+                }`}>
+                  <div className="flex gap-3">
+                    <span className="text-2xl">{error.icon}</span>
+                    <div className="flex-1">
+                      <h3 className={`font-semibold mb-1 ${
+                        error.type === "quota"
+                          ? "text-orange-900 dark:text-orange-100"
+                          : error.type === "network"
+                          ? "text-red-900 dark:text-red-100"
+                          : "text-amber-900 dark:text-amber-100"
+                      }`}>
+                        {error.title}
+                      </h3>
+                      <p className={`text-sm ${
+                        error.type === "quota"
+                          ? "text-orange-800 dark:text-orange-200"
+                          : error.type === "network"
+                          ? "text-red-800 dark:text-red-200"
+                          : "text-amber-800 dark:text-amber-200"
+                      }`}>
+                        {error.message}
+                      </p>
+                      {error.type === "quota" && error.timeRemaining && (
+                        <p className={`text-sm font-semibold mt-2 ${
+                          "text-orange-700 dark:text-orange-300"
+                        }`}>
+                          ⏰ Back tomorrow or in {error.timeRemaining}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

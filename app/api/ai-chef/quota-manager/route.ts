@@ -1,9 +1,9 @@
 /**
- * Quota Manager - Track and manage Gemini API free tier usage
+ * Quota Manager - Track and manage Groq API free tier usage
  * Handles daily request limits, deduplication, and graceful degradation
  * 
  * Strategy:
- * - 20 requests/day free tier limit
+ * - 14,400 requests/day free tier limit (Groq Llama 3.1 8B Instant)
  * - Request deduplication via query hashing
  * - Query normalization for better cache hits
  * - Graceful fallback to cached recipes when quota exceeded
@@ -79,7 +79,7 @@ function resetIfNewDay() {
       queryHashes: new Set(),
       queryLog: [],
     }
-    console.log(`🟢 [QUOTA] New day! Quota reset to 0/20`)
+    console.log(`🟢 [QUOTA] New day! Quota reset to 0/14,400`)
   }
 }
 
@@ -90,8 +90,8 @@ function resetIfNewDay() {
 export async function GET(request: NextRequest) {
   resetIfNewDay()
 
-  const requestsRemaining = 20 - quotaData.requestCount
-  const isExceeded = quotaData.requestCount >= 20
+  const requestsRemaining = 14400 - quotaData.requestCount
+  const isExceeded = quotaData.requestCount >= 14400
 
   return NextResponse.json({
     requestsUsed: quotaData.requestCount,
@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/ai-chef/quota-manager
- * Check if query should trigger Gemini API call or use cache
+ * Check if query should trigger Groq API call or use cache
  * 
  * Request body:
  * {
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
  * 
  * Response:
  * {
- *   shouldCallGemini: boolean,
+ *   shouldCallGroq: boolean,
  *   queryHash: string,
  *   isCached: boolean,
  *   requestsRemaining: number,
@@ -143,24 +143,24 @@ export async function POST(request: NextRequest) {
     // Check if this exact query was already processed today
     const isCached = quotaData.queryHashes.has(queryHash)
 
-    let shouldCallGemini = false
+    let shouldCallGroq = false
     let reason = ""
 
     if (isCached) {
       // Use cached result
-      shouldCallGemini = false
+      shouldCallGroq = false
       reason = "Query found in cache (ZERO COST!)"
       console.log(`🟢 [QUOTA] Cache HIT: ${reason}`)
-    } else if (quotaData.requestCount >= 20) {
-      // Quota exceeded
-      shouldCallGemini = false
-      reason = "Quota exceeded (20/20). Using suggestions instead."
+    } else if (quotaData.requestCount >= 14400) {
+      // Quota exceeded (extremely unlikely on free tier)
+      shouldCallGroq = false
+      reason = "Quota exceeded (14,400/14,400). Using suggestions instead."
       console.log(
-        `🔴 [QUOTA] Quota EXCEEDED: ${quotaData.requestCount}/20 requests used`
+        `🔴 [QUOTA] Quota EXCEEDED: ${quotaData.requestCount}/14,400 requests used`
       )
     } else {
       // New query and quota available
-      shouldCallGemini = true
+      shouldCallGroq = true
       quotaData.requestCount++
       quotaData.queryHashes.add(queryHash)
       quotaData.queryLog.push({
@@ -169,17 +169,17 @@ export async function POST(request: NextRequest) {
         timestamp: Date.now(),
         tokensUsed: tokensEstimate,
       })
-      reason = `New query. Generating fresh recipe. (${quotaData.requestCount}/20 requests used)`
+      reason = `New query. Generating fresh recipe. (${quotaData.requestCount}/14,400 requests used)`
       console.log(`🟡 [QUOTA] New query: ${reason}`)
     }
 
     return NextResponse.json({
-      shouldCallGemini,
+      shouldCallGroq,
       queryHash,
       isCached,
       requestsUsed: quotaData.requestCount,
-      requestsRemaining: Math.max(0, 20 - quotaData.requestCount),
-      isExceeded: quotaData.requestCount >= 20,
+      requestsRemaining: Math.max(0, 14400 - quotaData.requestCount),
+      isExceeded: quotaData.requestCount >= 14400,
       reason,
     })
   } catch (error) {

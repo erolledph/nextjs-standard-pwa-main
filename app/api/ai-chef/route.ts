@@ -1,13 +1,13 @@
 /**
  * AI Chef API endpoint
- * Generates recipes based on user constraints using Gemini 2.5 Flash-Lite
+ * Generates recipes based on user constraints using Groq's Llama 3.1 8B Instant
  *
  * POST /api/ai-chef
  * Body: { description, country, taste, protein, ingredients, csrfToken }
  */
 
 import { NextResponse, type NextRequest } from "next/server"
-import { generateRecipeWithAI } from "@/lib/gemini"
+import { generateRecipeWithAI } from "@/lib/groq"
 import { AIChefInputSchema, RecipeResponseSchema } from "@/lib/ai-chef-schema"
 import { verifyCSRFToken } from "@/lib/csrf"
 import { checkRateLimit } from "@/lib/rateLimiter"

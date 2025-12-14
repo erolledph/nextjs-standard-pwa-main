@@ -12,6 +12,7 @@ import { YouTubeQuotaCard } from "@/components/admin/YouTubeQuotaCard"
 import { AIRecipesTab } from "@/components/admin/AIRecipesTab"
 import { CommentsTab } from "@/components/admin/CommentsTab"
 import { SubscribersTab } from "@/components/admin/SubscribersTab"
+import { GroqQuotaTab } from "@/components/admin/GroqQuotaTab"
 import { PaginatedTable } from "@/components/admin/PaginatedTable"
 import { typography, responsive, spacing, gradients, interactive } from "@/lib/design-system"
 import type { Column } from "@/components/admin/PaginatedTable"
@@ -59,7 +60,7 @@ export default function AdminDashboard() {
     // Check for tab query parameter
     const searchParams = new URLSearchParams(window.location.search)
     const tab = searchParams.get('tab')
-    if (tab && ['overview', 'content', 'recipes', 'ai-recipes', 'stats', 'youtube', 'comments', 'subscribers'].includes(tab)) {
+    if (tab && ['overview', 'content', 'recipes', 'ai-recipes', 'stats', 'youtube', 'groq-quota', 'comments', 'subscribers'].includes(tab)) {
       setActiveTab(tab)
     }
   }, [])
@@ -310,6 +311,16 @@ export default function AdminDashboard() {
               }`}
             >
               YouTube
+            </button>
+            <button
+              onClick={() => setActiveTab("groq-quota")}
+              className={`pb-3 px-2 text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === "groq-quota"
+                  ? "text-foreground border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Groq Quota
             </button>
             <button
               onClick={() => setActiveTab("comments")}
@@ -795,6 +806,10 @@ export default function AdminDashboard() {
 
         {activeTab === "youtube" && (
           <YouTubeQuotaCard />
+        )}
+
+        {activeTab === "groq-quota" && (
+          <GroqQuotaTab />
         )}
 
         {activeTab === "comments" && (

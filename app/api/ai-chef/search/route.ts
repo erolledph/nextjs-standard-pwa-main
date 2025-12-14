@@ -179,13 +179,13 @@ async function generateNewRecipe(input: AIChefInputType, queryHash: string) {
   try {
     console.log("🟡 [GEN-1] Generating new recipe with AI...")
 
-    // Import Gemini client
-    const { generateRecipeWithAI } = await import("@/lib/gemini")
+    // Import Groq client
+    const { generateRecipeWithAI } = await import("@/lib/groq")
     
-    // Call Gemini API to generate recipe
+    // Call Groq API to generate recipe
     const recipe = await generateRecipeWithAI(input as any)
 
-    console.log("🟢 [GEN-2] Recipe generated successfully from Gemini API")
+    console.log("🟢 [GEN-2] Recipe generated successfully from Groq API")
 
     // Cache the result
     CACHED_RECIPES_DB[queryHash] = {

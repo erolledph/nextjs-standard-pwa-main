@@ -136,61 +136,7 @@ From AI Chef on World Food Recipes`
           </ol>
         </div>
 
-        {/* Nutrition Info */}
-        {recipe.nutritionInfo && (
-          <div className="mb-12 bg-card p-6 rounded-lg border border-border">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Nutrition (per serving)</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {recipe.nutritionInfo.calories && (
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground mb-1">Calories</div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {recipe.nutritionInfo.calories}
-                  </div>
-                </div>
-              )}
-              {recipe.nutritionInfo.protein && (
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground mb-1">Protein</div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {recipe.nutritionInfo.protein}
-                  </div>
-                </div>
-              )}
-              {recipe.nutritionInfo.carbs && (
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground mb-1">Carbs</div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {recipe.nutritionInfo.carbs}
-                  </div>
-                </div>
-              )}
-              {recipe.nutritionInfo.fat && (
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground mb-1">Fat</div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {recipe.nutritionInfo.fat}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* Chef's Tips */}
-        {recipe.tips && recipe.tips.length > 0 && (
-          <div className="mb-12 bg-card p-6 rounded-lg border border-border">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Chef&apos;s Tips</h2>
-            <ul className="space-y-3">
-              {recipe.tips.map((tip, idx) => (
-                <li key={idx} className="flex gap-3">
-                  <span className="text-primary font-bold mt-0.5">✓</span>
-                  <span className="text-foreground">{tip}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
 
       {/* Footer */}
