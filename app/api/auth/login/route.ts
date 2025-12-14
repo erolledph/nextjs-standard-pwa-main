@@ -1,29 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { setAdminSession, verifyPassword } from "@/lib/auth"
 import { checkRateLimit } from "@/lib/rateLimiter"
-import { generateCsrfToken } from "@/lib/csrf"
-import { handleApiError, ApiError } from "@/lib/api-error-handler"
 
 export const runtime = 'edge'
 
-export async function GET() {
-  try {
-    const csrfToken = await generateCsrfToken()
-    return NextResponse.json({ csrfToken })
-  } catch (error) {
-    return handleApiError(error)
-  }
-}
-
 export async function POST(request: NextRequest) {
-  const requestId = crypto.randomUUID()
-
   try {
     // Get client IP for rate limiting
     const ip = request.headers.get('cf-connecting-ip') ||
                request.headers.get('x-forwarded-for') ||
                'unknown'
-    
+
     // Check rate limit: 5 attempts per 15 minutes
     const rateLimit = checkRateLimit(ip, {
       maxAttempts: 5,
@@ -32,31 +19,47 @@ export async function POST(request: NextRequest) {
     })
 
     if (!rateLimit.allowed) {
-      throw new ApiError(
-        429,
-        "Too many login attempts. Please try again later.",
-        "RATE_LIMIT_EXCEEDED"
+      return NextResponse.json(
+        {
+          error: "Too many login attempts. Please try again later.",
+          retryAfter: rateLimit.retryAfter
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfter)
+          }
+        }
       )
     }
 
-    const { password, csrfToken } = await request.json()
+    const { password } = await request.json()
 
     if (!password || typeof password !== 'string') {
-      throw new ApiError(400, "Password is required", "MISSING_PASSWORD")
-    }
-
-    if (!csrfToken || typeof csrfToken !== 'string') {
-      throw new ApiError(400, "CSRF token is required", "MISSING_CSRF")
+      return NextResponse.json(
+        { error: "Password is required" },
+        { status: 400 }
+      )
     }
 
     if (!verifyPassword(password)) {
-      throw new ApiError(401, "Invalid password", "INVALID_PASSWORD")
+      return NextResponse.json(
+        {
+          error: "Invalid password",
+          remaining: rateLimit.remaining
+        },
+        { status: 401 }
+      )
     }
 
     await setAdminSession()
     return NextResponse.json({ success: true })
   } catch (error) {
-    return handleApiError(error, requestId)
+    console.error("Login error:", error)
+    return NextResponse.json(
+      { error: "Login failed" },
+      { status: 500 }
+    )
   }
 }
 

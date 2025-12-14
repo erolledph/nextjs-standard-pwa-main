@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAIRecipes } from "@/lib/firebase-admin";
-import { isAdminAuthenticated } from "@/lib/auth";
 
 export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   try {
-    const isAuthenticated = await isAdminAuthenticated();
-    if (!isAuthenticated) {
+    // Verify admin session via cookie
+    const sessionCookie = request.cookies.get('admin-session')?.value
+    if (!sessionCookie || sessionCookie !== 'true') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const recipes = await getAIRecipes(false); // Fetch all recipes, not just published

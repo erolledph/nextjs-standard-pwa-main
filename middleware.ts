@@ -5,13 +5,12 @@ const protectedRoutes = ["/admin/dashboard", "/admin/create", "/admin/comments",
 const publicAdminRoutes = ["/admin/login"]
 
 /**
- * Validate session token format (UUID, not "true")
+ * Validate session token (simple "true" string)
  */
 function isValidSessionToken(token: string): boolean {
   if (!token) return false
-  // Must be UUID format (36 chars: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  return uuidRegex.test(token)
+  // Accept the simple "true" string value
+  return token === "true"
 }
 
 export async function middleware(request: NextRequest) {
