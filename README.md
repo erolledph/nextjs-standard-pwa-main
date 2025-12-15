@@ -1,18 +1,18 @@
-# World Food Recipes - Next.js PWA & Blog Platform
+# 🌍 World Food Recipes - PWA & Blog Platform
 
 [![Next.js 15](https://img.shields.io/badge/Next.js-15.5.2-black.svg?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB.svg?style=for-the-badge&logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38BDF8.svg?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8.svg?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps)
+[![AI Chef](https://img.shields.io/badge/AI%20Chef-Groq-FF6B35.svg?style=for-the-badge)](https://groq.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
 ---
 
-**World Food Recipes** is a production-ready, high-performance **Progressive Web App (PWA)** built with the latest web technologies. It serves as a feature-rich platform for sharing recipes and blog posts, leveraging a **GitHub-based CMS** for content management. It is designed for optimal user experience, SEO, and security, and is deployable on edge networks like Cloudflare Pages.
+**World Food Recipes** is a production-ready, high-performance **Progressive Web App (PWA)** serving as a comprehensive platform for sharing recipes and blog posts with **AI-powered recipe generation**, **real-time quota monitoring**, and a **GitHub-based CMS**.
 
-🌐 **Live Demo:** [worldfoodrecipes.sbs](https://worldfoodrecipes.sbs)  
-📑 **Detailed Analysis:** See [CODEBASE_ANALYSIS.md](./CODEBASE_ANALYSIS.md) for a full breakdown.
+🌐 **Live Demo:** [worldfoodrecipes.sbs](https://worldfoodrecipes.sbs)
 
 ---
 
