@@ -3,6 +3,8 @@
  * Tracks RPM, RPD, TPM, TPD from Groq API headers
  */
 
+export const runtime = "edge"
+
 import { NextRequest, NextResponse } from "next/server"
 
 interface QuotaData {
