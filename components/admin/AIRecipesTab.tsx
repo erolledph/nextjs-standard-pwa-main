@@ -180,39 +180,49 @@ export function AIRecipesTab() {
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">AI-Generated Recipes</h3>
+    <div className="space-y-6">
+      {/* Card Header */}
+      <div className="bg-card border border-border rounded-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              AI Generated
+              <span className="text-sm font-normal text-muted-foreground">
+                ({recipes.length})
+              </span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-2">Manage your AI-generated recipes</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Table Content */}
       {recipes.length === 0 ? (
-        <p>No AI-generated recipes found.</p>
+        <div className="text-center py-16 bg-card border border-border rounded-lg">
+          <p className="text-lg text-muted-foreground mb-4">No AI-generated recipes yet</p>
+        </div>
       ) : (
-        <PaginatedTable
-          data={recipes}
-          columns={[
-            {
-              key: "title",
-              header: "Title",
-              render: (recipe) => (
-                <div className="font-medium text-foreground line-clamp-1">{recipe.title}</div>
-              ),
-            },
-            {
-              key: "cuisine",
-              header: "Cuisine",
-              hideOnMobile: true,
-              render: (recipe) => (
-                <span className="text-muted-foreground">{recipe.cuisine || "—"}</span>
-              ),
-            },
-            {
-              key: "createdAt",
-              header: "Created",
-              hideOnMobile: true,
-              render: (recipe) => (
-                <span className="text-sm text-muted-foreground">
-                  {formatDate(recipe.createdAt)}
-                </span>
-              ),
-            },
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
+          <PaginatedTable
+            data={recipes}
+            columns={[
+              {
+                key: "title",
+                header: "Title",
+                render: (recipe) => (
+                  <div className="font-medium text-foreground line-clamp-1">{recipe.title}</div>
+                ),
+              },
+              {
+                key: "createdAt",
+                header: "Date",
+                hideOnMobile: true,
+                render: (recipe) => (
+                  <span className="text-sm text-muted-foreground">
+                    {formatDate(recipe.createdAt)}
+                  </span>
+                ),
+              },
             {
               key: "actions",
               header: "Actions",
@@ -249,9 +259,10 @@ export function AIRecipesTab() {
                 </div>
               ),
             },
-          ]}
-          pageSize={10}
-        />
+            ]}
+            pageSize={10}
+          />
+        </div>
       )}
 
       {/* View Recipe Modal */}
