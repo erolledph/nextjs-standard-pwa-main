@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Search, UtensilsCrossed, Heart } from "lucide-react"
+import { Search, UtensilsCrossed, Heart, Wand2 } from "lucide-react"
 import { BlogPostCard } from "@/components/blog/BlogPostCard"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
 import { BlogPostCardSkeleton } from "@/components/blog/BlogPostCardSkeleton"
@@ -62,78 +62,88 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className={`relative w-full min-h-screen flex flex-col items-center justify-center ${spacing.pageX} ${spacing.pageY} overflow-hidden`}>
-        {/* Background Gradient and Decorative Elements */}
-        <div className={`absolute inset-0 ${gradients.heroVertical} -z-10`} />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10" />
+      {/* Hero Section - Modern UX Design */}
+      <div className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden">
+        {/* Premium Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/5 -z-10" />
         
-        <div className={`w-full ${spacing.container.lg}`}>
- 
-          {/* Main Headline */}
-          <div className="text-center mb-8">
-            <h1 className={`${typography.display.lg} mb-6`}>
-              <span className="bg-gradient-to-r from-foreground via-primary to-primary bg-clip-text text-transparent">
-                Cook Something
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-primary to-foreground bg-clip-text text-transparent">
-                Amazing Today
-              </span>
+        {/* Animated Gradient Orbs */}
+        <div className="absolute top-20 right-10 w-72 h-72 bg-gradient-to-br from-primary/30 to-purple-600/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -z-10 animate-blob" />
+        <div className="absolute -bottom-8 left-10 w-72 h-72 bg-gradient-to-br from-pink-600/20 to-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -z-10 animate-blob animation-delay-2000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-br from-orange-400/10 to-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10" />
+        
+        {/* Content Container */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-24 max-w-6xl mx-auto">
+
+          {/* Main Headline - Clean Single Color */}
+          <div className="text-center mb-10 sm:mb-14">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 sm:mb-8 text-foreground">
+              AI-Powered Recipe Search
             </h1>
-            <p className={`${typography.body.lg} text-muted-foreground max-w-2xl mx-auto`}>
-              Discover thousands of delicious recipes from cuisines around the world. Easy, fresh, and inspiring.
+            
+            {/* Subtitle - Clear Value Proposition */}
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Discover authentic recipes from around the world or generate your own with AI. 
+              <br className="hidden sm:inline" />
+              Search recipes or let AI create something delicious for you.
             </p>
           </div>
 
-          {/* Enhanced Search Bar */}
-          <form onSubmit={handleSearch} className="mb-12 mt-12">
-            <div className="w-full flex gap-2 items-stretch">
-              {/* Search Input */}
-              <div className="flex-1 relative">
+          {/* Main Search & CTA Section - Consistent Design System */}
+          <div className="mb-12 sm:mb-16 max-w-2xl mx-auto">
+            <form onSubmit={handleSearch} className="space-y-4" role="search">
+              {/* Search Bar - AI CTA pill inside on right, search button on right */}
+              <div className="relative">
                 <input
                   type="text"
-                  placeholder="pasta, chicken, dessert, articles..."
+                  placeholder="Search recipes, blog, food, ingredients..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full px-6 py-4 rounded-lg border border-input bg-background text-foreground placeholder-foreground/50 ${interactive.transition} focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent`}
+                  className="w-full px-4 pr-36 py-4 rounded-md border border-border bg-background text-foreground placeholder-foreground/50 text-base shadow-xs transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md hover:bg-accent transition-colors"
-                  aria-label="Search"
-                >
-                  <Search className="w-5 h-5 text-primary" />
-                </button>
-              </div>
-              {/* Search Button - responsive text */}
-              <button
-                type="submit"
-                className="px-4 sm:px-8 py-4 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold transition-all hover:shadow-lg active:scale-95 flex items-center justify-center whitespace-nowrap"
-              >
-                <span className="hidden sm:inline">Search</span>
-                <span className="sm:hidden">Go</span>
-              </button>
-            </div>
-          </form>
 
-          {/* Quick Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-            <Link
-              href="/recipes"
-              className="flex items-center justify-center gap-2 px-8 py-4 rounded-md bg-primary hover:bg-primary/90 text-white font-semibold transition-all hover:shadow-lg transform hover:scale-105 active:scale-95"
-            >
-              <UtensilsCrossed className="w-5 h-5" />
-              Browse Recipes
-            </Link>
-            <Link
-              href="/favorites"
-              className="flex items-center justify-center gap-2 px-8 py-4 rounded-md border-2 border-primary text-primary bg-background hover:bg-primary/5 font-semibold transition-all hover:shadow-lg transform hover:scale-105 active:scale-95"
-            >
-              <Heart className="w-5 h-5" />
-              My Favorites
-            </Link>
+                {/* Right side: AI pill and submit icon, both inside input area */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <button
+                    type="submit"
+                    className="p-2 rounded-md hover:bg-accent transition-colors"
+                    aria-label="Search"
+                  >
+                    <Search className="w-5 h-5 text-primary" />
+                  </button>
+
+                  <Link
+                    href="/ai-chef"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
+                    aria-label="AI Mode (AI Chef)"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">AI Chef</span>
+                  </Link>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          {/* Quick Navigation Pills */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center text-center">
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground">Popular Searches:</span>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {['Pasta Recipes', 'Vegan Meals', 'Desserts', 'Asian Food'].map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => {
+                    setSearchTerm(tag)
+                    setTimeout(() => {
+                      router.push(`/search?q=${encodeURIComponent(tag)}`)
+                    }, 0)
+                  }}
+                  className="px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 hover:border-primary dark:hover:border-primary/50"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
