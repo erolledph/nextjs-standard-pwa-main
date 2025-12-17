@@ -279,3 +279,69 @@
 .animation-delay-2000 {
   animation-delay: 2s;
 }
+
+/* ===== Enhanced UX Micro-interactions ===== */
+/* Smooth input focus transitions */
+@keyframes inputFocus {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 117, 24, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(255, 117, 24, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 117, 24, 0);
+  }
+}
+
+/* Button press feedback */
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Smooth fade-in for hero section */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-fade-in {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Search bar hover lift effect */
+.search-lift {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.search-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Floating label effect for inputs */
+@keyframes floatLabel {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

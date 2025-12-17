@@ -2,6 +2,7 @@ import { BlogPost } from "@/components/pages/blog/BlogPost"
 import { fetchPostsFromGitHub } from "@/lib/github"
 import type { Metadata } from "next"
 import { responsive, typography } from "@/lib/design-system"
+import { siteConfig } from "@/lib/seo"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ""
 
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: post.title,
       description: post.excerpt || post.content.substring(0, 160),
       authors: post.author ? [{ name: post.author }] : undefined,
-      keywords: [...(post.tags || []), "blog", "tech", "innovation"],
+      keywords: [...(post.tags || []), "blog", "food blog", "culinary"],
       openGraph: {
         title: post.title,
         description: post.excerpt || post.content.substring(0, 160),
@@ -55,7 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         card: "summary_large_image",
         title: post.title,
         description: post.excerpt || post.content.substring(0, 160),
-        creator: "@yourhandle",
+        creator: siteConfig.socialMedia.twitter,
         images: post.image ? [post.image] : [`${siteUrl}/og-image.svg`],
       },
       alternates: {

@@ -2,6 +2,7 @@ import { RecipePost } from "@/components/pages/recipes/RecipePost"
 import { fetchContentFromGitHub } from "@/lib/github"
 import type { Metadata } from "next"
 import { responsive, typography } from "@/lib/design-system"
+import { siteConfig } from "@/lib/seo"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ""
 
@@ -59,7 +60,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         card: "summary_large_image",
         title: recipe.title,
         description: recipe.excerpt || recipe.content.substring(0, 160),
-        creator: "@yourhandle",
+        creator: siteConfig.socialMedia.twitter,
         images: recipe.image ? [recipe.image] : [`${siteUrl}/og-image.svg`],
       },
       alternates: {
@@ -123,9 +124,37 @@ export default async function RecipePostPage({ params }: { params: Promise<{ slu
     ],
   }
 
+  // Recipe schema for Google rich snippets
+  const recipeSchema = {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: recipe.title,
+    description: recipe.excerpt || recipe.content.substring(0, 160),
+    image: recipe.image || `${siteUrl}/og-image.svg`,
+    author: {
+      "@type": "Organization",
+      name: recipe.author || siteConfig.name,
+    },
+    datePublished: recipe.date,
+    dateModified: recipe.date,
+    cuisine: recipe.tags?.[0] || "International",
+    prepTime: "PT15M",
+    cookTime: "PT30M",
+    totalTime: "PT45M",
+    recipeYield: "4 servings",
+    keywords: recipe.tags?.join(", ") || "recipe, cooking",
+  }
+
   return (
     <>
       <RecipePost recipe={recipe} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(recipeSchema),
+        }}
+        suppressHydrationWarning
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

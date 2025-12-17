@@ -45,6 +45,7 @@ interface HomePageProps {
 export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+  const [isSearching, setIsSearching] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -56,7 +57,11 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchTerm.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchTerm)}`)
+      setIsSearching(true)
+      // Simulate search transition
+      setTimeout(() => {
+        router.push(`/search?q=${encodeURIComponent(searchTerm)}`)
+      }, 200)
     }
   }
 
@@ -75,61 +80,70 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
         {/* Content Container */}
         <div className="w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-24 max-w-6xl mx-auto">
 
-          {/* Main Headline - Clean Single Color */}
-          <div className="text-center mb-10 sm:mb-14">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6 sm:mb-8 text-foreground">
-              AI-Powered Recipe Search
+          {/* Main Headline - Premium Typography with Animations */}
+          <div className="text-center mb-10 sm:mb-14 hero-fade-in">
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight leading-tight mb-4 sm:mb-6 text-foreground">
+              Recipes Meets <span className="text-orange-500">Artificial Intelligence</span>
             </h1>
             
             {/* Subtitle - Clear Value Proposition */}
-            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Discover authentic recipes from around the world or generate your own with AI. 
-              <br className="hidden sm:inline" />
-              Search recipes or let AI create something delicious for you.
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
+              Search thousands of recipes or generate personalized recipes instantly with AI.
             </p>
           </div>
 
-          {/* Main Search & CTA Section - Consistent Design System */}
-          <div className="mb-12 sm:mb-16 max-w-2xl mx-auto">
+          {/* Main Search & CTA Section - Premium UX Design */}
+          <div className="mb-12 sm:mb-16 max-w-4xl mx-auto px-0">
             <form onSubmit={handleSearch} className="space-y-4" role="search">
-              {/* Search Bar - AI CTA pill inside on right, search button on right */}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search recipes, blog, food, ingredients..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 pr-36 py-4 rounded-md border border-border bg-background text-foreground placeholder-foreground/50 text-base shadow-xs transition-colors focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                />
-
-                {/* Right side: AI pill and submit icon, both inside input area */}
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              {/* Dual Input System - Search or AI Chef */}
+              <div className="flex flex-col sm:flex-row gap-3 w-full">
+                {/* Primary Search Input */}
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search recipes, blog, food, ingredients..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    disabled={isSearching}
+                    className="w-full px-4 py-3.5 sm:py-4 rounded-lg border-2 border-border bg-background text-foreground placeholder-foreground/40 text-sm sm:text-base font-medium shadow-sm hover:border-primary/50 transition-all duration-200 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/20 disabled:opacity-60"
+                  />
+                  
+                  {/* Search Button - Primary Action on Mobile, Icon-only on Desktop */}
                   <button
                     type="submit"
-                    className="p-2 rounded-md hover:bg-accent transition-colors"
-                    aria-label="Search"
+                    disabled={isSearching || !searchTerm.trim()}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-md bg-transparent hover:bg-primary/10 text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 hover:shadow-sm active:scale-95"
+                    aria-label="Search recipes"
                   >
-                    <Search className="w-5 h-5 text-primary" />
+                    <Search className="w-5 h-5 sm:w-5 sm:h-5" />
                   </button>
-
-                  <Link
-                    href="/ai-chef"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
-                    aria-label="AI Mode (AI Chef)"
-                  >
-                    <Wand2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">AI Chef</span>
-                  </Link>
                 </div>
+
+                {/* Secondary AI Chef CTA - Primary on Desktop */}
+                <Link
+                  href="/ai-chef"
+                  className="inline-flex items-center justify-center sm:justify-start gap-2 px-5 sm:px-6 py-3.5 sm:py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-background whitespace-nowrap group"
+                  aria-label="Generate recipe with AI Chef"
+                >
+                  <Wand2 className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  <span className="text-sm sm:text-base">Generate Recipe</span>
+                </Link>
               </div>
+
+              {/* Helpful Hint - UX Guidance */}
+              <p className="text-xs sm:text-sm text-muted-foreground text-center px-4">
+                💡 <span className="hidden sm:inline">Try searching for ingredients like "chicken, garlic, tomato" or use AI to create something new</span>
+                <span className="sm:hidden">Search or generate with AI</span>
+              </p>
             </form>
           </div>
 
-          {/* Quick Navigation Pills */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center text-center">
-            <span className="text-xs sm:text-sm font-medium text-muted-foreground">Popular Searches:</span>
+          {/* Quick Navigation Pills - Trending Tags */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-center">
+            <span className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide">🔥 Trending:</span>
             <div className="flex flex-wrap gap-2 justify-center">
-              {['Pasta Recipes', 'Vegan Meals', 'Desserts', 'Asian Food'].map((tag) => (
+              {['Pasta Recipes', 'Vegan Meals', 'Desserts', 'Asian Fusion'].map((tag, idx) => (
                 <button
                   key={tag}
                   onClick={() => {
@@ -138,7 +152,8 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                       router.push(`/search?q=${encodeURIComponent(tag)}`)
                     }, 0)
                   }}
-                  className="px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 transition-all duration-200 hover:border-primary dark:hover:border-primary/50"
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                  className="px-4 py-2 rounded-full bg-muted hover:bg-primary/10 dark:bg-gray-800 dark:hover:bg-gray-700 border border-border hover:border-primary dark:border-gray-700 dark:hover:border-primary/50 text-xs font-semibold text-foreground/80 transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer group"
                 >
                   {tag}
                 </button>
