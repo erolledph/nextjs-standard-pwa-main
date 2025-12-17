@@ -30,8 +30,8 @@ export default function ContactPage() {
             </p>
                         <div className="rounded-lg border border-shadow-gray p-6 bg-muted/20 inline-block">
               <p className="text-muted-foreground mb-2">Drop me an email:</p>
-              <a href="mailto:hello@example.com" className="text-primary hover:underline text-lg">
-                youremail@mail.com
+              <a href={`mailto:${siteConfig.email}`} className="text-primary hover:underline text-lg">
+                {siteConfig.email}
               </a>
             </div>
           </section>
@@ -42,9 +42,11 @@ export default function ContactPage() {
               I'm occasionally active on these platforms:
             </p>
             <div className="flex flex-wrap gap-4">
-              <a href="https://www.facebook.com" className="text-primary hover:underline">Facebook</a>
+              <a href={`https://www.facebook.com/${siteConfig.socialMedia.facebook}`} className="text-primary hover:underline">Facebook</a>
               <span className="text-muted-foreground">•</span>
-              <a href="https://github.com" className="text-primary hover:underline">GitHub</a>
+              <a href={`https://instagram.com/${siteConfig.socialMedia.instagram}`} className="text-primary hover:underline">Instagram</a>
+              <span className="text-muted-foreground">•</span>
+              <a href={`https://twitter.com/${siteConfig.socialMedia.twitter.replace('@', '')}`} className="text-primary hover:underline">Twitter</a>
             </div>
           </section>
         </div>
