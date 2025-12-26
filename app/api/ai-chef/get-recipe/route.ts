@@ -129,7 +129,7 @@ async function generateJWT(privateKey: string, clientEmail: string): Promise<str
   const key = await jose.importPKCS8(privateKey, 'RS256')
   
   // Sign JWT using jose
-  const jwt = await jose.SignJWT(payload)
+  const jwt = await new jose.SignJWT(payload)
     .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
     .sign(key)
 
