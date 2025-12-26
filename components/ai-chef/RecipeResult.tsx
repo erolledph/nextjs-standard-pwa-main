@@ -166,9 +166,9 @@ From AI Chef on World Food Recipes
           )}
 
           {/* Recipe Description/Summary */}
-          {recipe.summary && (
+          {recipe.description && (
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              {recipe.summary}
+              {recipe.description}
             </p>
           )}
         </header>
