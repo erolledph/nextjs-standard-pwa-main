@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import * as jose from 'jose'
 
 // Use edge runtime for Cloudflare Pages compatibility
 export const runtime = "edge"
@@ -112,16 +113,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Generate JWT for Firebase service account
+// Generate JWT for Firebase service account using jose (edge runtime compatible)
 async function generateJWT(privateKey: string, clientEmail: string): Promise<string> {
-  const crypto = await import('crypto')
-  
-  const header = {
-    alg: 'RS256',
-    typ: 'JWT',
-  }
-
   const now = Math.floor(Date.now() / 1000)
+  
   const payload = {
     iss: clientEmail,
     scope: 'https://www.googleapis.com/auth/cloud-platform',
@@ -130,14 +125,14 @@ async function generateJWT(privateKey: string, clientEmail: string): Promise<str
     iat: now,
   }
 
-  const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64url')
-  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url')
-  const message = `${encodedHeader}.${encodedPayload}`
+  // Convert PEM private key to KeyLike format for jose
+  const key = await jose.importPKCS8(privateKey, 'RS256')
+  
+  // Sign JWT using jose
+  const jwt = await jose.SignJWT(payload)
+    .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
+    .sign(key)
 
-  const sign = crypto.createSign('RSA-SHA256')
-  sign.update(message)
-  const signature = sign.sign(privateKey, 'base64url')
-
-  return `${message}.${signature}`
+  return jwt
 }
 
