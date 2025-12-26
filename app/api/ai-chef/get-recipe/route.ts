@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
-// Use nodejs runtime for better compatibility with Firebase REST API
-export const runtime = "nodejs"
+// Use edge runtime for Cloudflare Pages compatibility
+export const runtime = "edge"
 
 export async function GET(request: NextRequest) {
   try {

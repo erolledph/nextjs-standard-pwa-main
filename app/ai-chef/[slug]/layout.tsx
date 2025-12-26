@@ -1,6 +1,8 @@
 import { Metadata } from "next"
 import { getRecipeImage } from "@/lib/recipeImages"
 
+export const runtime = 'edge'
+
 async function fetchRecipe(id: string) {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'}/api/ai-chef/get-recipe?id=${id}`, {
