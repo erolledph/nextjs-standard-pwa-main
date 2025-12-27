@@ -139,23 +139,23 @@ async function isImageAccessible(url: string): Promise<boolean> {
  */
 function getDefaultRecipeImage(cuisine?: string): string {
   const defaultImages: Record<string, string> = {
-    african: 'https://images.unsplash.com/photo-1504674900769-7c168f8bd17e?w=800&h=500&fit=crop&q=80', // African food
-    asian: 'https://images.unsplash.com/photo-1537047902294-6d01f4bbe3e0?w=800&h=500&fit=crop&q=80', // Asian noodles
-    asian_fusion: 'https://images.unsplash.com/photo-1543521521-b2b0c2e1f78d?w=800&h=500&fit=crop&q=80', // Fusion cuisine
-    caribbean: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=500&fit=crop&q=80', // Caribbean food
-    chinese: 'https://images.unsplash.com/photo-1585238341710-4dd0287b2226?w=800&h=500&fit=crop&q=80', // Chinese stir fry
-    european: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80', // European cuisine
-    french: 'https://images.unsplash.com/photo-1484723991212-4601c1227ae0?w=800&h=500&fit=crop&q=80', // French cuisine
-    indian: 'https://images.unsplash.com/photo-1596040541827-e5267edb7e9e?w=800&h=500&fit=crop&q=80', // Indian curry
-    italian: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&h=500&fit=crop&q=80', // Italian pasta
-    japanese: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800&h=500&fit=crop&q=80', // Japanese sushi
-    korean: 'https://images.unsplash.com/photo-1599599810694-b3ac228c94d5?w=800&h=500&fit=crop&q=80', // Korean food
-    mediterranean: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80', // Mediterranean
-    mexican: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=500&fit=crop&q=80', // Mexican food
-    middle_eastern: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&h=500&fit=crop&q=80', // Middle Eastern
-    thai: 'https://images.unsplash.com/photo-1589273346635-87d9d96b0908?w=800&h=500&fit=crop&q=80', // Thai food
-    vietnamese: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=500&fit=crop&q=80', // Vietnamese pho
-    default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80', // Generic food (European)
+    african: 'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=800&h=500&fit=crop&q=80', // Tagine
+    asian: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=500&fit=crop&q=80', // Buddha Bowl
+    asian_fusion: 'https://images.unsplash.com/photo-1631100732613-6b65da9a343d?w=800&h=500&fit=crop&q=80', // Bao Buns
+    caribbean: 'https://images.unsplash.com/photo-1598514983318-2f64f8f4796c?w=800&h=500&fit=crop&q=80', // Jerk Chicken
+    chinese: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800&h=500&fit=crop&q=80', // Fried Rice
+    european: 'https://images.unsplash.com/photo-1547573854-74d2a71d0826?w=800&h=500&fit=crop&q=80', // Plated Meat/Veg
+    french: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&h=500&fit=crop&q=80', // Croissants/Pastries
+    indian: 'https://images.unsplash.com/photo-1738291422837-85761f82a10e?w=800&h=500&fit=crop&q=80', // Chicken Tikka
+    italian: 'https://images.unsplash.com/photo-1473093226795-af9932fe5856?w=800&h=500&fit=crop&q=80', // Pesto Pasta
+    japanese: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&h=500&fit=crop&q=80', // Sushi Platter
+    korean: 'https://images.unsplash.com/photo-1661366394743-fe30fe478ef7?w=800&h=500&fit=crop&q=80', // Bibimbap
+    mediterranean: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&h=500&fit=crop&q=80', // Fresh Salad
+    mexican: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=500&fit=crop&q=80', // Tacos
+    middle_eastern: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800&h=500&fit=crop&q=80', // Kebabs
+    thai: 'https://images.unsplash.com/photo-1675150277436-9c7348972c11?w=800&h=500&fit=crop&q=80', // Pad Thai
+    vietnamese: 'https://images.unsplash.com/photo-1509072619873-adb3dc289b50?w=800&h=500&fit=crop&q=80', // Spring Rolls
+    default: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=500&fit=crop&q=80', // Generic Food Table
   }
 
   const key = cuisine?.toLowerCase().replace(/\s+/g, '_') || 'default'
