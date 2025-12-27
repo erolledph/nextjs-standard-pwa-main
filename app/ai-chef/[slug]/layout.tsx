@@ -45,8 +45,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const ogDescription = `${recipe.title} - AI-generated ${recipe.cuisine || 'delicious'} recipe with easy instructions. Prep: ${recipe.prepTime}, Cook: ${recipe.cookTime}. Perfect for dinner!`
 
   // Fetch recipe image for OG and Twitter cards
-  const recipeImage = await getRecipeImage(recipe.title, recipe.cuisine || 'food')
-  const imageUrl = recipeImage.url || '/og-image.jpg'
+  let imageUrl = `${baseUrl}/og-image.svg` // Use local fallback as default
+  
+  try {
+    const recipeImage = await getRecipeImage(recipe.title, recipe.cuisine || 'food')
+    if (recipeImage?.url) {
+      imageUrl = recipeImage.url
+    }
+  } catch (error) {
+    console.warn('Failed to fetch recipe image, using default:', error)
+    // Keep default imageUrl
+  }
+
+  // Ensure imageUrl is absolute (starts with http or /)
+  if (!imageUrl.startsWith('http')) {
+    imageUrl = `${baseUrl}${imageUrl}`
+  }
 
   return {
     title: `${recipe.title} Recipe | Easy AI Chef - World Food Recipes`,
@@ -68,7 +82,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
           width: 1200,
           height: 800,
           alt: recipe.title,
-          type: 'image/jpeg',
+          type: 'image/svg+xml',
         },
       ],
     },
