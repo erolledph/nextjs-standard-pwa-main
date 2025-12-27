@@ -89,6 +89,16 @@ export const RecipeResponseSchema = z.object({
     .default([]),
 
   nutritionInfo: NutritionInfoSchema.optional(),
+  
+  cuisine: z
+    .string()
+    .max(50, "Cuisine name too long")
+    .optional(),
+    
+  imageUrl: z
+    .string()
+    .url("Invalid image URL")
+    .optional(),
 })
 
 export type RecipeResponseType = z.infer<typeof RecipeResponseSchema>
