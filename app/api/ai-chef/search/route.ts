@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { AIChefInputSchema, type AIChefInputType } from "@/lib/ai-chef-schema"
 import { generateQueryHash, calculateQuerySimilarity, findBestMatches } from "@/lib/fuzzy-match"
 import { fetchContentFromGitHub, type Recipe } from "@/lib/github"
+import { getRecipeImage } from "@/lib/recipeImages"
 
 export const runtime = 'edge'
 
@@ -186,6 +187,19 @@ async function generateNewRecipe(input: AIChefInputType, queryHash: string) {
     const recipe = await generateRecipeWithAI(input as any)
 
     console.log("🟢 [GEN-2] Recipe generated successfully from Groq API")
+
+    // Fetch and cache recipe image
+    console.log("🟡 [GEN-2b] Fetching recipe image...")
+    try {
+      const recipeImage = await getRecipeImage(recipe.title, recipe.cuisine || input.country || 'food')
+      if (recipeImage?.url) {
+        recipe.imageUrl = recipeImage.url
+        console.log("🟢 [GEN-2c] Recipe image cached:", recipeImage.url.substring(0, 50) + "...")
+      }
+    } catch (error) {
+      console.warn("🟡 [GEN-2d] Failed to fetch recipe image (non-critical):", error)
+      // Don't fail the recipe generation if image fetch fails
+    }
 
     // Cache the result
     CACHED_RECIPES_DB[queryHash] = {

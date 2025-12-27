@@ -155,7 +155,7 @@ function getDefaultRecipeImage(cuisine?: string): string {
     middle_eastern: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&h=500&fit=crop&q=80', // Middle Eastern
     thai: 'https://images.unsplash.com/photo-1589273346635-87d9d96b0908?w=800&h=500&fit=crop&q=80', // Thai food
     vietnamese: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=500&fit=crop&q=80', // Vietnamese pho
-    default: 'https://images.unsplash.com/photo-1495654633220-2f6e66e73833?w=800&h=500&fit=crop&q=80', // Generic food
+    default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80', // Generic food (European)
   }
 
   const key = cuisine?.toLowerCase().replace(/\s+/g, '_') || 'default'
