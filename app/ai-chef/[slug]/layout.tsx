@@ -36,23 +36,29 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
   }
 
-  const description = recipe.description || `Try this AI-generated ${recipe.cuisine || 'delicious'} recipe. Prep: ${recipe.prepTime}, Cook: ${recipe.cookTime}`
+  const description = recipe.description || `Easy AI-generated ${recipe.cuisine || 'delicious'} recipe. Prep time: ${recipe.prepTime}, Cooking time: ${recipe.cookTime}. Learn how to make this tasty dish at home.`
+
+  // Create more detailed OG title (50-60 chars optimal)
+  const ogTitle = `${recipe.title} Recipe - Easy ${recipe.cuisine || 'Homemade'} Cooking`
+  
+  // Create more detailed description (110-160 chars optimal)
+  const ogDescription = `${recipe.title} - AI-generated ${recipe.cuisine || 'delicious'} recipe with easy instructions. Prep: ${recipe.prepTime}, Cook: ${recipe.cookTime}. Perfect for dinner!`
 
   // Fetch recipe image for OG and Twitter cards
   const recipeImage = await getRecipeImage(recipe.title, recipe.cuisine || 'food')
   const imageUrl = recipeImage.url || '/og-image.jpg'
 
   return {
-    title: `${recipe.title} | AI Chef - World Food Recipes`,
+    title: `${recipe.title} Recipe | Easy AI Chef - World Food Recipes`,
     description: description,
-    keywords: [recipe.title, 'AI recipe', 'cooking', recipe.cuisine].filter(Boolean),
+    keywords: [recipe.title, 'AI recipe', 'cooking', 'easy recipe', recipe.cuisine, 'how to make'].filter(Boolean),
     authors: [{ name: 'AI Chef' }],
     creator: 'World Food Recipes AI Chef',
     publisher: 'World Food Recipes',
     metadataBase: new URL(baseUrl),
     openGraph: {
-      title: recipe.title,
-      description: description,
+      title: ogTitle,
+      description: ogDescription,
       url: pageUrl,
       type: 'website',
       siteName: 'World Food Recipes - AI Chef',
@@ -62,13 +68,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
           width: 1200,
           height: 800,
           alt: recipe.title,
+          type: 'image/jpeg',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: recipe.title,
-      description: description,
+      title: ogTitle,
+      description: ogDescription,
       images: [imageUrl],
       creator: '@worldfoodrecipes',
     },
