@@ -44,17 +44,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Create more detailed description (110-160 chars optimal)
   const ogDescription = `${recipe.title} - AI-generated ${recipe.cuisine || 'delicious'} recipe with easy instructions. Prep: ${recipe.prepTime}, Cook: ${recipe.cookTime}. Perfect for dinner!`
 
-  // Fetch recipe image for OG and Twitter cards
-  let imageUrl = `${baseUrl}/og-image.svg` // Use local fallback as default
+  // Use cached recipe image or fetch one
+  let imageUrl = `${baseUrl}/og-image.svg` // Local fallback
   
-  try {
-    const recipeImage = await getRecipeImage(recipe.title, recipe.cuisine || 'food')
-    if (recipeImage?.url) {
-      imageUrl = recipeImage.url
+  if (recipe.imageUrl) {
+    // Recipe already has a cached image
+    imageUrl = recipe.imageUrl
+  } else {
+    // Fetch image for recipes without cached image
+    try {
+      const recipeImage = await getRecipeImage(recipe.title, recipe.cuisine || 'food')
+      if (recipeImage?.url) {
+        imageUrl = recipeImage.url
+      }
+    } catch (error) {
+      console.warn('Failed to fetch recipe image, using default:', error)
     }
-  } catch (error) {
-    console.warn('Failed to fetch recipe image, using default:', error)
-    // Keep default imageUrl
   }
 
   // Ensure imageUrl is absolute (starts with http or /)

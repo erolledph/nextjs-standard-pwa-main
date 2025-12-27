@@ -98,6 +98,7 @@ export async function GET(request: NextRequest) {
       protein: fields.protein?.stringValue,
       tasteProfile: fields.tasteProfile?.stringValue,
       createdAt: fields.createdAt?.timestampValue,
+      imageUrl: fields.imageUrl?.stringValue, // Cached image URL if available
     }
 
     return NextResponse.json({

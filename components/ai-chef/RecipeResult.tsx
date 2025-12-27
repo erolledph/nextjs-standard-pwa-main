@@ -20,14 +20,21 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
 
-  // Fetch recipe image on mount
+  // Fetch recipe image on mount (use cached if available)
   useEffect(() => {
     const fetchImage = async () => {
+      // Use cached image if available
+      if (recipe.imageUrl) {
+        setRecipeImage(recipe.imageUrl)
+        return
+      }
+      
+      // Only fetch if recipe doesn't have cached image
       const image = await getRecipeImage(recipe.title, recipe.cuisine || 'cuisine')
       setRecipeImage(image.url)
     }
     fetchImage()
-  }, [recipe.title, recipe.cuisine])
+  }, [recipe.title, recipe.cuisine, recipe.imageUrl])
 
   const handleShare = async () => {
     // Get the domain from window.location or fallback to environment variable

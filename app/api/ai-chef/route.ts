@@ -12,6 +12,7 @@ import { AIChefInputSchema, RecipeResponseSchema } from "@/lib/ai-chef-schema"
 import { verifyCSRFToken } from "@/lib/csrf"
 import { checkRateLimit } from "@/lib/rateLimiter"
 import { setCached, getCached } from "@/lib/cache"
+import { getRecipeImage } from "@/lib/recipeImages"
 
 export const runtime = 'edge'
 
@@ -154,16 +155,29 @@ export async function POST(request: NextRequest) {
 
     const validatedRecipe = responseValidation.data
 
+    // 8b. Fetch and cache recipe image (only on edge runtime if available)
+    console.log("🟡 [API-27a] Fetching recipe image...")
+    try {
+      const recipeImage = await getRecipeImage(validatedRecipe.title, validatedRecipe.cuisine || 'food')
+      if (recipeImage?.url) {
+        validatedRecipe.imageUrl = recipeImage.url
+        console.log("🟢 [API-27b] Recipe image cached:", recipeImage.url.substring(0, 50) + "...")
+      }
+    } catch (error) {
+      console.warn("🟡 [API-27c] Failed to fetch recipe image (non-critical):", error)
+      // Don't fail the recipe generation if image fetch fails
+    }
+
     // 9. Cache successful response (24 hours)
-    console.log("🟡 [API-27] Caching recipe for 24 hours...")
+    console.log("🟡 [API-28] Caching recipe for 24 hours...")
     setCached(cacheKey, validatedRecipe, {
       ttl: 24 * 60 * 60 * 1000, // 24 hours
     })
-    console.log("🟢 [API-28] Recipe cached successfully!")
+    console.log("🟢 [API-29] Recipe cached successfully!")
 
     // 10. Return success response with Firebase save info
-    console.log("🟢 [API-29] Returning successful response")
-    console.log("ℹ️  [API-29b] Firebase save happens via background task (see /api/ai-chef/save-recipe)")
+    console.log("🟢 [API-30] Returning successful response")
+    console.log("ℹ️  [API-30b] Firebase save happens via background task (see /api/ai-chef/save-recipe)")
     return NextResponse.json(validatedRecipe, {
       headers: {
         "X-Cache": "MISS",

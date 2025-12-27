@@ -30,6 +30,7 @@ export interface RecipeResponse {
   nutritionInfo?: NutritionInfo
   nutritionPer100g?: NutritionInfo
   cuisine?: string
+  imageUrl?: string // URL to recipe image (cached from first fetch)
 }
 
 /**
