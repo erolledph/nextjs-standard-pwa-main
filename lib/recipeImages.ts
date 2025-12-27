@@ -30,6 +30,7 @@ export async function getRecipeImage(
 
     // Return cached image if still valid
     if (cached && cached.expires > Date.now()) {
+      console.log(`📸 Using cached image for: ${recipeTitle}`)
       return { url: cached.url }
     }
 
@@ -41,6 +42,8 @@ export async function getRecipeImage(
       'appetizing food',
     ]
 
+    console.log(`🔍 Fetching image for recipe: ${recipeTitle} (${cuisine})`)
+    
     for (const query of searchQueries) {
       try {
         const image = await fetchFromUnsplash(query)
@@ -51,6 +54,7 @@ export async function getRecipeImage(
             expires: Date.now() + 24 * 60 * 60 * 1000,
           })
 
+          console.log(`✅ Found image from Unsplash for query: ${query}`)
           return {
             url: image.urls.regular,
             attribution: `Photo by ${image.user.name} on Unsplash`,
@@ -63,6 +67,7 @@ export async function getRecipeImage(
     }
 
     // If all Unsplash queries fail, use fallback
+    console.log(`⚠️ No image found on Unsplash, using fallback for cuisine: ${cuisine}`)
     return { url: getDefaultRecipeImage(cuisine) }
   } catch (error) {
     console.error('Error getting recipe image:', error)
@@ -78,7 +83,7 @@ async function fetchFromUnsplash(query: string): Promise<UnsplashImage | null> {
     const accessKey = process.env.UNSPLASH_ACCESS_KEY
 
     if (!accessKey) {
-      console.warn('UNSPLASH_ACCESS_KEY not configured, using fallback images')
+      console.warn('⚠️ UNSPLASH_ACCESS_KEY not configured, using fallback images')
       return null
     }
 
@@ -134,21 +139,23 @@ async function isImageAccessible(url: string): Promise<boolean> {
  */
 function getDefaultRecipeImage(cuisine?: string): string {
   const defaultImages: Record<string, string> = {
-    african: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    asian: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    asian_fusion: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    caribbean: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    chinese: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    european: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    indian: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    italian: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    japanese: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    mediterranean: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    mexican: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    middle_eastern: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    thai: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    vietnamese: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
-    default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80',
+    african: 'https://images.unsplash.com/photo-1504674900769-7c168f8bd17e?w=800&h=500&fit=crop&q=80', // African food
+    asian: 'https://images.unsplash.com/photo-1537047902294-6d01f4bbe3e0?w=800&h=500&fit=crop&q=80', // Asian noodles
+    asian_fusion: 'https://images.unsplash.com/photo-1543521521-b2b0c2e1f78d?w=800&h=500&fit=crop&q=80', // Fusion cuisine
+    caribbean: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=500&fit=crop&q=80', // Caribbean food
+    chinese: 'https://images.unsplash.com/photo-1585238341710-4dd0287b2226?w=800&h=500&fit=crop&q=80', // Chinese stir fry
+    european: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80', // European cuisine
+    french: 'https://images.unsplash.com/photo-1484723991212-4601c1227ae0?w=800&h=500&fit=crop&q=80', // French cuisine
+    indian: 'https://images.unsplash.com/photo-1596040541827-e5267edb7e9e?w=800&h=500&fit=crop&q=80', // Indian curry
+    italian: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=800&h=500&fit=crop&q=80', // Italian pasta
+    japanese: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800&h=500&fit=crop&q=80', // Japanese sushi
+    korean: 'https://images.unsplash.com/photo-1599599810694-b3ac228c94d5?w=800&h=500&fit=crop&q=80', // Korean food
+    mediterranean: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop&q=80', // Mediterranean
+    mexican: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=500&fit=crop&q=80', // Mexican food
+    middle_eastern: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&h=500&fit=crop&q=80', // Middle Eastern
+    thai: 'https://images.unsplash.com/photo-1589273346635-87d9d96b0908?w=800&h=500&fit=crop&q=80', // Thai food
+    vietnamese: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=500&fit=crop&q=80', // Vietnamese pho
+    default: 'https://images.unsplash.com/photo-1495654633220-2f6e66e73833?w=800&h=500&fit=crop&q=80', // Generic food
   }
 
   const key = cuisine?.toLowerCase().replace(/\s+/g, '_') || 'default'
