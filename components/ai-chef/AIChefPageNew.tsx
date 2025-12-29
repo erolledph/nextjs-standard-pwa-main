@@ -145,18 +145,21 @@ export function AIChefPageNew() {
     setError(null)
 
     try {
-      // Call backend API to generate recipe using Groq
-      const response = await fetch("/api/ai-chef/search", {
+      // Step 2: Call backend API to generate fresh AI recipe via save endpoint
+      const response = await fetch("/api/ai-chef/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          description: formData.description,
-          country: formData.country,
-          protein: formData.protein,
-          taste: formData.taste,
-          ingredients: formData.ingredients,
+          userInput: {
+            description: formData.description,
+            country: formData.country,
+            protein: formData.protein,
+            taste: formData.taste,
+            ingredients: formData.ingredients,
+          },
+          shouldGenerateAI: true, // Signal to generate fresh AI recipe
         }),
       })
 
@@ -166,60 +169,18 @@ export function AIChefPageNew() {
 
       const data = await response.json()
       
-      // Handle different response structures:
-      // 1. freshResponse key (normal generation response from search endpoint)
-      // 2. source: "cache_exact" (exact cache hit - recipe at top level)
-      // 3. recipe key (cached response)
-      let freshResponse = data.freshResponse || data.freshRecipe || data.recipe
-      
-      if (!freshResponse && data.source === "cache_exact") {
-        // Recipe properties are at top level for exact cache hits
-        const { source, recipePosts, cachedResults, queryHash, shouldGenerateNew, message, ...recipeData } = data
-        freshResponse = recipeData
-      }
-      
-      if (!freshResponse) {
+      if (!data.success || !data.recipe) {
         console.error("Response structure:", data)
         throw new Error("No fresh recipe generated")
       }
 
-      // Save to Firebase and open recipe view immediately
-      try {
-        const saveResponse = await fetch('/api/ai-chef/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipe: freshResponse,
-            userInput: {
-              description: formData.description,
-              country: formData.country,
-              protein: formData.protein,
-              taste: formData.taste,
-              ingredients: formData.ingredients,
-            },
-          }),
-        })
+      const freshResponse = data.recipe
+      const recipeId = data.recipeId
 
-        if (!saveResponse.ok) {
-          throw new Error('Failed to save recipe to Firebase')
-        }
-
-        const result = await saveResponse.json()
-        console.log("✅ Recipe saved to Firebase:", result.recipeId)
-
-        // Display the recipe immediately with the recipeId
-        setRecipeId(result.recipeId)
-        setSelectedRecipe(freshResponse)
-        setStage("recipe")
-      } catch (saveErr) {
-        console.error("Error saving recipe to Firebase:", saveErr)
-        // Still show the recipe even if save fails
-        setRecipeId(null) // No ID if save failed
-        setSelectedRecipe(freshResponse)
-        setStage("recipe")
-      }
+      // Display the recipe immediately
+      setRecipeId(recipeId)
+      setSelectedRecipe(freshResponse)
+      setStage("recipe")
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate recipe"
       

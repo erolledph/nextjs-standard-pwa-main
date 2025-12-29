@@ -127,8 +127,9 @@ export async function fetchContentFromGitHub(
 
     const sorted = content.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-    // Cache the results (5 minutes = 300000ms)
-    setCached(cacheKey, sorted, { ttl: 5 * 60 * 1000 })
+    // Cache the results (1 hour = 3600000ms)
+    // Recipes don't change frequently, so longer cache reduces API calls
+    setCached(cacheKey, sorted, { ttl: 60 * 60 * 1000 })
 
     return sorted
   } catch (error) {

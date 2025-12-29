@@ -1,15 +1,14 @@
 /**
- * AI Chef API endpoint - improved version
+ * AI Chef API endpoint - Step 1: Search for suggestions
  * 1. Searches for similar cached recipes first (zero cost)
  * 2. Searches recipe posts database for matches
- * 3. Offers to generate with AI if no good matches found
+ * 3. Returns suggestions only (AI generation happens in Step 2)
  */
 
 import { NextRequest, NextResponse } from "next/server"
 import { AIChefInputSchema, type AIChefInputType } from "@/lib/ai-chef-schema"
 import { generateQueryHash, calculateQuerySimilarity, findBestMatches } from "@/lib/fuzzy-match"
 import { fetchContentFromGitHub, type Recipe } from "@/lib/github"
-import { getRecipeImage } from "@/lib/recipeImages"
 
 export const runtime = 'edge'
 
@@ -132,21 +131,11 @@ export async function POST(request: NextRequest) {
 
     console.log(`🟢 [API-11] Found ${recipePosts.length} recipe posts matching criteria`)
 
-    // Generate fresh AI recipe when:
-    // 1. No cached recipes found (similarRecipes = 0), OR
-    // 2. Found recipe posts but no cached recipes (new unique query)
-    // Skip only if we have BOTH cached recipes AND recipe posts (high confidence results)
-    let freshAIRecipe = null
-    if (similarRecipes.length === 0 || (recipePosts.length > 0 && similarRecipes.length === 0)) {
-      console.log("🟡 [API-13] Generating fresh AI recipe for unique query...")
-      freshAIRecipe = await generateNewRecipe(input, queryHash)
-    } else if (similarRecipes.length > 0 && recipePosts.length > 0) {
-      console.log(`🟢 [API-13] Have both cached (${similarRecipes.length}) and recipe posts (${recipePosts.length}), skipping generation (ZERO COST!)`)
-    } else {
-      console.log(`🟢 [API-13] Using ${similarRecipes.length} cached recipes, skipping generation (ZERO COST!)`)
-    }
+    // AI generation is deferred to Step 2 (save endpoint)
+    // Users click "Fresh Generate" button which calls /api/ai-chef/save
+    console.log("🟢 [API-13] Suggestions complete. AI generation available in Step 2")
 
-    // Return search results in order
+    // Return search results (suggestions only)
     const response = {
       queryHash,
       recipePosts: recipePosts, // Existing blog posts
@@ -155,8 +144,6 @@ export async function POST(request: NextRequest) {
         similarity: r.similarity,
         usageCount: r.usageCount,
       })), // Top 3 cached AI results
-      shouldGenerateNew: similarRecipes.length === 0 && recipePosts.length === 0,
-      freshResponse: freshAIRecipe, // Include generated recipe only if created
       source: "search",
       message: `Found ${recipePosts.length} posts and ${similarRecipes.length} cached recipes`,
     }
@@ -172,48 +159,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/ai-chef/search
- * Generate new recipe with AI (only if no good matches found)
- */
-async function generateNewRecipe(input: AIChefInputType, queryHash: string) {
-  try {
-    console.log("🟡 [GEN-1] Generating new recipe with AI...")
 
-    // Import Groq client
-    const { generateRecipeWithAI } = await import("@/lib/groq")
-    
-    // Call Groq API to generate recipe
-    const recipe = await generateRecipeWithAI(input as any)
-
-    console.log("🟢 [GEN-2] Recipe generated successfully from Groq API")
-
-    // Fetch and cache recipe image
-    console.log("🟡 [GEN-2b] Fetching recipe image...")
-    try {
-      const recipeImage = await getRecipeImage(recipe.title, recipe.cuisine || input.country || 'food')
-      if (recipeImage?.url) {
-        recipe.imageUrl = recipeImage.url
-        console.log("🟢 [GEN-2c] Recipe image cached:", recipeImage.url.substring(0, 50) + "...")
-      }
-    } catch (error) {
-      console.warn("🟡 [GEN-2d] Failed to fetch recipe image (non-critical):", error)
-      // Don't fail the recipe generation if image fetch fails
-    }
-
-    // Cache the result
-    CACHED_RECIPES_DB[queryHash] = {
-      input,
-      recipe,
-      createdAt: new Date(),
-      usageCount: 1,
-    }
-
-    console.log("🟢 [GEN-3] Recipe cached")
-
-    return recipe
-  } catch (error) {
-    console.error("🔴 [GEN-ERROR]", error)
-    throw error
-  }
-}
