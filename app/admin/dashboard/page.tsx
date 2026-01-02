@@ -525,45 +525,43 @@ export default function AdminDashboard() {
 
             {/* Quick Actions */}
             <div className="mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-foreground">Quick Actions</h2>
-              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-6">Quick Actions</h2>
             </div>
 
             <div className="space-y-6">
-              <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-2">
+              <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <Link href="/admin/create">
-                  <Button variant="outline" className="w-full justify-start h-auto py-3 sm:py-4 text-xs sm:text-sm">
-                    <div className="text-left">
-                      <div className="font-semibold mb-0.5 sm:mb-1">Create Story</div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Write article</div>
-                    </div>
-                  </Button>
-                </Link>
-
-                <Link href="/blog">
-                  <Button variant="outline" className="w-full justify-start h-auto py-3 sm:py-4 text-xs sm:text-sm">
-                    <div className="text-left">
-                      <div className="font-semibold mb-0.5 sm:mb-1">All Stories</div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Browse articles</div>
+                  <Button className="w-full h-auto py-4 sm:py-5 bg-primary hover:bg-primary/90 text-white shadow-sm hover:shadow-md transition-all">
+                    <div className="text-left w-full">
+                      <div className="font-bold text-sm sm:text-base mb-1">Create Story</div>
+                      <div className="text-xs text-primary-foreground/90">Write a new article</div>
                     </div>
                   </Button>
                 </Link>
 
                 <Link href="/admin/create?type=recipes">
-                  <Button variant="outline" className="w-full justify-start h-auto py-3 sm:py-4 text-xs sm:text-sm">
-                    <div className="text-left">
-                      <div className="font-semibold mb-0.5 sm:mb-1">Create Recipe</div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Share recipe</div>
+                  <Button className="w-full h-auto py-4 sm:py-5 bg-amber-600 hover:bg-amber-700 text-white shadow-sm hover:shadow-md transition-all">
+                    <div className="text-left w-full">
+                      <div className="font-bold text-sm sm:text-base mb-1">Create Recipe</div>
+                      <div className="text-xs text-amber-50/90">Share a new recipe</div>
+                    </div>
+                  </Button>
+                </Link>
+
+                <Link href="/blog">
+                  <Button variant="outline" className="w-full h-auto py-4 sm:py-5 hover:bg-primary/5">
+                    <div className="text-left w-full">
+                      <div className="font-bold text-sm sm:text-base mb-1">All Stories</div>
+                      <div className="text-xs text-muted-foreground">View all articles</div>
                     </div>
                   </Button>
                 </Link>
 
                 <Link href="/recipes">
-                  <Button variant="outline" className="w-full justify-start h-auto py-3 sm:py-4 text-xs sm:text-sm">
-                    <div className="text-left">
-                      <div className="font-semibold mb-0.5 sm:mb-1">All Recipes</div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Browse recipes</div>
+                  <Button variant="outline" className="w-full h-auto py-4 sm:py-5 hover:bg-amber-50/5 dark:hover:bg-amber-950/20">
+                    <div className="text-left w-full">
+                      <div className="font-bold text-sm sm:text-base mb-1">All Recipes</div>
+                      <div className="text-xs text-muted-foreground">Browse all recipes</div>
                     </div>
                   </Button>
                 </Link>
@@ -583,19 +581,14 @@ export default function AdminDashboard() {
               <Card>
                 <CardHeader>
                   <div className="flex flex-col gap-4 sm:gap-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          Blog Posts
-                          <span className="text-sm font-normal text-muted-foreground">
-                            ({filteredPosts.length} of {posts.length})
-                          </span>
-                        </CardTitle>
-                        <CardDescription>Manage your blog content</CardDescription>
-                      </div>
-                      <Link href="/admin/create">
-                        <Button>Create New Post</Button>
-                      </Link>
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        Blog Posts
+                        <span className="text-sm font-normal text-muted-foreground">
+                          ({filteredPosts.length} of {posts.length})
+                        </span>
+                      </CardTitle>
+                      <CardDescription>Manage your blog content</CardDescription>
                     </div>
                     <input
                       type="search"
@@ -722,19 +715,14 @@ export default function AdminDashboard() {
               <Card>
                 <CardHeader>
                   <div className="flex flex-col gap-4 sm:gap-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          Recipes
-                          <span className="text-sm font-normal text-muted-foreground">
-                            ({filteredRecipes.length} of {recipes.length})
-                          </span>
-                        </CardTitle>
-                        <CardDescription>Manage your recipes</CardDescription>
-                      </div>
-                      <Link href="/admin/create?type=recipes">
-                        <Button>Create New Recipe</Button>
-                      </Link>
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        Recipes
+                        <span className="text-sm font-normal text-muted-foreground">
+                          ({filteredRecipes.length} of {recipes.length})
+                        </span>
+                      </CardTitle>
+                      <CardDescription>Manage your recipes</CardDescription>
                     </div>
                     <input
                       type="search"
