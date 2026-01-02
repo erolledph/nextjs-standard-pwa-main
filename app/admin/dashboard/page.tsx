@@ -52,6 +52,10 @@ export default function AdminDashboard() {
   const [deletingPost, setDeletingPost] = useState<string | null>(null)
   const [deletingRecipe, setDeletingRecipe] = useState<string | null>(null)
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
+  const [postSearchTerm, setPostSearchTerm] = useState("")
+  const [recipeSearchTerm, setRecipeSearchTerm] = useState("")
+  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([])
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([])
   const router = useRouter()
 
   useEffect(() => {
@@ -72,6 +76,24 @@ export default function AdminDashboard() {
       fetchRecipes()
     }
   }, [activeTab])
+
+  // Filter posts when search term or posts change
+  useEffect(() => {
+    const filtered = posts.filter(post =>
+      post.title.toLowerCase().includes(postSearchTerm.toLowerCase()) ||
+      post.slug.toLowerCase().includes(postSearchTerm.toLowerCase())
+    )
+    setFilteredPosts(filtered)
+  }, [postSearchTerm, posts])
+
+  // Filter recipes when search term or recipes change
+  useEffect(() => {
+    const filtered = recipes.filter(recipe =>
+      recipe.title.toLowerCase().includes(recipeSearchTerm.toLowerCase()) ||
+      recipe.slug.toLowerCase().includes(recipeSearchTerm.toLowerCase())
+    )
+    setFilteredRecipes(filtered)
+  }, [recipeSearchTerm, recipes])
 
   async function fetchStats() {
     try {
@@ -156,6 +178,8 @@ export default function AdminDashboard() {
       }
 
       toast.success("Post deleted successfully")
+      // Update filtered posts
+      setFilteredPosts(filteredPosts.filter(post => post.slug !== slug))
       await fetchPosts()
       await fetchStats()
     } catch (error) {
@@ -187,6 +211,8 @@ export default function AdminDashboard() {
       }
 
       toast.success("Recipe deleted successfully")
+      // Update filtered recipes
+      setFilteredRecipes(filteredRecipes.filter(recipe => recipe.slug !== slug))
       await fetchRecipes()
       await fetchStats()
     } catch (error) {
@@ -556,19 +582,28 @@ export default function AdminDashboard() {
             ) : (
               <Card>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        Blog Posts
-                        <span className="text-sm font-normal text-muted-foreground">
-                          ({posts.length})
-                        </span>
-                      </CardTitle>
-                      <CardDescription>Manage your blog content</CardDescription>
+                  <div className="flex flex-col gap-4 sm:gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          Blog Posts
+                          <span className="text-sm font-normal text-muted-foreground">
+                            ({filteredPosts.length} of {posts.length})
+                          </span>
+                        </CardTitle>
+                        <CardDescription>Manage your blog content</CardDescription>
+                      </div>
+                      <Link href="/admin/create">
+                        <Button>Create New Post</Button>
+                      </Link>
                     </div>
-                    <Link href="/admin/create">
-                      <Button>Create New Post</Button>
-                    </Link>
+                    <input
+                      type="search"
+                      placeholder="Search posts..."
+                      value={postSearchTerm}
+                      onChange={(e) => setPostSearchTerm(e.target.value)}
+                      className="px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full sm:w-64"
+                    />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -580,9 +615,14 @@ export default function AdminDashboard() {
                         <Button>Create your first post</Button>
                       </Link>
                     </div>
+                  ) : filteredPosts.length === 0 ? (
+                    <div className="text-center py-16">
+                      <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-lg text-muted-foreground mb-4">No posts found matching "{postSearchTerm}"</p>
+                    </div>
                   ) : (
                     <PaginatedTable
-                      data={posts}
+                      data={filteredPosts}
                       columns={[
                         {
                           key: "image",
@@ -681,19 +721,28 @@ export default function AdminDashboard() {
             ) : (
               <Card>
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        Recipes
-                        <span className="text-sm font-normal text-muted-foreground">
-                          ({recipes.length})
-                        </span>
-                      </CardTitle>
-                      <CardDescription>Manage your recipes</CardDescription>
+                  <div className="flex flex-col gap-4 sm:gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          Recipes
+                          <span className="text-sm font-normal text-muted-foreground">
+                            ({filteredRecipes.length} of {recipes.length})
+                          </span>
+                        </CardTitle>
+                        <CardDescription>Manage your recipes</CardDescription>
+                      </div>
+                      <Link href="/admin/create?type=recipes">
+                        <Button>Create New Recipe</Button>
+                      </Link>
                     </div>
-                    <Link href="/admin/create?type=recipes">
-                      <Button>Create New Recipe</Button>
-                    </Link>
+                    <input
+                      type="search"
+                      placeholder="Search recipes..."
+                      value={recipeSearchTerm}
+                      onChange={(e) => setRecipeSearchTerm(e.target.value)}
+                      className="px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full sm:w-64"
+                    />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -705,9 +754,14 @@ export default function AdminDashboard() {
                         <Button>Create your first recipe</Button>
                       </Link>
                     </div>
+                  ) : filteredRecipes.length === 0 ? (
+                    <div className="text-center py-16">
+                      <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-lg text-muted-foreground mb-4">No recipes found matching "{recipeSearchTerm}"</p>
+                    </div>
                   ) : (
                     <PaginatedTable
-                      data={recipes}
+                      data={filteredRecipes}
                       columns={[
                         {
                           key: "image",

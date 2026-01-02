@@ -7,17 +7,11 @@ export function RecipePostCardSkeleton() {
       <Skeleton className="w-full h-48 md:h-56" />
 
       {/* Content Skeleton */}
-      <div className="p-5 md:p-6 flex flex-col min-h-[280px]">
+      <div className="p-5 md:p-6 flex flex-col min-h-[180px]">
         {/* Title Skeleton */}
-        <div className="space-y-2 mb-3">
+        <div className="space-y-2 mb-4">
           <Skeleton className="h-6 w-full" />
           <Skeleton className="h-5 w-4/5" />
-        </div>
-
-        {/* Excerpt Skeleton */}
-        <div className="space-y-2 mb-3 flex-1">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
         </div>
 
         {/* Quick Info Metadata Skeleton */}

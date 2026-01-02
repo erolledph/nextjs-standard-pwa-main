@@ -20,6 +20,7 @@ import type { Column } from "@/components/admin/PaginatedTable"
 
 export function AIRecipesTab() {
   const [recipes, setRecipes] = useState<any[]>([])
+  const [filteredRecipes, setFilteredRecipes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedRecipe, setSelectedRecipe] = useState<any | null>(null)
@@ -28,17 +29,19 @@ export function AIRecipesTab() {
   const [recipeToDelete, setRecipeToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isConverting, setIsConverting] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
   const router = useRouter()
 
   useEffect(() => {
     async function fetchAiRecipes() {
       try {
-        const response = await fetch("/api/admin/ai-recipes") // Corrected endpoint
+        const response = await fetch("/api/admin/ai-recipes")
         if (!response.ok) {
           throw new Error("Failed to fetch AI recipes")
         }
         const data = await response.json()
         setRecipes(data.recipes)
+        setFilteredRecipes(data.recipes)
       } catch (err: any) {
         setError(err.message)
       } finally {
@@ -48,6 +51,15 @@ export function AIRecipesTab() {
 
     fetchAiRecipes()
   }, [])
+
+  // Filter recipes based on search term
+  useEffect(() => {
+    const filtered = recipes.filter(recipe =>
+      recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      recipe.id.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    setFilteredRecipes(filtered)
+  }, [searchTerm, recipes])
 
   // Helper function to safely format date
   const formatDate = (createdAt: any) => {
@@ -135,6 +147,7 @@ export function AIRecipesTab() {
       }
 
       setRecipes(recipes.filter(recipe => recipe.id !== recipeToDelete))
+      setFilteredRecipes(filteredRecipes.filter(recipe => recipe.id !== recipeToDelete))
       toast.success("AI recipe deleted successfully.")
     } catch (err: any) {
       toast.error(err.message)
@@ -183,28 +196,39 @@ export function AIRecipesTab() {
     <div className="space-y-6">
       {/* Card Header */}
       <div className="bg-card border border-border rounded-lg p-6">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex-1">
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               AI Generated
               <span className="text-sm font-normal text-muted-foreground">
-                ({recipes.length})
+                ({filteredRecipes.length} of {recipes.length})
               </span>
             </h2>
             <p className="text-sm text-muted-foreground mt-2">Manage your AI-generated recipes</p>
           </div>
+          
+          {/* Search Bar */}
+          <input
+            type="search"
+            placeholder="Search recipes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all w-full sm:w-64"
+          />
         </div>
       </div>
 
       {/* Table Content */}
-      {recipes.length === 0 ? (
+      {filteredRecipes.length === 0 ? (
         <div className="text-center py-16 bg-card border border-border rounded-lg">
-          <p className="text-lg text-muted-foreground mb-4">No AI-generated recipes yet</p>
+          <p className="text-lg text-muted-foreground mb-4">
+            {searchTerm ? `No recipes found matching "${searchTerm}"` : "No AI-generated recipes yet"}
+          </p>
         </div>
       ) : (
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           <PaginatedTable
-            data={recipes}
+            data={filteredRecipes}
             columns={[
               {
                 key: "image",
