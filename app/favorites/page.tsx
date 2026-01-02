@@ -39,7 +39,12 @@ export default function FavoritesPage() {
       
       if (regularStored) {
         try {
-          allFavorites = JSON.parse(regularStored)
+          const regularRecipes = JSON.parse(regularStored)
+          // Mark all regular recipes as NOT AI recipes
+          allFavorites = regularRecipes.map((r: any) => ({
+            ...r,
+            isAiChefRecipe: false
+          }))
         } catch (error) {
           console.error("Error loading regular favorites:", error)
         }
@@ -51,10 +56,13 @@ export default function FavoritesPage() {
         try {
           const aiIds = JSON.parse(aiStored) || []
           
-          // Fetch full details for AI recipes
+          // Create AI favorites with isAiChefRecipe: true flag
           if (aiIds.length > 0) {
+            // Fetch full details for AI recipes to get images and other data
             try {
-              const response = await fetch("/api/admin/ai-recipes")
+              const response = await fetch("/api/admin/ai-recipes", {
+                credentials: "include"
+              })
               if (response.ok) {
                 const data = await response.json()
                 const allAiRecipes = data.recipes || []
@@ -62,24 +70,29 @@ export default function FavoritesPage() {
                 // Match favorited IDs with full recipe data
                 const aiFavorites = aiIds.map((id: string) => {
                   const fullRecipe = allAiRecipes.find((r: any) => r.id === id)
-                  return fullRecipe ? {
-                    ...fullRecipe,
-                    image: fullRecipe.imageUrl || fullRecipe.image,
+                  return {
+                    ...(fullRecipe || {}),
+                    image: fullRecipe?.imageUrl || fullRecipe?.image,
                     id,
                     slug: id,
-                    isAiChefRecipe: true
-                  } : {
-                    id,
-                    title: `AI Recipe ${id.substring(0, 8)}...`,
-                    slug: id,
+                    title: fullRecipe?.title || `AI Recipe ${id.substring(0, 8)}...`,
                     isAiChefRecipe: true
                   }
                 })
                 allFavorites = [...allFavorites, ...aiFavorites]
+              } else {
+                // If API fails, still create AI recipe entries with flag
+                const aiFavorites = aiIds.map((id: string) => ({
+                  id,
+                  title: `AI Recipe ${id.substring(0, 8)}...`,
+                  slug: id,
+                  isAiChefRecipe: true
+                }))
+                allFavorites = [...allFavorites, ...aiFavorites]
               }
             } catch (error) {
               console.error("Error fetching AI recipe details:", error)
-              // Fallback: use placeholder data
+              // Fallback: use placeholder data with proper flag
               const aiFavorites = aiIds.map((id: string) => ({
                 id,
                 title: `AI Recipe ${id.substring(0, 8)}...`,
