@@ -16,6 +16,7 @@ interface FavoriteRecipe {
   difficulty?: string
   prepTime?: string
   cookTime?: string
+  isAiChefRecipe?: boolean
 }
 
 export default function FavoritesPage() {
@@ -25,16 +26,41 @@ export default function FavoritesPage() {
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
-    const stored = localStorage.getItem("favoriteRecipes")
-    if (stored) {
+    setLoading(true)
+    
+    // Load regular recipes from favoriteRecipes
+    const regularStored = localStorage.getItem("favoriteRecipes")
+    let allFavorites: FavoriteRecipe[] = []
+    
+    if (regularStored) {
       try {
-        const parsed = JSON.parse(stored)
-        setFavorites(parsed)
-        setFilteredFavorites(parsed)
+        allFavorites = JSON.parse(regularStored)
       } catch (error) {
-        console.error("Error loading favorites:", error)
+        console.error("Error loading regular favorites:", error)
       }
     }
+    
+    // Load AI Chef recipe IDs from ai-chef-favorites
+    const aiStored = localStorage.getItem("ai-chef-favorites")
+    if (aiStored) {
+      try {
+        const aiIds = JSON.parse(aiStored) || []
+        // Convert AI IDs to FavoriteRecipe format
+        // We'll fetch full details via API
+        const aiFavorites = aiIds.map((id: string) => ({
+          id,
+          title: `AI Recipe ${id.substring(0, 8)}...`,
+          slug: id,
+          isAiChefRecipe: true
+        }))
+        allFavorites = [...allFavorites, ...aiFavorites]
+      } catch (error) {
+        console.error("Error loading AI favorites:", error)
+      }
+    }
+    
+    setFavorites(allFavorites)
+    setFilteredFavorites(allFavorites)
     setLoading(false)
   }, [])
 
@@ -61,10 +87,21 @@ export default function FavoritesPage() {
     // Local search handles it automatically via useEffect
   }
 
-  const removeFavorite = (slug: string) => {
+  const removeFavorite = (slug: string, isAiChef: boolean = false) => {
     const updated = favorites.filter(fav => fav.slug !== slug)
     setFavorites(updated)
-    localStorage.setItem("favoriteRecipes", JSON.stringify(updated))
+    
+    if (isAiChef) {
+      // Remove from ai-chef-favorites
+      const aiIds = JSON.parse(localStorage.getItem("ai-chef-favorites") || "[]")
+      const filtered = aiIds.filter((id: string) => id !== slug)
+      localStorage.setItem("ai-chef-favorites", JSON.stringify(filtered))
+    } else {
+      // Remove from regular favorites
+      const regularFavs = JSON.parse(localStorage.getItem("favoriteRecipes") || "[]")
+      const filtered = regularFavs.filter((fav: any) => fav.slug !== slug)
+      localStorage.setItem("favoriteRecipes", JSON.stringify(filtered))
+    }
   }
 
   if (loading) {
@@ -117,10 +154,13 @@ export default function FavoritesPage() {
               </div>
             ) : (
               <div className="space-y-8">
-                {filteredFavorites.map((recipe) => (
-                  <article key={recipe.slug} className="border-b border-shadow-gray pb-8 last:border-b-0">
-                    <Link href={`/recipes/${recipe.slug}`} className="group">
-                      <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                {filteredFavorites.map((recipe) => {
+                  const isAiChef = recipe.isAiChefRecipe
+                  const href = isAiChef ? `/ai-chef/${recipe.slug}` : `/recipes/${recipe.slug}`
+                  return (
+                    <article key={recipe.slug} className="border-b border-shadow-gray pb-8 last:border-b-0">
+                      <Link href={href} className="group">
+                        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
                         {/* Recipe Image */}
                         {recipe.image && (
                           <div className="md:flex-shrink-0 md:w-64 h-48 md:h-auto overflow-hidden rounded-lg">
@@ -180,7 +220,7 @@ export default function FavoritesPage() {
                             <button
                               onClick={(e) => {
                                 e.preventDefault()
-                                removeFavorite(recipe.slug)
+                                removeFavorite(recipe.slug, isAiChef)
                               }}
                               className="ml-auto text-destructive hover:text-destructive/80 transition-colors flex items-center gap-2 text-sm font-medium"
                             >
@@ -190,9 +230,10 @@ export default function FavoritesPage() {
                           </div>
                         </div>
                       </div>
-                    </Link>
-                  </article>
-                ))}
+                      </Link>
+                    </article>
+                  )
+                })}
               </div>
             )}
           </div>
