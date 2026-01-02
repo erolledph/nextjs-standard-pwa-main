@@ -18,6 +18,7 @@ export interface RecipePostCardProps {
   difficulty?: string
   isFavorited?: boolean
   onToggleFavorite?: () => void
+  href?: string
 }
 
 export function RecipePostCard({
@@ -35,6 +36,7 @@ export function RecipePostCard({
   difficulty,
   isFavorited = false,
   onToggleFavorite,
+  href,
 }: RecipePostCardProps) {
   const formatDate = (dateString: string) => {
     const dateObj = new Date(dateString)
@@ -79,7 +81,7 @@ export function RecipePostCard({
         </button>
       )}
 
-      <Link href={`/recipes/${slug}`} className="flex flex-col h-full">
+      <Link href={href || `/recipes/${slug}`} className="flex flex-col h-full">
         {/* Recipe Image */}
         <div className="w-full h-48 md:h-56 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
           {image ? (

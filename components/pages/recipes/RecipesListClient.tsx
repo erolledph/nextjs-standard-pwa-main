@@ -98,6 +98,7 @@ export function RecipesListClient({ recipes }: RecipesListProps) {
                       difficulty: recipe.difficulty,
                       prepTime: recipe.prepTime,
                       cookTime: recipe.cookTime,
+                      type: "recipe"
                     })
                   }
                 />

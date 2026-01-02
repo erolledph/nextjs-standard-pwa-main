@@ -131,6 +131,7 @@ export function RecipePost({ recipe }: RecipePostProps) {
                       difficulty: recipe.difficulty,
                       prepTime: recipe.prepTime,
                       cookTime: recipe.cookTime,
+                      type: "recipe"
                     })
                   }}
                   className="p-2 rounded-lg hover:bg-muted transition-colors"

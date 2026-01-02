@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -182,11 +181,11 @@ export default function FavoritesPage() {
             <p className="text-muted-foreground mb-6">
               Start adding recipes to your favorites by clicking the heart icon on any recipe
             </p>
-            <Link href="/recipes">
+            <a href="/recipes">
               <Button style={{ backgroundColor: '#FF7518', color: 'white' }}>
                 Explore Recipes
               </Button>
-            </Link>
+            </a>
           </Card>
         ) : (
           <div>
@@ -209,24 +208,23 @@ export default function FavoritesPage() {
                   const isAiChef = recipe.isAiChefRecipe
                   const href = isAiChef ? `/ai-chef/${recipe.slug}` : `/recipes/${recipe.slug}`
                   return (
-                    <Link key={recipe.slug} href={href}>
-                      <div className="cursor-pointer">
-                        <RecipePostCard
-                          id={recipe.id}
-                          title={recipe.title}
-                          slug={recipe.slug}
-                          excerpt={recipe.excerpt}
-                          date={recipe.image ? "" : new Date().toLocaleDateString()}
-                          author={isAiChef ? "AI Chef" : recipe.author || "Author"}
-                          tags={recipe.tags || []}
-                          image={recipe.image}
-                          prepTime={recipe.prepTime}
-                          cookTime={recipe.cookTime}
-                          servings={String(recipe.servings || 4)}
-                          difficulty={recipe.difficulty}
-                        />
-                      </div>
-                    </Link>
+                    <div key={recipe.slug}>
+                      <RecipePostCard
+                        id={recipe.id}
+                        title={recipe.title}
+                        slug={recipe.slug}
+                        excerpt={recipe.excerpt}
+                        date={recipe.image ? "" : new Date().toLocaleDateString()}
+                        author={isAiChef ? "AI Chef" : recipe.author || "Author"}
+                        tags={recipe.tags || []}
+                        image={recipe.image}
+                        prepTime={recipe.prepTime}
+                        cookTime={recipe.cookTime}
+                        servings={String(recipe.servings || 4)}
+                        difficulty={recipe.difficulty}
+                        href={href}
+                      />
+                    </div>
                   )
                 })}
               </div>
