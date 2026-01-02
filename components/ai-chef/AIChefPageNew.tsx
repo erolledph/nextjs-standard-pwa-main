@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AIChefInputSchema, type AIChefInputType } from "@/lib/ai-chef-schema"
@@ -49,6 +50,7 @@ interface ErrorState {
 }
 
 export function AIChefPageNew() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [error, setError] = useState<ErrorState | null>(null)
@@ -71,8 +73,11 @@ export function AIChefPageNew() {
         const response = await fetch("/api/admin/ai-recipes")
         if (response.ok) {
           const data = await response.json()
+          // Handle the { recipes: [...] } structure from API
+          const recipesList = data.recipes || data || []
+          const recipesArray = Array.isArray(recipesList) ? recipesList : []
           // Get last 6 recipes, sorted by creation date
-          const sorted = (data || [])
+          const sorted = recipesArray
             .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, 6)
           setRecentlyGeneratedRecipes(sorted)
@@ -622,7 +627,7 @@ export function AIChefPageNew() {
                     <div
                       key={recipe.id}
                       className="cursor-pointer group"
-                      onClick={() => handleViewRecipe(recipe, true)}
+                      onClick={() => router.push(`/ai-chef/${recipe.id}`)}
                     >
                       <RecipePostCard
                         id={recipe.id}
