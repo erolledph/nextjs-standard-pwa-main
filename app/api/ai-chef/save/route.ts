@@ -61,6 +61,12 @@ export async function POST(request: NextRequest) {
       console.log("🟢 [SAVE-6] Using provided recipe")
     }
 
+    // Extract quota remaining if available
+    const quotaRemaining = recipe?.quotaRemaining
+    if (quotaRemaining) {
+      delete recipe.quotaRemaining // Don't save quota to database
+    }
+
     // Step 2: Fetch and cache recipe image
     console.log("🟡 [SAVE-7] Fetching recipe image...")
     try {
@@ -80,7 +86,11 @@ export async function POST(request: NextRequest) {
 
     if (recipeId) {
       console.log("🟢 [SAVE-11] Recipe saved successfully")
-      return NextResponse.json({ success: true, recipeId, recipe });
+      const response: any = { success: true, recipeId, recipe }
+      if (quotaRemaining) {
+        response.quotaRemaining = quotaRemaining
+      }
+      return NextResponse.json(response);
     } else {
       console.error("🔴 [SAVE-12] Failed to save recipe to Firebase")
       return NextResponse.json(

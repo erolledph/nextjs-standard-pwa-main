@@ -45,10 +45,17 @@ export async function fetchContentFromGitHub(
   const contentDir = contentType === "recipes" ? "posts/recipes" : "posts/blog"
   
   try {
-    if (process.env.NODE_ENV === "development" && typeof window === "undefined") {
+    // Only attempt file system access on server in development
+    const isServer = typeof window === "undefined"
+    const isDev = process.env.NODE_ENV === "development"
+    
+    if (isDev && isServer) {
       try {
-        const fs = await import("fs/promises")
-        const path = await import("path")
+        // Dynamic import to avoid static analysis warnings in edge runtime
+        const fsModule = await import("fs/promises")
+        const pathModule = await import("path")
+        const fs = fsModule
+        const path = pathModule
 
         const localContentDir = path.join(process.cwd(), contentDir)
 
@@ -127,9 +134,9 @@ export async function fetchContentFromGitHub(
 
     const sorted = content.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-    // Cache the results (1 hour = 3600000ms)
-    // Recipes don't change frequently, so longer cache reduces API calls
-    setCached(cacheKey, sorted, { ttl: 60 * 60 * 1000 })
+    // Cache the results (24 hours = 86400000ms)
+    // Recipes don't change frequently, so longer cache significantly reduces GitHub API calls
+    setCached(cacheKey, sorted, { ttl: 24 * 60 * 60 * 1000 })
 
     return sorted
   } catch (error) {

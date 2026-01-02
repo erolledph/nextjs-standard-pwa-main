@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/Badge"
 import {
   AlertCircle,
   Loader2,
@@ -57,6 +58,7 @@ export function AIChefPageNew() {
   const [stage, setStage] = useState<"form" | "results" | "recipe">("form")
   const [formData, setFormData] = useState<AIChefInputType | null>(null)
   const [activeTab, setActiveTab] = useState<"suggestions" | "generated">("suggestions")
+  const [quotaRemaining, setQuotaRemaining] = useState<number | null>(null)
 
   const {
     control,
@@ -177,6 +179,11 @@ export function AIChefPageNew() {
 
       const freshResponse = data.recipe
       const recipeId = data.recipeId
+
+      // Track quota remaining from response
+      if (data.quotaRemaining !== undefined) {
+        setQuotaRemaining(data.quotaRemaining)
+      }
 
       // Display the recipe immediately
       setRecipeId(recipeId)
@@ -666,6 +673,16 @@ export function AIChefPageNew() {
                         </>
                       )}
                     </button>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                      <Badge variant="warning" className="text-xs whitespace-nowrap">
+                        ⚡ Uses Quota
+                      </Badge>
+                      {quotaRemaining !== null && (
+                        <span className="text-xs text-muted-foreground font-medium">
+                          {quotaRemaining}/14400
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

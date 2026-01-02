@@ -56,8 +56,9 @@ The JSON must follow this exact structure:
 
 /**
  * Generate a recipe using Groq's Llama 3.1 8B Instant
+ * Returns both the recipe and quota information
  */
-export async function generateRecipeWithAI(input: AIChefInput): Promise<RecipeResponse> {
+export async function generateRecipeWithAI(input: AIChefInput): Promise<RecipeResponse & { quotaRemaining?: number }> {
   try {
     console.log("🟡 [GROQ-1] Starting recipe generation for:", input)
     const userPrompt = buildPrompt(input)
@@ -165,8 +166,13 @@ export async function generateRecipeWithAI(input: AIChefInput): Promise<RecipeRe
       throw new Error("AI response was not valid JSON")
     }
 
-    console.log("🟢 [GROQ-15] Returning parsed response")
-    return parsedResponse as RecipeResponse
+    console.log("🟢 [GROQ-15] Returning parsed response with quota info")
+    
+    // Extract remaining requests from rate headers
+    const remainingRequests = parseInt(rateHeaders["x-ratelimit-remaining-requests"] as string) || 14400
+    parsedResponse.quotaRemaining = remainingRequests
+    
+    return parsedResponse as RecipeResponse & { quotaRemaining?: number }
   } catch (error) {
     console.error("🔴 [GROQ-ERROR] Exception in generateRecipeWithAI:", error)
     if (error instanceof Error) {
