@@ -1,7 +1,7 @@
 "use client"
 
 import { RecipeResponse } from "@/types/ai-chef"
-import { Clock, Users, ChefHat, Flame, Share2, Download, AlertCircle } from "lucide-react"
+import { Clock, Users, ChefHat, Flame, Share2, Download, AlertCircle, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
@@ -19,6 +19,15 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
   const [recipeImage, setRecipeImage] = useState<string>('')
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false)
+
+  // Check if recipe is already favorited on mount
+  useEffect(() => {
+    if (recipeId) {
+      const favorites = JSON.parse(localStorage.getItem('ai-chef-favorites') || '[]')
+      setIsFavorite(favorites.includes(recipeId))
+    }
+  }, [recipeId])
 
   // Fetch recipe image on mount (use cached if available)
   useEffect(() => {
@@ -35,6 +44,24 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
     }
     fetchImage()
   }, [recipe.title, recipe.cuisine, recipe.imageUrl])
+
+  const handleToggleFavorite = () => {
+    if (!recipeId) return
+    
+    const favorites = JSON.parse(localStorage.getItem('ai-chef-favorites') || '[]')
+    
+    if (isFavorite) {
+      // Remove from favorites
+      const updated = favorites.filter((id: string) => id !== recipeId)
+      localStorage.setItem('ai-chef-favorites', JSON.stringify(updated))
+      setIsFavorite(false)
+    } else {
+      // Add to favorites
+      favorites.push(recipeId)
+      localStorage.setItem('ai-chef-favorites', JSON.stringify(favorites))
+      setIsFavorite(true)
+    }
+  }
 
   const handleShare = async () => {
     // Get the domain from window.location or fallback to environment variable
@@ -218,6 +245,19 @@ From AI Chef on World Food Recipes
           className="flex gap-3 flex-wrap mb-8 pb-8 border-b border-shadow-gray print:hidden"
           style={{ opacity: isCapturing ? 0.5 : 1 }}
         >
+          <Button
+            onClick={handleToggleFavorite}
+            disabled={isCapturing}
+            variant={isFavorite ? "default" : "outline"}
+            className={`gap-2 ${
+              isFavorite
+                ? "bg-red-500 hover:bg-red-600 text-white"
+                : "hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400"
+            }`}
+          >
+            <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
+            {isFavorite ? "Favorited" : "Add to Favorites"}
+          </Button>
           <Button
             onClick={handleShare}
             disabled={isCapturing}
