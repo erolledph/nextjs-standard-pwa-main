@@ -78,6 +78,7 @@ export async function DELETE(request: Request) {
     clearCacheByNamespace("github")
 
     console.log("[DELETE /api/posts/delete] Post deleted successfully")
+    return NextResponse.json({ success: true, message: "Post deleted successfully" }, { status: 200 })
   } catch (error) {
     console.error("Error deleting post:", error)
     return NextResponse.json({ error: "Failed to delete post" }, { status: 500 })

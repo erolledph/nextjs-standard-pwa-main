@@ -111,6 +111,7 @@ function CreatePostContent() {
         difficulty: data.difficulty || "Easy",
         content: data.content || "",
         tags: parsedTags,
+        image: data.imageUrl || data.image || "",
       }))
 
       // Set content type to recipes

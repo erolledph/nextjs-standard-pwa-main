@@ -207,6 +207,29 @@ export function AIRecipesTab() {
             data={recipes}
             columns={[
               {
+                key: "image",
+                header: "Image",
+                hideOnMobile: true,
+                render: (recipe) => (
+                  <div className="w-12 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
+                    {recipe.imageUrl ? (
+                      <img
+                        src={recipe.imageUrl}
+                        alt={recipe.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted-foreground/20 flex items-center justify-center text-xs text-muted-foreground">
+                        No image
+                      </div>
+                    )}
+                  </div>
+                ),
+              },
+              {
                 key: "title",
                 header: "Title",
                 render: (recipe) => (
