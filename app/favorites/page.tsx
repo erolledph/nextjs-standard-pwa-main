@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Heart, Clock, ChefHat } from "lucide-react"
+import { Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { SearchBar } from "@/components/ui/search-bar"
+import { RecipePostCard } from "@/components/blog/RecipePostCard"
 
 interface FavoriteRecipe {
   id: string
@@ -16,6 +17,9 @@ interface FavoriteRecipe {
   difficulty?: string
   prepTime?: string
   cookTime?: string
+  servings?: number
+  author?: string
+  tags?: string[]
   isAiChefRecipe?: boolean
 }
 
@@ -26,42 +30,76 @@ export default function FavoritesPage() {
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
-    setLoading(true)
-    
-    // Load regular recipes from favoriteRecipes
-    const regularStored = localStorage.getItem("favoriteRecipes")
-    let allFavorites: FavoriteRecipe[] = []
-    
-    if (regularStored) {
-      try {
-        allFavorites = JSON.parse(regularStored)
-      } catch (error) {
-        console.error("Error loading regular favorites:", error)
+    const loadFavorites = async () => {
+      setLoading(true)
+      
+      // Load regular recipes from favoriteRecipes
+      const regularStored = localStorage.getItem("favoriteRecipes")
+      let allFavorites: FavoriteRecipe[] = []
+      
+      if (regularStored) {
+        try {
+          allFavorites = JSON.parse(regularStored)
+        } catch (error) {
+          console.error("Error loading regular favorites:", error)
+        }
       }
+      
+      // Load AI Chef recipe IDs from ai-chef-favorites
+      const aiStored = localStorage.getItem("ai-chef-favorites")
+      if (aiStored) {
+        try {
+          const aiIds = JSON.parse(aiStored) || []
+          
+          // Fetch full details for AI recipes
+          if (aiIds.length > 0) {
+            try {
+              const response = await fetch("/api/admin/ai-recipes")
+              if (response.ok) {
+                const data = await response.json()
+                const allAiRecipes = data.recipes || []
+                
+                // Match favorited IDs with full recipe data
+                const aiFavorites = aiIds.map((id: string) => {
+                  const fullRecipe = allAiRecipes.find((r: any) => r.id === id)
+                  return fullRecipe ? {
+                    ...fullRecipe,
+                    image: fullRecipe.imageUrl || fullRecipe.image,
+                    id,
+                    slug: id,
+                    isAiChefRecipe: true
+                  } : {
+                    id,
+                    title: `AI Recipe ${id.substring(0, 8)}...`,
+                    slug: id,
+                    isAiChefRecipe: true
+                  }
+                })
+                allFavorites = [...allFavorites, ...aiFavorites]
+              }
+            } catch (error) {
+              console.error("Error fetching AI recipe details:", error)
+              // Fallback: use placeholder data
+              const aiFavorites = aiIds.map((id: string) => ({
+                id,
+                title: `AI Recipe ${id.substring(0, 8)}...`,
+                slug: id,
+                isAiChefRecipe: true
+              }))
+              allFavorites = [...allFavorites, ...aiFavorites]
+            }
+          }
+        } catch (error) {
+          console.error("Error loading AI favorites:", error)
+        }
+      }
+      
+      setFavorites(allFavorites)
+      setFilteredFavorites(allFavorites)
+      setLoading(false)
     }
     
-    // Load AI Chef recipe IDs from ai-chef-favorites
-    const aiStored = localStorage.getItem("ai-chef-favorites")
-    if (aiStored) {
-      try {
-        const aiIds = JSON.parse(aiStored) || []
-        // Convert AI IDs to FavoriteRecipe format
-        // We'll fetch full details via API
-        const aiFavorites = aiIds.map((id: string) => ({
-          id,
-          title: `AI Recipe ${id.substring(0, 8)}...`,
-          slug: id,
-          isAiChefRecipe: true
-        }))
-        allFavorites = [...allFavorites, ...aiFavorites]
-      } catch (error) {
-        console.error("Error loading AI favorites:", error)
-      }
-    }
-    
-    setFavorites(allFavorites)
-    setFilteredFavorites(allFavorites)
-    setLoading(false)
+    loadFavorites()
   }, [])
 
   // Local search for favorites
@@ -153,85 +191,29 @@ export default function FavoritesPage() {
                 <p className="text-muted-foreground">Try adjusting your search terms</p>
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredFavorites.map((recipe) => {
                   const isAiChef = recipe.isAiChefRecipe
                   const href = isAiChef ? `/ai-chef/${recipe.slug}` : `/recipes/${recipe.slug}`
                   return (
-                    <article key={recipe.slug} className="border-b border-shadow-gray pb-8 last:border-b-0">
-                      <Link href={href} className="group">
-                        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-                        {/* Recipe Image */}
-                        {recipe.image && (
-                          <div className="md:flex-shrink-0 md:w-64 h-48 md:h-auto overflow-hidden rounded-lg">
-                            <img
-                              src={recipe.image}
-                              alt={recipe.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              loading="lazy"
-                            />
-                          </div>
-                        )}
-
-                        {/* Recipe Info */}
-                        <div className="flex-1">
-                          <h2 className="text-2xl md:text-3xl font-bold text-foreground dark:text-white mb-3 group-hover:text-primary transition-colors" style={{ fontFamily: 'Georgia, serif' }}>
-                            {recipe.title}
-                          </h2>
-
-                          {recipe.excerpt && (
-                            <p className="text-muted-foreground mb-4 leading-relaxed">
-                              {recipe.excerpt}
-                            </p>
-                          )}
-
-                          {/* Quick Info */}
-                          <div className="flex flex-wrap gap-4 mb-4 text-sm text-muted-foreground">
-                            {recipe.difficulty && (
-                              <div className="flex items-center gap-2">
-                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                  recipe.difficulty === 'Easy' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100' :
-                                  recipe.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' :
-                                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-                                }`}>
-                                  {recipe.difficulty}
-                                </span>
-                              </div>
-                            )}
-                            {recipe.prepTime && (
-                              <div className="flex items-center gap-2">
-                                <Clock className="w-4 h-4 text-primary" />
-                                <span>Prep: {recipe.prepTime}</span>
-                              </div>
-                            )}
-                            {recipe.cookTime && (
-                              <div className="flex items-center gap-2">
-                                <ChefHat className="w-4 h-4 text-primary" />
-                                <span>Cook: {recipe.cookTime}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex gap-3 pt-4 border-t border-shadow-gray">
-                            <Button variant="ghost" className="text-primary hover:text-primary/80 font-medium">
-                              View Recipe →
-                            </Button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault()
-                                removeFavorite(recipe.slug, isAiChef)
-                              }}
-                              className="ml-auto text-destructive hover:text-destructive/80 transition-colors flex items-center gap-2 text-sm font-medium"
-                            >
-                              <Heart className="w-4 h-4" fill="currentColor" />
-                              Remove
-                            </button>
-                          </div>
-                        </div>
+                    <Link key={recipe.slug} href={href}>
+                      <div className="cursor-pointer">
+                        <RecipePostCard
+                          id={recipe.id}
+                          title={recipe.title}
+                          slug={recipe.slug}
+                          excerpt={recipe.excerpt}
+                          date={recipe.image ? "" : new Date().toLocaleDateString()}
+                          author={isAiChef ? "AI Chef" : recipe.author || "Author"}
+                          tags={recipe.tags || []}
+                          image={recipe.image}
+                          prepTime={recipe.prepTime}
+                          cookTime={recipe.cookTime}
+                          servings={String(recipe.servings || 4)}
+                          difficulty={recipe.difficulty}
+                        />
                       </div>
-                      </Link>
-                    </article>
+                    </Link>
                   )
                 })}
               </div>
