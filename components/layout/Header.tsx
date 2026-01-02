@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
-import { Sun, Moon, UtensilsCrossed, Play, Download } from "lucide-react"
+import { Sun, Moon, UtensilsCrossed, Play, Download, WandSparkles } from "lucide-react"
 import { isPWA, canInstallPWA, isIOS } from "@/lib/pwa"
 import type { BeforeInstallPromptEvent } from "@/lib/pwa"
 
@@ -96,6 +96,10 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
+          <Link href="/ai-chef" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded px-2 py-1">
+            <WandSparkles className="w-4 h-4" />
+            AI Chef
+          </Link>
           <Link href="/recipes" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 rounded px-2 py-1">
             Recipes
           </Link>
