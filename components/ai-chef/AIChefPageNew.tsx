@@ -26,6 +26,7 @@ import {
   ArrowLeft,
   Eye,
   ChefHat,
+  WandSparkles,
 } from "lucide-react"
 import { RecipeResult } from "./RecipeResult"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
@@ -269,7 +270,8 @@ export function AIChefPageNew() {
         <div className="container px-4 sm:px-8 mx-auto xl:px-5 max-w-screen-lg py-16 md:py-24">
           {/* Header - Centered */}
           <div className="mb-16 max-w-2xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4 flex items-center justify-center gap-3" style={{ fontFamily: 'Georgia, serif' }}>
+              <WandSparkles className="w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 text-primary" />
               AI Chef
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
