@@ -6,7 +6,7 @@
  * Form → Generate (Shows both tabs immediately) → Recipe View
  */
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AIChefInputSchema, type AIChefInputType } from "@/lib/ai-chef-schema"
@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import { RecipeResult } from "./RecipeResult"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface SearchResult {
   recipePosts: any[]
@@ -58,6 +59,34 @@ export function AIChefPageNew() {
   const [formData, setFormData] = useState<AIChefInputType | null>(null)
   const [activeTab, setActiveTab] = useState<"suggestions" | "generated">("suggestions")
   const [quotaRemaining, setQuotaRemaining] = useState<number | null>(null)
+  const [showMoreIdeas, setShowMoreIdeas] = useState(false)
+  const [recentlyGeneratedRecipes, setRecentlyGeneratedRecipes] = useState<any[]>([])
+  const [loadingRecipes, setLoadingRecipes] = useState(true)
+
+  // Fetch recently generated AI recipes from Firebase
+  useEffect(() => {
+    const fetchRecentRecipes = async () => {
+      try {
+        setLoadingRecipes(true)
+        const response = await fetch("/api/admin/ai-recipes")
+        if (response.ok) {
+          const data = await response.json()
+          // Get last 6 recipes, sorted by creation date
+          const sorted = (data || [])
+            .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 6)
+          setRecentlyGeneratedRecipes(sorted)
+        }
+      } catch (err) {
+        console.error("Failed to fetch recent recipes:", err)
+        setRecentlyGeneratedRecipes([])
+      } finally {
+        setLoadingRecipes(false)
+      }
+    }
+
+    fetchRecentRecipes()
+  }, [])
 
   const {
     control,
@@ -78,6 +107,25 @@ export function AIChefPageNew() {
       ingredients: [],
     },
   })
+
+  // Random quick ideas
+  const allQuickIdeas = [
+    // Standard 3
+    "Quick weeknight dinner with chicken",
+    "Spicy vegetarian meal for guests",
+    "Light and healthy salad",
+    // Hidden ideas
+    "Budget-friendly pasta dish",
+    "One-pot meal for lazy Sundays",
+    "Crispy fried chicken with sides",
+    "Protein-rich vegan bowl",
+    "Comfort food comfort food",
+    "Mediterranean seafood dish",
+    "Asian fusion noodles",
+  ]
+
+  const visibleIdeas = allQuickIdeas.slice(0, 3)
+  const hiddenIdeas = allQuickIdeas.slice(3)
 
   const onSearch = async (data: AIChefInputType) => {
     setFormData(data)
@@ -299,22 +347,47 @@ export function AIChefPageNew() {
               </div>
               
               {/* Quick Suggestions */}
-              <div className="mb-3 flex flex-wrap gap-2">
-                <p className="text-xs font-semibold text-muted-foreground w-full">Quick ideas:</p>
-                {[
-                  "Quick weeknight dinner with chicken",
-                  "Spicy vegetarian meal for guests",
-                  "Light and healthy salad"
-                ].map((suggestion) => (
+              <div className="mb-3 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground">Quick ideas:</p>
+                <div className="flex flex-wrap gap-2">
+                  {visibleIdeas.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => setValue("description", suggestion)}
+                      className="text-xs px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-800/40 transition-colors border border-orange-300 dark:border-orange-700"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* More Ideas - Hidden by Default */}
+                {showMoreIdeas && (
+                  <div className="flex flex-wrap gap-2 pt-1 animate-in fade-in-50 slide-in-from-top-2 duration-300">
+                    {hiddenIdeas.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => setValue("description", suggestion)}
+                        className="text-xs px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-800/40 transition-colors border border-orange-300 dark:border-orange-700"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Show/Hide More Ideas Button */}
+                {hiddenIdeas.length > 0 && (
                   <button
-                    key={suggestion}
                     type="button"
-                    onClick={() => setValue("description", suggestion)}
-                    className="text-xs px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-800/40 transition-colors border border-orange-300 dark:border-orange-700"
+                    onClick={() => setShowMoreIdeas(!showMoreIdeas)}
+                    className="text-xs font-medium text-primary hover:text-primary/80 transition-colors mt-1"
                   >
-                    {suggestion}
+                    {showMoreIdeas ? "Hide ideas" : "More ideas"}
                   </button>
-                ))}
+                )}
               </div>
               
               <Textarea
@@ -520,6 +593,57 @@ export function AIChefPageNew() {
               )}
             </Button>
           </form>
+
+          {/* Recently Generated Recipes Section */}
+          {recentlyGeneratedRecipes.length > 0 && (
+            <div className="mt-20 pt-20 border-t border-shadow-gray">
+              <div className="mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3" style={{ fontFamily: 'Georgia, serif' }}>
+                  Recently Generated Recipes
+                </h2>
+                <p className="text-muted-foreground">
+                  Get inspired by AI Chef's latest creations
+                </p>
+              </div>
+              
+              {loadingRecipes ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="space-y-3">
+                      <Skeleton className="h-48 w-full rounded-lg" />
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {recentlyGeneratedRecipes.map((recipe: any) => (
+                    <div
+                      key={recipe.id}
+                      className="cursor-pointer group"
+                      onClick={() => handleViewRecipe(recipe, true)}
+                    >
+                      <RecipePostCard
+                        id={recipe.id}
+                        title={recipe.title}
+                        slug={recipe.id}
+                        excerpt={recipe.description}
+                        date={recipe.createdAt}
+                        author="AI Chef"
+                        tags={[recipe.country || "Recipe"]}
+                        image={recipe.imageUrl}
+                        prepTime={recipe.prepTime}
+                        cookTime={recipe.cookTime}
+                        servings={recipe.servings}
+                        difficulty={recipe.difficulty}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     )
