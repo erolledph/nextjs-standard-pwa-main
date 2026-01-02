@@ -17,6 +17,7 @@ export async function DELETE(request: Request) {
     // Validate slug format to prevent path traversal
     const validation = validateSlug(slug)
     if (!validation.valid) {
+      console.error("[DELETE /api/posts/delete] Validation errors:", validation.errors)
       return NextResponse.json(
         { error: "Validation failed", details: validation.errors },
         { status: 400 }
@@ -32,7 +33,7 @@ export async function DELETE(request: Request) {
     }
 
     const filename = `${slug}.md`
-    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/posts/${filename}`
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/posts/blog/${filename}`
 
     // First, get the file SHA
     const getResponse = await fetch(apiUrl, {
@@ -69,14 +70,14 @@ export async function DELETE(request: Request) {
 
     if (!deleteResponse.ok) {
       const error = await deleteResponse.json()
-      console.error("GitHub API error:", error)
+      console.error("[DELETE /api/posts/delete] GitHub API error:", error)
       return NextResponse.json({ error: "Failed to delete post on GitHub" }, { status: 500 })
     }
 
     // Invalidate cache when post is deleted
     clearCacheByNamespace("github")
 
-    return NextResponse.json({ success: true, message: "Post deleted successfully" })
+    console.log("[DELETE /api/posts/delete] Post deleted successfully")
   } catch (error) {
     console.error("Error deleting post:", error)
     return NextResponse.json({ error: "Failed to delete post" }, { status: 500 })
