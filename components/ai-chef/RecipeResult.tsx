@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { RecipeResponse } from "@/types/ai-chef"
 import { Clock, Users, ChefHat, Flame, Download, AlertCircle, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -128,22 +129,46 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
       className="container px-4 sm:px-8 mx-auto xl:px-5 max-w-screen-lg py-16 md:py-24"
       data-printable="true"
     >
-      <header className="mx-auto max-w-screen-md mb-8">
-        {/* AI Badge */}
-        <div className="inline-block mb-4 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold uppercase tracking-wider">
-          AI Generated Recipe
-        </div>
-
-        {/* Title */}
+      <header className="mx-auto max-w-screen-md">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground dark:text-white lg:leading-tight mb-8 font-serif">
           {recipe.title}
         </h1>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 pb-8 border-b border-shadow-gray">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="inline-block px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-semibold uppercase tracking-wider">
+              AI Generated Recipe
+            </div>
+          </div>
+          <div className="flex justify-start sm:justify-end gap-2">
+            <SocialShare 
+              url={`${typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL || "https://worldfoodrecipes.com"}/ai-chef/${recipeId || recipe.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+              title={recipe.title}
+              description={`AI-generated recipe - Prep: ${recipe.prepTime}, Cook: ${recipe.cookTime}`}
+            />
+            {typeof window !== "undefined" && (
+              <button
+                onClick={handleToggleFavorite}
+                className="p-2 rounded-lg hover:bg-muted transition-colors"
+                aria-label="Add to favorites"
+              >
+                <Heart
+                  className="w-5 h-5"
+                  style={{
+                    color: isFavorite ? '#FF7518' : 'currentColor',
+                  }}
+                  fill={isFavorite ? '#FF7518' : 'none'}
+                />
+              </button>
+            )}
+          </div>
+        </div>
       </header>
 
       {/* Recipe Hero Image */}
       {recipeImage && (
         <>
-          <figure className="relative z-0 mx-auto max-w-screen-lg aspect-video overflow-hidden lg:rounded-lg mb-2">
+          <figure className="relative z-0 mx-auto max-w-screen-lg overflow-hidden lg:rounded-lg mb-8">
             <Image
               src={recipeImage}
               alt={recipe.title}
@@ -154,7 +179,7 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
               onError={() => setImageError(true)}
             />
           </figure>
-          <figcaption className="text-center text-xs text-muted-foreground mb-8">{recipe.title}</figcaption>
+          <figcaption className="text-center text-xs text-muted-foreground mt-2">{recipe.title}</figcaption>
         </>
       )}
 
@@ -209,30 +234,12 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Download Button - Unique to AI Chef */}
         <div 
           ref={buttonContainerRef}
           className="flex gap-3 flex-wrap mb-8 pb-8 border-b border-shadow-gray print:hidden"
           style={{ opacity: isCapturing ? 0.5 : 1 }}
         >
-          <Button
-            onClick={handleToggleFavorite}
-            disabled={isCapturing}
-            variant={isFavorite ? "default" : "outline"}
-            className={`gap-2 ${
-              isFavorite
-                ? "bg-red-500 hover:bg-red-600 text-white"
-                : "hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400"
-            }`}
-          >
-            <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
-            {isFavorite ? "Favorited" : "Add to Favorites"}
-          </Button>
-          <SocialShare 
-            url={`${typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL || "https://worldfoodrecipes.com"}/ai-chef/${recipeId || recipe.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-            title={recipe.title}
-            description={`AI-generated recipe - Prep: ${recipe.prepTime}, Cook: ${recipe.cookTime}`}
-          />
           <Button
             onClick={handleDownload}
             disabled={isCapturing}
@@ -244,8 +251,6 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
           </Button>
         </div>
 
-      {/* Main Content */}
-      <div className="mx-auto max-w-screen-md">
         {/* Ingredients Section */}
         <div className="mb-12 bg-card p-6 rounded-lg border border-border">
           <h2 className="text-2xl font-bold text-foreground mb-6">Ingredients</h2>
@@ -281,16 +286,22 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
           </ol>
         </div>
 
+        {/* Footer Navigation */}
+        <nav className="mb-12 mt-16 flex justify-center pt-8 border-t border-shadow-gray" aria-label="Recipe navigation">
+          <Link href="/ai-chef">
+            <Button variant="ghost" className="bg-muted/20 rounded-full px-6 py-2 text-sm text-primary hover:text-primary/80 font-medium">
+              ← Back to AI Chef
+            </Button>
+          </Link>
+        </nav>
 
+        {/* Footer */}
+        <div className="mt-12 text-center text-xs text-muted-foreground">
+          <p>This recipe was generated by AI Chef</p>
+          <p className="mt-1">
+            Results may vary. Always exercise caution when cooking with new ingredients.
+          </p>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-12 text-center text-xs text-muted-foreground border-t pt-4 max-w-screen-md mx-auto">
-        <p>This recipe was generated by AI Chef</p>
-        <p className="mt-1">
-          Results may vary. Always exercise caution when cooking with new ingredients.
-        </p>
       </div>
     </article>
   )
