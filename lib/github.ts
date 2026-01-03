@@ -51,10 +51,10 @@ export async function fetchContentFromGitHub(
     
     if (isDev && isServer) {
       try {
-        // Dynamic import using concatenation to prevent bundlers from
-        // statically resolving server-only modules when building for edge.
-        const fsModule = await import("f" + "s/promises")
-        const pathModule = await import("pa" + "th")
+        // Use eval to dynamically require server-only modules
+        // This prevents bundlers from statically resolving these imports
+        const fsModule = await eval('import("fs/promises")')
+        const pathModule = await eval('import("path")')
         const fs = fsModule
         const path = pathModule
 
