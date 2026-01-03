@@ -4,7 +4,7 @@ import { generateMetadata as generateSEOMetadata, siteConfig, getCanonicalUrl } 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url
 
 export const metadata: Metadata = generateSEOMetadata({
-  title: "Disclaimer - World Food Recipes",
+  title: "Disclaimer",
   description: "Important disclaimer for World Food Recipes. Learn about nutritional information, recipe modifications, and cooking safety when using our world food recipes and cooking tutorials.",
   url: getCanonicalUrl('/disclaimer'),
   image: `${siteUrl}/og-image.png`,

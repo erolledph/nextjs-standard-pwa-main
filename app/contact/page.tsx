@@ -4,7 +4,7 @@ import { generateMetadata as generateSEOMetadata, siteConfig, getCanonicalUrl } 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url
 
 export const metadata: Metadata = generateSEOMetadata({
-  title: "Contact Us - World Food Recipes",
+  title: "Contact Us",
   description: "Have questions about recipes, food blogging, or our world food content? Contact World Food Recipes. We're here to help with all your culinary inquiries.",
   url: getCanonicalUrl('/contact'),
   image: `${siteUrl}/og-image.png`,

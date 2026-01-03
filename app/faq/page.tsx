@@ -6,7 +6,7 @@ import Link from "next/link"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url
 
 export const metadata: Metadata = generateSEOMetadata({
-  title: "Frequently Asked Questions - World Food Recipes",
+  title: "Frequently Asked Questions",
   description: "Find answers to common questions about World Food Recipes. Learn how to use our platform, save recipes, access content, and more.",
   url: getCanonicalUrl('/faq'),
   image: `${siteUrl}/og-image.png`,

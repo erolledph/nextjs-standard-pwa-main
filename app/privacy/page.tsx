@@ -4,7 +4,7 @@ import { generateMetadata as generateSEOMetadata, siteConfig, getCanonicalUrl } 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url
 
 export const metadata: Metadata = generateSEOMetadata({
-  title: "Privacy Policy - World Food Recipes",
+  title: "Privacy Policy",
   description: "Read our privacy policy to understand how World Food Recipes protects your personal data and information when you explore our recipes and food blogging content.",
   url: getCanonicalUrl('/privacy'),
   image: `${siteUrl}/og-image.png`,
