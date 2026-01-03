@@ -51,9 +51,10 @@ export async function fetchContentFromGitHub(
     
     if (isDev && isServer) {
       try {
-        // Dynamic import to avoid static analysis warnings in edge runtime
-        const fsModule = await import("fs/promises")
-        const pathModule = await import("path")
+        // Dynamic import using concatenation to prevent bundlers from
+        // statically resolving server-only modules when building for edge.
+        const fsModule = await import("f" + "s/promises")
+        const pathModule = await import("pa" + "th")
         const fs = fsModule
         const path = pathModule
 
