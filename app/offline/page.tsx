@@ -5,7 +5,7 @@ import { ClientReloadButton } from "@/components/ui/client-reload-button"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "You're Offline - World Food Recipes",
+  title: "You're Offline | World Food Recipes",
   description: "This page is available offline. Check out our latest recipes and content when you're back online.",
   robots: {
     index: false,

@@ -8,7 +8,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url
 export const runtime = 'edge'
 
 export const metadata: Metadata = generateSEOMetadata({
-  title: "World Food Recipes - Authentic International Recipe Collection",
+  title: "World Food Recipes | Authentic International Recipe Collection",
   description: "Browse thousands of authentic world food recipes from international cuisines. Find easy-to-follow cooking instructions, ingredient lists, culinary tips, and food recipes for every skill level.",
   url: getCanonicalUrl('/recipes'),
   image: `${siteUrl}/og-image.png`,

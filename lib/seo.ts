@@ -74,7 +74,7 @@ export function generateMetadata(metadata: SEOMetadata) {
 
   // Improve title and description based on category for better SEO snippets
   // Check if title already contains site name to avoid duplication
-  const hasOGSiteName = title.includes(` | ${siteConfig.name}`) || title.includes(` — ${siteConfig.name}`)
+  const hasOGSiteName = title.includes(` | ${siteConfig.name}`) || title.includes(` — ${siteConfig.name}`) || title.includes(` - ${siteConfig.name}`)
   let finalTitle = hasOGSiteName ? title : `${title} | ${siteConfig.name}`
   let finalDescription = description
 
