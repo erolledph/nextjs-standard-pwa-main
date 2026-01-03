@@ -79,13 +79,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: ogTitle,
       description: ogDescription,
       url: pageUrl,
-      type: 'website',
+      type: 'article',
       siteName: 'World Food Recipes - AI Chef',
       images: [
         {
           url: imageUrl,
           width: 1200,
-          height: 800,
+          height: 630,
           alt: recipe.title,
           type: 'image/svg+xml',
         },

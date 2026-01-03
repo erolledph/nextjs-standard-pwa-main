@@ -102,7 +102,7 @@ export function generateMetadata(metadata: SEOMetadata) {
     ...title.split(/\s+/).slice(0, 6),
   ]
 
-  const ogType = category === 'blog' ? 'article' : 'website'
+  const ogType: 'article' | 'website' = category === 'blog' || category === 'recipe' || category === 'ai-chef' ? 'article' : 'website'
 
   return {
     title: finalTitle,

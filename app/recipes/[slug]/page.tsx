@@ -129,10 +129,9 @@ export default async function RecipePostPage({ params }: { params: Promise<{ slu
     datePublished: recipe.date,
     dateModified: recipe.date,
     cuisine: recipe.tags?.[0] || "International",
-    prepTime: "PT15M",
-    cookTime: "PT30M",
-    totalTime: "PT45M",
-    recipeYield: "4 servings",
+    ...(recipe.prepTime && { prepTime: recipe.prepTime }),
+    ...(recipe.cookTime && { cookTime: recipe.cookTime }),
+    ...(recipe.servings && { recipeYield: `${recipe.servings} servings` }),
     keywords: recipe.tags?.join(", ") || "recipe, cooking",
   }
 
