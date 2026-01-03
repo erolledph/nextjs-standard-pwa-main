@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: `${siteConfig.name} - Authentic Recipes & Food Stories`,
-    template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
