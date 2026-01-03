@@ -63,7 +63,7 @@ export function RecipePostCard({
 
   return (
     <article className="group rounded-lg overflow-hidden border border-shadow-gray hover:border-primary/50 hover:shadow-lg transition-all duration-300 bg-background hover:bg-muted/50 relative">
-      {/* Favorite Button - Only show for AI Chef recipes on hover */}
+      {/* Favorite Button - Always visible */}
       {onToggleFavorite && (
         <button
           onClick={(e) => {
@@ -71,7 +71,7 @@ export function RecipePostCard({
             e.stopPropagation()
             onToggleFavorite()
           }}
-          className="absolute top-3 right-3 z-10 p-2 rounded-lg hover:bg-background/90 transition-all duration-200 opacity-0 group-hover:opacity-100"
+          className="absolute top-3 right-3 z-10 p-2 rounded-lg hover:bg-background/90 transition-colors"
           aria-label="Add to favorites"
         >
           <Heart
