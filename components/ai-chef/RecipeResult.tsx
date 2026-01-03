@@ -1,8 +1,9 @@
 "use client"
 
 import { RecipeResponse } from "@/types/ai-chef"
-import { Clock, Users, ChefHat, Flame, Share2, Download, AlertCircle, Heart } from "lucide-react"
+import { Clock, Users, ChefHat, Flame, Download, AlertCircle, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SocialShare } from "@/components/ui/social-share"
 import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
 import { getRecipeImage } from "@/lib/recipeImages"
@@ -60,37 +61,6 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
       favorites.push(recipeId)
       localStorage.setItem('ai-chef-favorites', JSON.stringify(favorites))
       setIsFavorite(true)
-    }
-  }
-
-  const handleShare = async () => {
-    // Get the domain from window.location or fallback to environment variable
-    const domain = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL || "https://worldfoodrecipes.com"
-    
-    // Create URL slug from recipe title (kebab-case)
-    const slug = recipeId || recipe.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
-    
-    const shareUrl = `${domain}/ai-chef/${slug}`
-    
-    const text = `Check out this AI-generated recipe: ${recipe.title}
-
-Prep Time: ${recipe.prepTime}
-Cook Time: ${recipe.cookTime}
-Servings: ${recipe.servings}
-
-From AI Chef on World Food Recipes
-👉 ${shareUrl}`
-
-    if (navigator.share) {
-      await navigator.share({
-        title: recipe.title,
-        text: text,
-        url: shareUrl,
-      })
-    } else {
-      // Fallback: copy to clipboard
-      await navigator.clipboard.writeText(text)
-      alert("Recipe link copied to clipboard!")
     }
   }
 
@@ -258,14 +228,11 @@ From AI Chef on World Food Recipes
             <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
             {isFavorite ? "Favorited" : "Add to Favorites"}
           </Button>
-          <Button
-            onClick={handleShare}
-            disabled={isCapturing}
-            className="gap-2 bg-primary hover:bg-primary/90"
-          >
-            <Share2 className="h-4 w-4" />
-            Share
-          </Button>
+          <SocialShare 
+            url={`${typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_BASE_URL || "https://worldfoodrecipes.com"}/ai-chef/${recipeId || recipe.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+            title={recipe.title}
+            description={`AI-generated recipe - Prep: ${recipe.prepTime}, Cook: ${recipe.cookTime}`}
+          />
           <Button
             onClick={handleDownload}
             disabled={isCapturing}
