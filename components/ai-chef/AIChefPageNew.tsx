@@ -64,6 +64,7 @@ export function AIChefPageNew() {
   const [showMoreIdeas, setShowMoreIdeas] = useState(false)
   const [recentlyGeneratedRecipes, setRecentlyGeneratedRecipes] = useState<any[]>([])
   const [loadingRecipes, setLoadingRecipes] = useState(true)
+  const [recentRecipesSearch, setRecentRecipesSearch] = useState("")
 
   // Fetch recently generated AI recipes from Firebase
   useEffect(() => {
@@ -610,6 +611,17 @@ export function AIChefPageNew() {
                   Get inspired by AI Chef's latest creations
                 </p>
               </div>
+
+              {/* Search Input */}
+              <div className="mb-8">
+                <input
+                  type="text"
+                  placeholder="Search recipes by name..."
+                  value={recentRecipesSearch}
+                  onChange={(e) => setRecentRecipesSearch(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-shadow-gray bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
               
               {loadingRecipes ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -622,30 +634,50 @@ export function AIChefPageNew() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {recentlyGeneratedRecipes.map((recipe: any) => (
-                    <div
-                      key={recipe.id}
-                      className="cursor-pointer group"
-                      onClick={() => router.push(`/ai-chef/${recipe.id}`)}
-                    >
-                      <RecipePostCard
-                        id={recipe.id}
-                        title={recipe.title}
-                        slug={recipe.id}
-                        excerpt={recipe.description}
-                        date={recipe.createdAt}
-                        author="AI Chef"
-                        tags={[recipe.country || "Recipe"]}
-                        image={recipe.imageUrl}
-                        prepTime={recipe.prepTime}
-                        cookTime={recipe.cookTime}
-                        servings={recipe.servings}
-                        difficulty={recipe.difficulty}
-                      />
+                <>
+                  {recentlyGeneratedRecipes
+                    .filter((recipe: any) =>
+                      recipe.title.toLowerCase().includes(recentRecipesSearch.toLowerCase()) ||
+                      recipe.description?.toLowerCase().includes(recentRecipesSearch.toLowerCase()) ||
+                      recipe.country?.toLowerCase().includes(recentRecipesSearch.toLowerCase())
+                    )
+                    .length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">No recipes match your search</p>
                     </div>
-                  ))}
-                </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {recentlyGeneratedRecipes
+                        .filter((recipe: any) =>
+                          recipe.title.toLowerCase().includes(recentRecipesSearch.toLowerCase()) ||
+                          recipe.description?.toLowerCase().includes(recentRecipesSearch.toLowerCase()) ||
+                          recipe.country?.toLowerCase().includes(recentRecipesSearch.toLowerCase())
+                        )
+                        .map((recipe: any) => (
+                          <div
+                            key={recipe.id}
+                            className="cursor-pointer group"
+                            onClick={() => router.push(`/ai-chef/${recipe.id}`)}
+                          >
+                            <RecipePostCard
+                              id={recipe.id}
+                              title={recipe.title}
+                              slug={recipe.id}
+                              excerpt={recipe.description}
+                              date={recipe.createdAt}
+                              author="AI Chef"
+                              tags={[recipe.country || "Recipe"]}
+                              image={recipe.imageUrl}
+                              prepTime={recipe.prepTime}
+                              cookTime={recipe.cookTime}
+                              servings={recipe.servings}
+                              difficulty={recipe.difficulty}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
