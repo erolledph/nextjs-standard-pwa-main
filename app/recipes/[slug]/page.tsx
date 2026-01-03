@@ -129,9 +129,9 @@ export default async function RecipePostPage({ params }: { params: Promise<{ slu
     datePublished: recipe.date,
     dateModified: recipe.date,
     cuisine: recipe.tags?.[0] || "International",
-    ...('prepTime' in recipe && recipe.prepTime && { prepTime: recipe.prepTime }),
-    ...('cookTime' in recipe && recipe.cookTime && { cookTime: recipe.cookTime }),
-    ...('servings' in recipe && recipe.servings && { recipeYield: `${recipe.servings} servings` }),
+    ...(('prepTime' in recipe && recipe.prepTime) ? { prepTime: recipe.prepTime } : {}),
+    ...(('cookTime' in recipe && recipe.cookTime) ? { cookTime: recipe.cookTime } : {}),
+    ...(('servings' in recipe && recipe.servings) ? { recipeYield: `${recipe.servings} servings` } : {}),
     keywords: recipe.tags?.join(", ") || "recipe, cooking",
   }
 
