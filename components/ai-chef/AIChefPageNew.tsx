@@ -28,6 +28,7 @@ import {
   Eye,
   ChefHat,
   WandSparkles,
+  Search,
 } from "lucide-react"
 import { RecipeResult } from "./RecipeResult"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
@@ -614,13 +615,16 @@ export function AIChefPageNew() {
 
               {/* Search Input */}
               <div className="mb-8">
-                <input
-                  type="text"
-                  placeholder="Search recipes by name..."
-                  value={recentRecipesSearch}
-                  onChange={(e) => setRecentRecipesSearch(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-shadow-gray bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search recipes by name..."
+                    value={recentRecipesSearch}
+                    onChange={(e) => setRecentRecipesSearch(e.target.value)}
+                    className="w-full px-6 py-4 rounded-lg border border-shadow-gray bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary pr-12"
+                  />
+                  <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary pointer-events-none" />
+                </div>
               </div>
               
               {loadingRecipes ? (
