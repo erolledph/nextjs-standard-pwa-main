@@ -167,8 +167,8 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
 
       {/* Recipe Hero Image */}
       {recipeImage && (
-        <>
-          <figure className="relative z-0 mx-auto max-w-screen-lg aspect-video overflow-hidden lg:rounded-lg mb-8">
+        <figure className="relative z-0 mx-auto max-w-screen-lg overflow-hidden lg:rounded-lg mb-8">
+          <div className="aspect-video relative">
             <Image
               src={recipeImage}
               alt={recipe.title}
@@ -178,9 +178,9 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
               onLoadingComplete={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
-          </figure>
+          </div>
           <figcaption className="text-center text-xs text-muted-foreground mt-2">{recipe.title}</figcaption>
-        </>
+        </figure>
       )}
 
       <div className="mx-auto max-w-screen-md">
