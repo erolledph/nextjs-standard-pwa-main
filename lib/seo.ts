@@ -117,7 +117,7 @@ export function generateMetadata(metadata: SEOMetadata) {
       url,
       siteName: siteConfig.name,
       locale: siteConfig.locale,
-      type: ogType as const,
+      type: ogType,
       images: [
         {
           url: image,
