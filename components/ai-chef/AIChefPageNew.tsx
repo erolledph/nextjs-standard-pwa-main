@@ -701,6 +701,7 @@ export function AIChefPageNew() {
                               onToggleFavorite={() => {
                                 handleToggleFavorite(recipe.id)
                               }}
+                              href={`/ai-chef/${recipe.id}`}
                             />
                           </div>
                         ))}
