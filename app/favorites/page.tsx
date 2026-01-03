@@ -221,6 +221,8 @@ export default function FavoritesPage() {
                         servings={String(recipe.servings || 4)}
                         difficulty={recipe.difficulty}
                         href={href}
+                        isFavorited={true}
+                        onToggleFavorite={() => removeFavorite(recipe.slug, isAiChef)}
                       />
                     </div>
                   )
