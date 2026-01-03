@@ -168,7 +168,7 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
       {/* Recipe Hero Image */}
       {recipeImage && (
         <>
-          <figure className="relative z-0 mx-auto max-w-screen-lg overflow-hidden lg:rounded-lg mb-8">
+          <figure className="relative z-0 mx-auto max-w-screen-lg aspect-video overflow-hidden lg:rounded-lg mb-8">
             <Image
               src={recipeImage}
               alt={recipe.title}
