@@ -59,9 +59,7 @@ export default function FavoritesPage() {
           if (aiIds.length > 0) {
             // Fetch full details for AI recipes to get images and other data
             try {
-              const response = await fetch("/api/admin/ai-recipes", {
-                credentials: "include"
-              })
+              const response = await fetch("/api/ai-recipes")
               if (response.ok) {
                 const data = await response.json()
                 const allAiRecipes = data.recipes || []

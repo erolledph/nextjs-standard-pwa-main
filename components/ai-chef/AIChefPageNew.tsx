@@ -70,7 +70,7 @@ export function AIChefPageNew() {
     const fetchRecentRecipes = async () => {
       try {
         setLoadingRecipes(true)
-        const response = await fetch("/api/admin/ai-recipes")
+        const response = await fetch("/api/ai-recipes")
         if (response.ok) {
           const data = await response.json()
           // Handle the { recipes: [...] } structure from API
