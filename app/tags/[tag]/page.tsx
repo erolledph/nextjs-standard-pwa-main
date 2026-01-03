@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Container } from "@/components/layout/Container"
 import { BlogPostCard } from "@/components/blog/BlogPostCard"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
+import { siteConfig } from "@/lib/seo"
 
 export const runtime = 'edge'
 
@@ -19,7 +20,7 @@ export async function generateMetadata({
   const tagTitle = decodedTag.charAt(0).toUpperCase() + decodedTag.slice(1)
 
   return {
-    title: `${tagTitle} - Recipes & Articles`,
+    title: `${tagTitle} - Recipes & Articles | ${siteConfig.name}`,
     description: `Explore all recipes and articles tagged with "${tagTitle}". Discover culinary inspiration and food stories.`,
     keywords: [decodedTag, "recipes", "blog", "food", "cooking"],
     openGraph: {

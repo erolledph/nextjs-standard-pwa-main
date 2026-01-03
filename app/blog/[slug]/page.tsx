@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 
     return {
-      title: post.title,
+      title: `${post.title} | ${siteConfig.name}`,
       description: post.excerpt || post.content.substring(0, 160),
       authors: post.author ? [{ name: post.author }] : undefined,
       keywords: [...(post.tags || []), "blog", "food blog", "culinary"],
