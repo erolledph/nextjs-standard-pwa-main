@@ -1,14 +1,14 @@
 import { Metadata } from "next"
 import { getRecipeImage } from "@/lib/recipeImages"
 
-export const runtime = 'edge'
-
 async function fetchRecipe(id: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'}/api/ai-chef/get-recipe?id=${id}`, {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const response = await fetch(`${baseUrl}/api/ai-chef/get-recipe?id=${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
+      next: { revalidate: 3600 }, // Cache for 1 hour
     })
 
     if (!response.ok) {
@@ -26,7 +26,7 @@ async function fetchRecipe(id: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const recipe = await fetchRecipe(slug)
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
   const pageUrl = `${baseUrl}/ai-chef/${slug}`
 
   if (!recipe) {
