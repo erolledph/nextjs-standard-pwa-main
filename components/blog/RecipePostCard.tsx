@@ -39,7 +39,9 @@ export function RecipePostCard({
   href,
 }: RecipePostCardProps) {
   const formatDate = (dateString: string) => {
+    if (!dateString) return "Recently added"
     const dateObj = new Date(dateString)
+    if (isNaN(dateObj.getTime())) return "Recently added"
     return dateObj.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -61,14 +63,15 @@ export function RecipePostCard({
 
   return (
     <article className="group rounded-lg overflow-hidden border border-shadow-gray hover:border-primary/50 hover:shadow-lg transition-all duration-300 bg-background hover:bg-muted/50 relative">
-      {/* Favorite Button */}
+      {/* Favorite Button - Only show for AI Chef recipes on hover */}
       {onToggleFavorite && (
         <button
           onClick={(e) => {
             e.preventDefault()
+            e.stopPropagation()
             onToggleFavorite()
           }}
-          className="absolute top-3 right-3 z-10 p-2 rounded-lg hover:bg-background/90 transition-colors"
+          className="absolute top-3 right-3 z-10 p-2 rounded-lg hover:bg-background/90 transition-all duration-200 opacity-0 group-hover:opacity-100"
           aria-label="Add to favorites"
         >
           <Heart

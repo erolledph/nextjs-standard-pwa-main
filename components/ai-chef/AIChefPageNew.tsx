@@ -66,6 +66,7 @@ export function AIChefPageNew() {
   const [recentlyGeneratedRecipes, setRecentlyGeneratedRecipes] = useState<any[]>([])
   const [loadingRecipes, setLoadingRecipes] = useState(true)
   const [recentRecipesSearch, setRecentRecipesSearch] = useState("")
+  const [aiChefFavorites, setAiChefFavorites] = useState<string[]>([])
 
   // Fetch recently generated AI recipes from Firebase
   useEffect(() => {
@@ -93,6 +94,16 @@ export function AIChefPageNew() {
     }
 
     fetchRecentRecipes()
+    
+    // Load AI Chef favorites from localStorage
+    const stored = localStorage.getItem("ai-chef-favorites")
+    if (stored) {
+      try {
+        setAiChefFavorites(JSON.parse(stored))
+      } catch (err) {
+        console.error("Failed to load favorites:", err)
+      }
+    }
   }, [])
 
   const {
@@ -192,6 +203,16 @@ export function AIChefPageNew() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Toggle favorite for AI Chef recipe
+  const handleToggleFavorite = (recipeId: string) => {
+    const updated = aiChefFavorites.includes(recipeId)
+      ? aiChefFavorites.filter((id) => id !== recipeId)
+      : [...aiChefFavorites, recipeId]
+    
+    setAiChefFavorites(updated)
+    localStorage.setItem("ai-chef-favorites", JSON.stringify(updated))
   }
 
   // Generate fresh AI recipe when user clicks "Fresh Generate"
@@ -676,6 +697,10 @@ export function AIChefPageNew() {
                               cookTime={recipe.cookTime}
                               servings={recipe.servings}
                               difficulty={recipe.difficulty}
+                              isFavorited={aiChefFavorites.includes(recipe.id)}
+                              onToggleFavorite={() => {
+                                handleToggleFavorite(recipe.id)
+                              }}
                             />
                           </div>
                         ))}
