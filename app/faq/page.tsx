@@ -9,7 +9,7 @@ export const metadata: Metadata = generateSEOMetadata({
   title: "Frequently Asked Questions",
   description: "Find answers to common questions about World Food Recipes. Learn how to use our platform, save recipes, access content, and more.",
   url: getCanonicalUrl('/faq'),
-  image: `${siteUrl}/og-image.png`,
+  image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,
 }) as Metadata
 

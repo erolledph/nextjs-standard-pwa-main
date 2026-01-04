@@ -41,7 +41,7 @@ export const siteConfig = {
   ],
   logo: '/logo.svg',
   favicon: '/favicon.svg',
-  ogImage: '/og-image.png',
+  ogImage: '/og-image.svg',
 }
 
 /**

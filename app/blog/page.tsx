@@ -11,7 +11,7 @@ export const metadata: Metadata = generateSEOMetadata({
   title: "Food Blog - International Recipes & Cooking Stories | World Food Recipes",
   description: "Read authentic food blog posts about international cuisines, cooking techniques, food stories, and culinary tips. Discover world food blogging at its finest with detailed recipe guides.",
   url: getCanonicalUrl('/blog'),
-  image: `${siteUrl}/og-image.png`,
+  image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,
 }) as Metadata
 

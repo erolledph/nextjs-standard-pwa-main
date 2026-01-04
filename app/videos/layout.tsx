@@ -7,7 +7,7 @@ export const metadata: Metadata = generateSEOMetadata({
   title: "Cooking Video Tutorials & Recipes | World Food Recipes",
   description: "Watch cooking video tutorials featuring international recipes, cooking techniques, and culinary lessons. Learn world food cooking from experts through our comprehensive video collection.",
   url: getCanonicalUrl('/videos'),
-  image: `${siteUrl}/og-image.png`,
+  image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,
 }) as Metadata
 

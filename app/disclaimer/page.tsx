@@ -7,7 +7,7 @@ export const metadata: Metadata = generateSEOMetadata({
   title: "Disclaimer",
   description: "Important disclaimer for World Food Recipes. Learn about nutritional information, recipe modifications, and cooking safety when using our world food recipes and cooking tutorials.",
   url: getCanonicalUrl('/disclaimer'),
-  image: `${siteUrl}/og-image.png`,
+  image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,
 }) as Metadata
 

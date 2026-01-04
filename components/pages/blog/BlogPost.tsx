@@ -40,7 +40,7 @@ export function BlogPost({ post, siteUrl }: BlogPostProps) {
     "@type": "BlogPosting",
     "headline": post.title,
     "description": post.excerpt || post.content.substring(0, 160),
-    "image": post.image || `${siteUrl}/og-image.png`,
+    "image": post.image || `${siteUrl}/og-image.svg`,
     "datePublished": post.date,
     "dateModified": post.date,
     "author": {

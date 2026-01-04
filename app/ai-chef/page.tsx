@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: `${siteUrl}/og-image.png`,
+        url: `${siteUrl}/og-image.svg`,
         width: 1200,
         height: 630,
         alt: "AI Chef - Recipe Generator",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     title: "AI Chef - Smart Recipe Generator",
     description: "Generate unlimited recipes with AI or search our curated database.",
     creator: siteConfig.socialMedia.twitter,
-    images: [`${siteUrl}/og-image.png`],
+    images: [`${siteUrl}/og-image.svg`],
   },
   alternates: {
     canonical: getCanonicalUrl("/ai-chef"),

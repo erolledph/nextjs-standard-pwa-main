@@ -7,7 +7,7 @@ export const metadata: Metadata = generateSEOMetadata({
   title: "Privacy Policy",
   description: "Read our privacy policy to understand how World Food Recipes protects your personal data and information when you explore our recipes and food blogging content.",
   url: getCanonicalUrl('/privacy'),
-  image: `${siteUrl}/og-image.png`,
+  image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,
 }) as Metadata
 

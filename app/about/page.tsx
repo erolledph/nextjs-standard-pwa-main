@@ -9,7 +9,7 @@ export const metadata: Metadata = generateSEOMetadata({
   title: "About World Food Recipes | Our Story",
   description: "Discover the story behind World Food Recipes. We're passionate about food blogging and sharing authentic international recipes, cooking tips, and culinary traditions from around the world.",
   url: getCanonicalUrl('/about'),
-  image: `${siteUrl}/og-image.png`,
+  image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,
 }) as Metadata
 

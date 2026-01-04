@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: `${siteUrl}/og-image.png`,
+        url: `${siteUrl}/og-image.svg`,
         width: 1200,
         height: 630,
         alt: siteConfig.name
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} - Authentic Recipes & Food Stories`,
     description: siteConfig.description,
     creator: siteConfig.socialMedia.twitter,
-    images: [`${siteUrl}/og-image.png`],
+    images: [`${siteUrl}/og-image.svg`],
   },
   robots: {
     index: true,

@@ -7,7 +7,7 @@ export const metadata: Metadata = generateSEOMetadata({
   title: "AI Chef - Smart Recipe Generator | World Food Recipes",
   description: "Generate personalized recipes instantly with AI. Describe your ingredients, dietary preferences, and cooking skill level to get delicious recipe suggestions powered by artificial intelligence.",
   url: getCanonicalUrl('/ai-chef'),
-  image: `${siteUrl}/og-image.png`,
+  image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,
   category: "Tools",
 }) as Metadata

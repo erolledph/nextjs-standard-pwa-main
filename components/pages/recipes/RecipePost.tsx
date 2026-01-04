@@ -73,7 +73,7 @@ export function RecipePost({ recipe }: RecipePostProps) {
     "@type": "Recipe",
     "name": recipe.title,
     "description": recipe.excerpt || recipe.content.substring(0, 160),
-    "image": recipe.image || `${siteUrl}/og-image.png`,
+    "image": recipe.image || `${siteUrl}/og-image.svg`,
     "author": {
       "@type": "Person",
       "name": recipe.author || "World Food Recipes"

@@ -7,7 +7,7 @@ export const metadata: Metadata = generateSEOMetadata({
   title: "Terms of Service",
   description: "Review the terms of service for using World Food Recipes. Understand our conditions for accessing recipes, food blogging content, and cooking tutorials.",
   url: getCanonicalUrl('/terms'),
-  image: `${siteUrl}/og-image.png`,
+  image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,
 }) as Metadata
 
