@@ -10,7 +10,7 @@ import { RecipeResponse } from "@/types/ai-chef"
 
 async function fetchRecipe(id: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'}/api/ai-chef/get-recipe?id=${id}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/ai-chef/get-recipe?id=${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
