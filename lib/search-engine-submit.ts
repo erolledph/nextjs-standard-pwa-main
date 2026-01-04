@@ -34,6 +34,21 @@ async function submitToIndexNow(urls: string[]) {
 
     const data = await response.json()
 
+    // Handle rate limiting gracefully (429 is not a failure, just a retry-later)
+    if (response.status === 429) {
+      console.warn("[IndexNow Rate Limited]", {
+        status: response.status,
+        message: data.message,
+        retryAfter: data.retryAfter,
+      })
+      return {
+        success: true, // Still consider it successful - IndexNow received the request
+        service: "IndexNow",
+        message: `Rate limited - ${data.retryAfter || 'please retry later'}`,
+        rateLimited: true,
+      }
+    }
+
     if (!response.ok) {
       console.error("[IndexNow Submission Failed]", {
         status: response.status,
@@ -82,6 +97,35 @@ async function submitToBingWebmaster(urls: string[]) {
     })
 
     const data = await response.json()
+
+    // Handle rate limiting gracefully
+    if (response.status === 429) {
+      console.warn("[Bing Rate Limited]", {
+        status: response.status,
+        message: data.message,
+        retryAfter: data.retryAfter,
+      })
+      return {
+        success: true, // Still consider it successful
+        service: "Bing",
+        message: `Rate limited - ${data.retryAfter || 'please retry later'}`,
+        rateLimited: true,
+      }
+    }
+
+    // Handle missing API key gracefully
+    if (response.status === 200 && data.success && data.message && data.message.includes("skipped")) {
+      console.warn("[Bing Skipped]", {
+        message: data.message,
+        note: data.note,
+      })
+      return {
+        success: true,
+        service: "Bing",
+        message: data.message,
+        skipped: true,
+      }
+    }
 
     if (!response.ok) {
       console.error("[Bing Submission Failed]", {

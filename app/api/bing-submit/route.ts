@@ -19,13 +19,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // If Bing API key is not configured, skip submission gracefully
     if (!BING_API_KEY) {
+      console.warn("[Bing Submit] Bing API key not configured. Skipping Bing submission.")
       return NextResponse.json(
         {
-          error:
-            "Bing API key not configured. Please set BING_WEBMASTER_API_KEY environment variable.",
+          success: true,
+          message: "Bing submission skipped - API key not configured",
+          note: "Please set BING_WEBMASTER_API_KEY in Cloudflare Pages environment variables",
         },
-        { status: 500 }
+        { status: 200 }
       )
     }
 

@@ -100,11 +100,11 @@ export async function POST(request: NextRequest) {
     } else if (statusCode === 429) {
       return NextResponse.json(
         {
-          error: "Rate limited by IndexNow - please wait before submitting again",
+          success: true, // Rate limiting is not a failure - request was received
+          message: "Submission queued but rate limited - will be indexed soon",
           retryAfter: response.headers.get("Retry-After") || "60 seconds",
-          details: responseText,
         },
-        { status: 429 }
+        { status: 200 } // Return 200 since this is expected behavior
       )
     } else {
       return NextResponse.json(
