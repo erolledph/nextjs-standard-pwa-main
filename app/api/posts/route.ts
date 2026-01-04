@@ -119,7 +119,7 @@ image: ${image || ""}
 ${content}
 `
 
-    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/posts/${filename}`
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/posts/blog/${filename}`
     console.log("[POST /api/posts] GitHub API URL:", apiUrl)
     console.log("[POST /api/posts] Creating post:", { slug, filename })
 
