@@ -7,6 +7,9 @@ const INDEXNOW_KEY = process.env.NEXT_PUBLIC_INDEXNOW_KEY || ""
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ""
 const KEY_LOCATION = `${SITE_URL}/${INDEXNOW_KEY}.txt`
 
+// Extract host from SITE_URL (e.g., "https://worldfoodrecipes.sbs" → "worldfoodrecipes.sbs")
+const HOST = SITE_URL.replace(/^https?:\/\//, "")
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -30,12 +33,14 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[IndexNow] Submitting to IndexNow:", {
-      host: SITE_URL,
+      host: HOST,
+      key: INDEXNOW_KEY.substring(0, 8) + "...",
+      keyLocation: KEY_LOCATION,
       urlCount: urls.length,
       urls: urls,
     })
 
-    // Send to IndexNow
+    // Send to IndexNow with correct format
     const response = await fetch(INDEXNOW_API_URL, {
       method: "POST",
       headers: {
@@ -43,7 +48,7 @@ export async function POST(request: NextRequest) {
         "User-Agent": "WorldFoodRecipes/1.0",
       },
       body: JSON.stringify({
-        host: SITE_URL,
+        host: HOST,
         key: INDEXNOW_KEY,
         keyLocation: KEY_LOCATION,
         urlList: urls,
