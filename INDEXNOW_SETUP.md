@@ -20,32 +20,36 @@ No manual URL pasting needed! 🎉
 
 ## 🔑 Setup: Add Your IndexNow Key
 
-### Step 1: Get Your IndexNow Key from Bing
+### Step 1: Get Your IndexNow Key from Bing ✅
 
-1. Go to: https://www.bing.com/webmasters/
-2. Sign in or create account
-3. Add your site (https://worldfoodrecipes.sbs)
-4. Go to **Settings → Verification & tracking**
-5. Copy your **IndexNow API key** (looks like: `ff4781a1474d46f4a56fb227e2c203d0`)
+Your IndexNow Key: **`37ced97b3f05467fa60919e05ed8b79c`**
 
-### Step 2: Add Key to Cloudflare Pages
+This is your verification key. It's already created and ready to use.
 
-1. Go to Cloudflare Dashboard
+**Verification file location:** 
+```
+https://worldfoodrecipes.sbs/37ced97b3f05467fa60919e05ed8b79c.txt
+```
+
+### Step 2: Add Key to Cloudflare Pages ⏳ (YOUR TURN)
+
+1. Go to Cloudflare Dashboard: https://dash.cloudflare.com
 2. Navigate to **Pages → Your Project → Settings → Environment Variables**
 3. Add new variable:
    ```
-   Name: NEXT_PUBLIC_INDEXNOW_KEY
-   Value: [paste-your-key-here]
+   Name:  NEXT_PUBLIC_INDEXNOW_KEY
+   Value: 37ced97b3f05467fa60919e05ed8b79c
    ```
-4. Save and redeploy
+4. **Save** and wait for deployment
 
-### Step 3: Verify It's Working
+### Step 3: Verify It's Working ✅
 
 Create a test blog post:
 1. Go to Admin Dashboard → Create Post
 2. Fill in form and click **Publish**
 3. Look for toast notification: "Successfully submitted to IndexNow"
 4. Check Bing Webmaster Tools → Crawl requests → URL submission to see the submission
+5. Verify the URL appears with a successful status
 
 ---
 

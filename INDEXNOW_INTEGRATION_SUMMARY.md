@@ -76,25 +76,32 @@ When you create a **blog post** or **recipe**, it now automatically submits to:
 
 ## ⚙️ Setup Required (One Time Only)
 
-### Step 1: Get IndexNow Key
+### Your IndexNow Key: `37ced97b3f05467fa60919e05ed8b79c`
+
+### Step 1: Verification File ✅ (Already Done)
 ```
-1. Go to: https://www.bing.com/webmasters/
-2. Add site: https://worldfoodrecipes.sbs
-3. Settings → Verification & tracking
-4. Copy API key (e.g., ff4781a1474d46f4a56fb227e2c203d0)
+Location: https://worldfoodrecipes.sbs/37ced97b3f05467fa60919e05ed8b79c.txt
+Status:   ✅ Created and deployed
 ```
 
-### Step 2: Add to Cloudflare Pages
+### Step 2: Add to Cloudflare Pages ⏳ (Your Turn)
 ```
 Cloudflare Dashboard
   → Pages → Your Project
   → Settings → Environment Variables
-  → Add: NEXT_PUBLIC_INDEXNOW_KEY = [your-key]
+  
+Add:
+  Name:  NEXT_PUBLIC_INDEXNOW_KEY
+  Value: 37ced97b3f05467fa60919e05ed8b79c
 ```
 
 ### Step 3: Redeploy
 ```
-Git push to main (automatic deployment)
+Option A: Git push (automatic)
+  git push origin main
+
+Option B: Manual redeploy in Cloudflare Pages
+  Deployments → Latest → Retry
 ```
 
 ---
