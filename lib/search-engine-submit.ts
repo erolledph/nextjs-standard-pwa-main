@@ -3,8 +3,6 @@
  * Used for automatic indexing of new content
  */
 
-import { logger } from "@/lib/logger"
-
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ""
 
 /**
@@ -37,7 +35,7 @@ async function submitToIndexNow(urls: string[]) {
     const data = await response.json()
 
     if (!response.ok) {
-      logger.error("[IndexNow Submission Failed]", {
+      console.error("[IndexNow Submission Failed]", {
         status: response.status,
         error: data.error,
         details: data.details,
@@ -49,7 +47,7 @@ async function submitToIndexNow(urls: string[]) {
       }
     }
 
-    logger.info("[IndexNow Submission Success]", {
+    console.info("[IndexNow Submission Success]", {
       urls,
       message: data.message,
     })
@@ -60,7 +58,7 @@ async function submitToIndexNow(urls: string[]) {
       message: data.message,
     }
   } catch (error) {
-    logger.error("[IndexNow Submission Error]", {
+    console.error("[IndexNow Submission Error]", {
       urls,
       error: String(error),
     })
@@ -86,7 +84,7 @@ async function submitToBingWebmaster(urls: string[]) {
     const data = await response.json()
 
     if (!response.ok) {
-      logger.error("[Bing Submission Failed]", {
+      console.error("[Bing Submission Failed]", {
         status: response.status,
         error: data.error,
         details: data.details,
@@ -98,7 +96,7 @@ async function submitToBingWebmaster(urls: string[]) {
       }
     }
 
-    logger.info("[Bing Submission Success]", {
+    console.info("[Bing Submission Success]", {
       urls,
       message: data.message,
     })
@@ -109,7 +107,7 @@ async function submitToBingWebmaster(urls: string[]) {
       message: data.message,
     }
   } catch (error) {
-    logger.error("[Bing Submission Error]", {
+    console.error("[Bing Submission Error]", {
       urls,
       error: String(error),
     })
@@ -129,14 +127,16 @@ export async function submitToSearchEngines(
   type: "blog" | "recipe" | "ai-recipe"
 ) {
   if (!urls || urls.length === 0) {
-    logger.warn("[Search Engine Submission] No URLs provided")
+    console.warn("[Search Engine Submission] No URLs provided")
     return {
       success: false,
       message: "No URLs provided for submission",
+      successful: 0,
+      failed: 0,
     }
   }
 
-  logger.info("[Search Engine Submission] Starting", {
+  console.info("[Search Engine Submission] Starting", {
     type,
     urlCount: urls.length,
     urls,
@@ -149,23 +149,23 @@ export async function submitToSearchEngines(
   ])
 
   const results = [indexNowResult, bingResult].filter(r => r !== null)
-  const successful = results.filter(r => r.success)
-  const failed = results.filter(r => !r.success)
+  const successful = results.filter(r => r.success).length
+  const failed = results.filter(r => !r.success).length
 
   const summary = {
     type,
     urls,
     totalServices: results.length,
-    successful: successful.length,
-    failed: failed.length,
+    successful,
+    failed,
     results: results,
     message:
-      successful.length > 0
-        ? `Successfully submitted to ${successful.map(r => r.service).join(", ")}`
+      successful > 0
+        ? `Successfully submitted to ${results.filter(r => r.success).map(r => r.service).join(", ")}`
         : "Failed to submit to search engines",
   }
 
-  logger.info("[Search Engine Submission] Complete", summary)
+  console.info("[Search Engine Submission] Complete", summary)
 
   return summary
 }

@@ -246,7 +246,7 @@ function CreatePostContent() {
           ? await submitRecipePostToSearchEngines(slug)
           : await submitBlogPostToSearchEngines(slug)
 
-        if (submitResult.successful > 0) {
+        if (submitResult.successful && submitResult.successful > 0) {
           toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created and submitted to search engines!`)
         } else {
           toast.warning(
