@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Search, UtensilsCrossed, Heart, Wand2 } from "lucide-react"
+import { Search, UtensilsCrossed, Heart, Wand2, WandSparkles } from "lucide-react"
 import { BlogPostCard } from "@/components/blog/BlogPostCard"
 import { RecipePostCard } from "@/components/blog/RecipePostCard"
 import { BlogPostCardSkeleton } from "@/components/blog/BlogPostCardSkeleton"
@@ -83,7 +83,8 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
           {/* Main Headline - Premium Typography with Animations */}
           <div className="text-center mb-10 sm:mb-14 hero-fade-in">
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight leading-tight mb-4 sm:mb-6 text-foreground">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight leading-tight mb-4 sm:mb-6 text-foreground inline-flex items-center gap-3">
+              <WandSparkles className="w-10 sm:w-12 lg:w-16 text-orange-500 flex-shrink-0" />
               AI Recipe <span className="text-orange-500">Maker</span>
             </h1>
             

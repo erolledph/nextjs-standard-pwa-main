@@ -10,19 +10,20 @@ import { siteConfig, getCanonicalUrl } from "@/lib/seo"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url
 
 export const metadata: Metadata = {
-  title: "AI Chef - Smart Recipe Generator & Search | World Food Recipes",
+  title: "AI Recipe Maker - Generate Recipes with AI Chef | World Food Recipes",
   description:
-    "Create unique recipes with AI Chef. Search our global recipe database or generate custom recipes based on ingredients, cuisine, and taste preferences. Free AI-powered meal planning and cooking suggestions.",
+    "Free AI recipe maker: generate unlimited unique recipes based on ingredients, cuisine & dietary needs. Try our AI Chef - no login required. Create personalized recipes instantly.",
   keywords: [
+    "AI recipe maker",
+    "recipe generator",
     "AI recipe generator",
-    "recipe search",
+    "free recipe maker",
     "meal planning",
     "cooking assistant",
-    "smart recipe database",
+    "recipe creator",
     "AI cooking",
-    "recipe ideas",
-    "food generator",
     "custom recipes",
+    "recipe ideas generator",
   ],
   authors: [{ name: siteConfig.author }],
   robots: {
@@ -31,9 +32,9 @@ export const metadata: Metadata = {
     nocache: false,
   },
   openGraph: {
-    title: "AI Chef - Smart Recipe Generator & Search",
+    title: "AI Recipe Maker - Free Recipe Generator",
     description:
-      "Generate unlimited recipes with AI or search our curated database. Smart meal planning made easy.",
+      "Generate unlimited unique recipes with AI Chef. Create custom recipes based on ingredients, dietary preferences & cuisine. 100% free - no login required.",
     url: getCanonicalUrl("/ai-chef"),
     type: "website",
     siteName: siteConfig.name,
@@ -42,14 +43,14 @@ export const metadata: Metadata = {
         url: `${siteUrl}/og-image.svg`,
         width: 1200,
         height: 630,
-        alt: "AI Chef - Recipe Generator",
+        alt: "AI Recipe Maker - Free Recipe Generator",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI Chef - Smart Recipe Generator",
-    description: "Generate unlimited recipes with AI or search our curated database.",
+    title: "AI Recipe Maker - Generate Recipes Free",
+    description: "Generate unlimited unique recipes with our free AI recipe maker. No login needed!",
     creator: siteConfig.socialMedia.twitter,
     images: [`${siteUrl}/og-image.svg`],
   },
