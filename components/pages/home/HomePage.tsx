@@ -84,7 +84,7 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
           <div className="text-center mb-10 sm:mb-14 hero-fade-in">
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight leading-tight mb-4 sm:mb-6 text-foreground inline-flex items-center gap-3">
-              <WandSparkles className="w-10 sm:w-12 lg:w-16 text-orange-500 flex-shrink-0" />
+              <WandSparkles className="w-10 sm:w-14 lg:w-20 text-orange-500 flex-shrink-0" />
               AI Recipe <span className="text-orange-500">Maker</span>
             </h1>
             
