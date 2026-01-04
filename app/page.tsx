@@ -6,8 +6,8 @@ import { fetchContentFromGitHub } from "@/lib/github"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url
 
 export const metadata: Metadata = generateSEOMetadata({
-  title: "Authentic Global Recipes & Food Blogging | World Food Recipes",
-  description: "Explore authentic world food recipes from international cuisines. Discover easy cooking tips, food stories, and culinary traditions. Your ultimate food blogging destination for global recipes.",
+  title: "AI Recipe Maker - Free Recipe Generator | World Food Recipes",
+  description: "Generate unlimited unique recipes with our free AI recipe maker. Create dishes based on ingredients, dietary preferences & cuisine. Try AI Chef - no login required!",
   url: getCanonicalUrl('/'),
   image: `${siteUrl}/og-image.svg`,
   author: siteConfig.author,

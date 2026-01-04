@@ -84,12 +84,12 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
           <div className="text-center mb-10 sm:mb-14 hero-fade-in">
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight leading-tight mb-4 sm:mb-6 text-foreground">
-              Recipes Meets <span className="text-orange-500">Artificial Intelligence</span>
+              AI Recipe <span className="text-orange-500">Maker</span>
             </h1>
             
             {/* Subtitle - Clear Value Proposition */}
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
-              Search thousands of recipes or generate personalized recipes instantly with AI.
+              Generate unlimited unique recipes instantly. Tell AI your ingredients and get personalized recipes in seconds.
             </p>
           </div>
 
@@ -98,18 +98,28 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
             <form onSubmit={handleSearch} className="space-y-4" role="search">
               {/* Dual Input System - Search or AI Chef */}
               <div className="flex flex-col sm:flex-row gap-3 w-full">
-                {/* Primary Search Input */}
+                {/* AI Chef CTA - Primary Action */}
+                <Link
+                  href="/ai-chef"
+                  className="inline-flex items-center justify-center sm:justify-start gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-background whitespace-nowrap group flex-1 sm:flex-none"
+                  aria-label="Generate recipe with AI Chef"
+                >
+                  <Wand2 className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  <span className="text-base sm:text-base font-bold">Generate Recipe Free</span>
+                </Link>
+
+                {/* Secondary Search Input */}
                 <div className="relative flex-1">
                   <input
                     type="text"
-                    placeholder="Search recipes, blog, food, ingredients..."
+                    placeholder="Or search recipes..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     disabled={isSearching}
                     className="w-full px-4 py-3.5 sm:py-4 rounded-lg border-2 border-border bg-background text-foreground placeholder-foreground/40 text-sm sm:text-base font-medium shadow-sm hover:border-primary/50 transition-all duration-200 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/20 disabled:opacity-60"
                   />
                   
-                  {/* Search Button - Primary Action on Mobile, Icon-only on Desktop */}
+                  {/* Search Button */}
                   <button
                     type="submit"
                     disabled={isSearching || !searchTerm.trim()}
@@ -119,22 +129,12 @@ export function HomePage({ recentPosts = [], recentRecipes = [] }: HomePageProps
                     <Search className="w-5 h-5 sm:w-5 sm:h-5" />
                   </button>
                 </div>
-
-                {/* Secondary AI Chef CTA - Primary on Desktop */}
-                <Link
-                  href="/ai-chef"
-                  className="inline-flex items-center justify-center sm:justify-start gap-2 px-5 sm:px-6 py-3.5 sm:py-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-background whitespace-nowrap group"
-                  aria-label="Generate recipe with AI Chef"
-                >
-                  <Wand2 className="w-5 h-5 transition-transform group-hover:scale-110" />
-                  <span className="text-sm sm:text-base">Generate Recipe</span>
-                </Link>
               </div>
 
               {/* Helpful Hint - UX Guidance */}
               <p className="text-xs sm:text-sm text-muted-foreground text-center px-4">
-                💡 <span className="hidden sm:inline">Try searching for ingredients like "chicken, garlic, tomato" or use AI to create something new</span>
-                <span className="sm:hidden">Search or generate with AI</span>
+                ✨ <span className="hidden sm:inline">No login required • Works offline • 100% free</span>
+                <span className="sm:hidden">Free • No login • Offline ready</span>
               </p>
             </form>
           </div>
