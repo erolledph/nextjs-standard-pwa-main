@@ -6,7 +6,7 @@ import { fetchContentFromGitHub } from "@/lib/github"
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || siteConfig.url
 
 export const metadata: Metadata = generateSEOMetadata({
-  title: "World Food Recipes | Authentic Global Recipes & Food Blogging",
+  title: "Authentic Global Recipes & Food Blogging | World Food Recipes",
   description: "Explore authentic world food recipes from international cuisines. Discover easy cooking tips, food stories, and culinary traditions. Your ultimate food blogging destination for global recipes.",
   url: getCanonicalUrl('/'),
   image: `${siteUrl}/og-image.png`,
