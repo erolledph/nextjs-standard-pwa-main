@@ -35,7 +35,16 @@ export async function POST(request: NextRequest) {
       urls: urls,
     })
 
-    // Send to Bing
+    // Send to Bing (siteUrl must be domain only, without protocol)
+    const siteDomain = SITE_URL.replace(/^https?:\/\//i, '').replace(/\/$/, '')
+    
+    console.log("[Bing Submit] Request details:", {
+      apiUrl: BING_API_URL,
+      siteDomain: siteDomain,
+      urlCount: urls.length,
+      firstUrl: urls[0],
+    })
+
     const response = await fetch(`${BING_API_URL}?apikey=${BING_API_KEY}`, {
       method: "POST",
       headers: {
@@ -43,7 +52,7 @@ export async function POST(request: NextRequest) {
         "User-Agent": "WorldFoodRecipes/1.0",
       },
       body: JSON.stringify({
-        siteUrl: SITE_URL,
+        siteUrl: siteDomain,
         urlList: urls,
       }),
     })
