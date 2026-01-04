@@ -168,7 +168,7 @@ ${content}
 
     const result = await response.json()
     console.log("[POST /api/posts] Post created successfully:", result.content?.path)
-    return NextResponse.json({ success: true, data: result })
+    return NextResponse.json({ success: true, slug, data: result })
   } catch (error) {
     console.error("[POST /api/posts] Unexpected error:", error)
     return NextResponse.json({

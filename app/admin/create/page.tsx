@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Bold, Italic, Link2, List, ListOrdered, Heading1, Heading2, Code, Quote, Eye, EyeOff, Image, Plus, Trash2 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { toast } from "sonner"
+import { submitBlogPostToSearchEngines, submitRecipePostToSearchEngines } from "@/lib/search-engine-submit"
 
 function CreatePostContent() {
   const router = useRouter()
@@ -234,7 +235,28 @@ function CreatePostContent() {
         throw new Error(data.error || `Failed to create ${contentType === "recipes" ? "recipe" : "post"}`)
       }
 
-      toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created successfully!`)
+      const responseData = await response.json()
+      const slug = responseData.slug
+
+      // Submit to search engines (IndexNow + Bing)
+      if (slug) {
+        toast.loading(`Submitting ${contentType === "recipes" ? "recipe" : "post"} to search engines...`)
+        
+        const submitResult = contentType === "recipes" 
+          ? await submitRecipePostToSearchEngines(slug)
+          : await submitBlogPostToSearchEngines(slug)
+
+        if (submitResult.successful > 0) {
+          toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created and submitted to search engines!`)
+        } else {
+          toast.warning(
+            `${contentType === "recipes" ? "Recipe" : "Post"} created but search engine submission failed. You can resubmit later.`
+          )
+        }
+      } else {
+        toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created successfully!`)
+      }
+
       router.push(`/admin/dashboard?tab=${contentType === "recipes" ? "recipes" : "content"}`)
     } catch (err) {
       const message = err instanceof Error ? err.message : `Failed to create ${contentType === "recipes" ? "recipe" : "post"}`

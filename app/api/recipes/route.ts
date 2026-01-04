@@ -227,7 +227,7 @@ ${content}
     // Firebase save is not available on Cloudflare Pages (edge runtime)
     console.log("[POST /api/recipes] Recipe saved to GitHub (Firebase not available on this deployment)")
     
-    return NextResponse.json({ success: true, data: result })
+    return NextResponse.json({ success: true, slug, data: result })
   } catch (error) {
     console.error("[POST /api/recipes] Unexpected error:", error)
     return NextResponse.json({
