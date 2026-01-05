@@ -99,6 +99,8 @@ export async function GET(request: NextRequest) {
       tasteProfile: fields.tasteProfile?.stringValue,
       createdAt: fields.createdAt?.timestampValue,
       imageUrl: fields.imageUrl?.stringValue, // Cached image URL if available
+      content: fields.content?.stringValue || "",
+      tags: fields.tags?.arrayValue?.values?.map((item: any) => item.stringValue || "") || [],
     }
 
     return NextResponse.json({

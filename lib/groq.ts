@@ -31,6 +31,8 @@ The JSON must follow this exact structure:
   "servings": "4-6" or "4",
   "prepTime": "15 minutes",
   "cookTime": "30 minutes",
+  "content": "A 2-3 paragraph engaging introduction to the recipe, its origin, or why it works well. Write in a friendly, appetizing tone. Use Markdown.",
+  "tags": ["relevant", "keywords", "cuisine type", "dietary info"],
   "ingredients": [
     {
       "item": "ingredient name",

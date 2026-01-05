@@ -94,6 +94,15 @@ export const RecipeResponseSchema = z.object({
     .string()
     .max(50, "Cuisine name too long")
     .optional(),
+
+  tags: z
+    .array(z.string())
+    .optional()
+    .default([]),
+
+  content: z
+    .string()
+    .optional(),
     
   imageUrl: z
     .string()
