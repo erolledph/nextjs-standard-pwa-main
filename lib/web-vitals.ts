@@ -101,7 +101,7 @@ export async function initWebVitals(options?: {
     // This is optional - if not installed, tracking simply won't run
     let webVitals: any
     try {
-      // @ts-expect-error - web-vitals is an optional dependency
+      // @ts-ignore - web-vitals is an optional dependency
       webVitals = await import('web-vitals')
     } catch {
       if (process.env.NODE_ENV === 'development') {

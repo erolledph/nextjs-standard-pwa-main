@@ -8,6 +8,7 @@ import { SocialShare } from "@/components/ui/social-share"
 import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
 import { getRecipeImage } from "@/lib/recipeImages"
+import ReactMarkdown from "react-markdown"
 
 interface RecipeResultProps {
   recipe: RecipeResponse
@@ -201,6 +202,30 @@ export function RecipeResult({ recipe, recipeId }: RecipeResultProps) {
             </p>
           )}
         </header>
+
+        {/* About this Recipe (Content) */}
+        {recipe.content && (
+          <div className="mb-12 prose prose-lg dark:prose-invert max-w-none">
+            <h2 className="text-2xl font-bold text-foreground mb-4 font-serif">About this Recipe</h2>
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => (
+                  <p className="text-base leading-relaxed text-foreground/90 mb-4">
+                    {children}
+                  </p>
+                ),
+                strong: ({ children }) => (
+                  <strong className="font-bold text-foreground">{children}</strong>
+                ),
+                em: ({ children }) => (
+                  <em className="italic text-foreground">{children}</em>
+                ),
+              }}
+            >
+              {recipe.content}
+            </ReactMarkdown>
+          </div>
+        )}
 
         {/* Recipe Info Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 bg-muted/30 p-6 rounded-lg">
