@@ -27,6 +27,13 @@ export async function submitToIndexNow(
  */
 export async function submitBlogPostToIndexNow(slug: string) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+  
+  // Warn if NEXT_PUBLIC_SITE_URL is not set in production
+  if (!siteUrl) {
+    console.warn('[IndexNow] NEXT_PUBLIC_SITE_URL is not set in environment')
+    return { success: false, message: 'NEXT_PUBLIC_SITE_URL not configured' }
+  }
+  
   const url = `${siteUrl}/blog/${slug}`
   return submitToIndexNow([url])
 }
@@ -36,6 +43,13 @@ export async function submitBlogPostToIndexNow(slug: string) {
  */
 export async function submitRecipePostToIndexNow(slug: string) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+  
+  // Warn if NEXT_PUBLIC_SITE_URL is not set in production
+  if (!siteUrl) {
+    console.warn('[IndexNow] NEXT_PUBLIC_SITE_URL is not set in environment')
+    return { success: false, message: 'NEXT_PUBLIC_SITE_URL not configured' }
+  }
+  
   const url = `${siteUrl}/recipes/${slug}`
   return submitToIndexNow([url])
 }
