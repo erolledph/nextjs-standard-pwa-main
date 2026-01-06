@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      console.error("[IndexNow API] No URLs provided")
       return NextResponse.json(
         { error: "URLs array is required and must not be empty" },
         { status: 400 }
@@ -21,20 +22,27 @@ export async function POST(request: NextRequest) {
     }
 
     if (!INDEXNOW_KEY || !SITE_URL) {
-      console.error("Missing configuration: INDEXNOW_KEY or NEXT_PUBLIC_SITE_URL")
+      console.error("[IndexNow API] Missing configuration:", {
+        hasKey: !!INDEXNOW_KEY,
+        hasUrl: !!SITE_URL,
+      })
       return NextResponse.json(
-        { error: "Server misconfiguration" },
+        { error: "Server misconfiguration: Missing INDEXNOW_KEY or NEXT_PUBLIC_SITE_URL" },
         { status: 500 }
       )
     }
 
     // The key location must be accessible at the root
     const keyLocation = `${SITE_URL}/${INDEXNOW_KEY}.txt`
+    const hostname = new URL(SITE_URL).hostname
 
-    console.log("[IndexNow] Submitting:", {
-      host: new URL(SITE_URL).hostname,
+    console.log("[IndexNow API] Submitting:", {
+      host: hostname,
+      keyLength: INDEXNOW_KEY.length,
+      keyPreview: INDEXNOW_KEY.substring(0, 8) + "...",
+      keyLocation: keyLocation,
       urlCount: urls.length,
-      urls: urls,
+      firstUrl: urls[0],
     })
 
     // Send request to IndexNow API
@@ -44,7 +52,7 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({
-        host: new URL(SITE_URL).hostname,
+        host: hostname,
         key: INDEXNOW_KEY,
         keyLocation: keyLocation,
         urlList: urls,
@@ -54,6 +62,12 @@ export async function POST(request: NextRequest) {
     const statusCode = response.status
     const responseText = await response.text()
 
+    console.log("[IndexNow API] Response:", {
+      status: statusCode,
+      statusText: response.statusText,
+      body: responseText,
+    })
+
     if (statusCode === 200 || statusCode === 202) {
       return NextResponse.json(
         {
@@ -62,20 +76,36 @@ export async function POST(request: NextRequest) {
         },
         { status: 200 }
       )
-    } else {
-      console.error("[IndexNow] Error:", statusCode, responseText)
+    } else if (statusCode === 403) {
       return NextResponse.json(
         {
-          error: "Failed to submit to IndexNow",
+          error: "Forbidden - Invalid API key or key file not found",
+          keyLocation: keyLocation,
+          details: responseText,
+        },
+        { status: 403 }
+      )
+    } else if (statusCode === 422) {
+      return NextResponse.json(
+        {
+          error: "Unprocessable Entity - URLs may not belong to host",
+          details: responseText,
+        },
+        { status: 422 }
+      )
+    } else {
+      return NextResponse.json(
+        {
+          error: `Failed to submit to IndexNow (HTTP ${statusCode})`,
           details: responseText,
         },
         { status: statusCode }
       )
     }
   } catch (error) {
-    console.error("[IndexNow] Exception:", error)
+    console.error("[IndexNow API] Exception:", error)
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Internal Server Error", details: String(error) },
       { status: 500 }
     )
   }
