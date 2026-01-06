@@ -248,13 +248,18 @@ function CreatePostContent() {
             : await submitBlogPostToIndexNow(slug)
 
           if (indexNowResult.success) {
-            toast.success("Submitted to search engines!")
+            toast.success("✅ Submitted to search engines (Google, Bing, Yandex)!")
           } else {
-            console.warn("IndexNow warning:", indexNowResult.message)
-            toast.warning(`IndexNow warning: ${indexNowResult.message}`)
+            // Check if it's a config error vs other error
+            if (indexNowResult.message.includes("not configured") || indexNowResult.message.includes("SITE_URL")) {
+              toast.error(`⚠️ Search engine submission failed: ${indexNowResult.message}. Please configure NEXT_PUBLIC_SITE_URL in Cloudflare Pages environment variables.`)
+            } else {
+              toast.warning(`Search engine submission warning: ${indexNowResult.message}`)
+            }
           }
         } catch (err) {
           console.error("Failed to submit to IndexNow:", err)
+          toast.error("Failed to notify search engines - this won't affect your post")
           // Don't block the user flow if IndexNow fails
         }
       }
