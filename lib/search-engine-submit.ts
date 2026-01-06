@@ -95,85 +95,7 @@ async function submitToIndexNow(urls: string[]): Promise<SearchEngineSubmissionR
 }
 
 /**
- * Submit multiple URLs to Bing Webmaster Tools
- */
-async function submitToBingWebmaster(urls: string[]): Promise<SearchEngineSubmissionResult> {
-  try {
-    const response = await fetch("/api/bing-submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls }),
-    })
-
-    const data = await response.json()
-
-    // Handle rate limiting gracefully
-    if (response.status === 429) {
-      console.warn("[Bing Rate Limited]", {
-        status: response.status,
-        message: data.message,
-        retryAfter: data.retryAfter,
-      })
-      return {
-        success: true, // Still consider it successful
-        service: "Bing",
-        message: `Rate limited - ${data.retryAfter || 'please retry later'}`,
-        rateLimited: true,
-      }
-    }
-
-    // Handle missing API key gracefully
-    if (response.status === 200 && data.success && data.message && data.message.includes("skipped")) {
-      console.info("[Bing Skipped]", {
-        message: data.message,
-        note: data.note,
-      })
-      return {
-        success: true,
-        service: "Bing",
-        message: data.message,
-        skipped: true,
-      }
-    }
-
-    if (!response.ok) {
-      console.error("[Bing Submission Failed]", {
-        status: response.status,
-        error: data.error,
-        details: data.details,
-      })
-      return {
-        success: false,
-        service: "Bing",
-        error: data.error,
-      }
-    }
-
-    console.info("[Bing Submission Success]", {
-      urls,
-      message: data.message,
-    })
-
-    return {
-      success: true,
-      service: "Bing",
-      message: data.message,
-    }
-  } catch (error) {
-    console.error("[Bing Submission Error]", {
-      urls,
-      error: String(error),
-    })
-    return {
-      success: false,
-      service: "Bing",
-      error: `Bing submission failed: ${String(error)}`,
-    }
-  }
-}
-
-/**
- * Submit URLs to search engines (IndexNow is primary, Bing is optional)
+ * Submit URLs to search engines (IndexNow)
  * IndexNow alone is sufficient - it notifies Google, Bing, and Yandex
  */
 export async function submitToSearchEngines(
@@ -199,40 +121,28 @@ export async function submitToSearchEngines(
   // Submit to IndexNow (primary method - notifies Google, Bing, Yandex)
   const indexNowResult = await submitToIndexNow(urls)
   
-  // Optionally submit to Bing API if configured (backup method)
-  // The API handles the key check and skips gracefully if not configured
-  const bingResult = await submitToBingWebmaster(urls)
+  const results = [indexNowResult]
 
-  const results = [indexNowResult, bingResult].filter(r => r !== null)
-  // Count successful (actual submissions) and skipped separately
+  // Count successful (actual submissions)
   // Note: rate-limited requests are considered successful as they are queued
-  const successful = results.filter(r => r.success && !r.skipped).length
-  const skipped = results.filter(r => r.skipped).length
+  const successful = results.filter(r => r.success).length
   const failed = results.filter(r => !r.success).length
 
   const successfulServices = results
-    .filter(r => r.success && !r.skipped)
+    .filter(r => r.success)
     .map(r => r.rateLimited ? `${r.service} (queued)` : r.service)
     .join(", ")
-
-  const skippedServices = results.filter(r => r.skipped).map(r => r.service).join(", ")
 
   let message = "Failed to submit to search engines"
   if (successful > 0) {
     message = `Successfully submitted to ${successfulServices}`
-    if (skipped > 0) {
-      message += ` (${skippedServices} skipped)`
-    }
-  } else if (skipped > 0) {
-    message = `Search engine submission skipped (${skippedServices})`
   }
 
   const summary = {
     type,
     urls,
     totalServices: results.length,
-    successful, // Only counts actual submissions
-    skipped,
+    successful,
     failed,
     results: results,
     message,
