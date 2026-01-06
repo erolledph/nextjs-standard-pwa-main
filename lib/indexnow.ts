@@ -1,75 +1,72 @@
 'use client'
 
-// Retry with exponential backoff for 429 rate limit errors
-async function submitWithRetry(
-  urls: string[],
-  maxRetries: number = 3,
-  baseDelayMs: number = 1000
+// Client-side request deduplication to prevent duplicate submissions
+const pendingRequests = new Map<string, Promise<{ success: boolean; message: string }>>()
+
+async function submitWithoutRetry(
+  urls: string[]
 ): Promise<{ success: boolean; message: string }> {
   const timestamp = new Date().toISOString()
   
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`[${timestamp}] [IndexNow] Attempt ${attempt + 1}/${maxRetries + 1}: Submitting ${urls.length} URL(s)`, urls)
-      
-      const response = await fetch('/api/indexnow', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls }),
-      })
-      
-      const data = await response.json()
-      
-      // Success
-      if (response.ok) {
-        console.log(`[${timestamp}] [IndexNow] ✅ Submission successful:`, data)
-        return { success: true, message: data.message }
-      }
-      
-      // 429 Rate Limit - retry with exponential backoff
-      if (response.status === 429) {
-        if (attempt < maxRetries) {
-          const delayMs = baseDelayMs * Math.pow(2, attempt) + Math.random() * 1000 // exponential backoff + jitter
-          console.warn(`[${timestamp}] [IndexNow] ⚠️ Rate limited (429). Retrying in ${delayMs}ms...`, {
-            attempt,
-            maxRetries,
-            delayMs
-          })
-          
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, delayMs))
-          continue // Try again
-        } else {
-          console.error(`[${timestamp}] [IndexNow] ❌ Rate limit exceeded after ${maxRetries + 1} attempts`)
-          return { 
-            success: false, 
-            message: 'IndexNow rate limit exceeded. Please try again later. Your post was saved successfully.' 
-          }
-        }
-      }
-      
-      // Other errors
-      console.error(`[${timestamp}] [IndexNow] ❌ Submission failed:`, {
-        status: response.status,
-        error: data.error,
-        details: data.details
-      })
-      return { success: false, message: data.error || 'Failed' }
-    } catch (error) {
-      console.error(`[${timestamp}] [IndexNow] 💥 Error on attempt ${attempt + 1}:`, error)
-      if (attempt === maxRetries) {
-        return { success: false, message: 'Error submitting to IndexNow' }
+  try {
+    console.log(`[${timestamp}] [IndexNow] Submitting ${urls.length} URL(s) to IndexNow`, urls)
+    
+    const response = await fetch('/api/indexnow', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls }),
+    })
+    
+    const data = await response.json()
+    
+    // Success
+    if (response.ok) {
+      console.log(`[${timestamp}] [IndexNow] ✅ Submission successful:`, data)
+      return { success: true, message: data.message }
+    }
+    
+    // 429 Rate Limit - don't retry on client, let server handle it
+    if (response.status === 429) {
+      console.error(`[${timestamp}] [IndexNow] ❌ Rate limit exceeded (429)`)
+      return { 
+        success: false, 
+        message: 'IndexNow rate limit exceeded. Please try again later. Your post was saved successfully.' 
       }
     }
+    
+    // Other errors
+    console.error(`[${timestamp}] [IndexNow] ❌ Submission failed:`, {
+      status: response.status,
+      error: data.error,
+      details: data.details
+    })
+    return { success: false, message: data.error || 'Failed' }
+  } catch (error) {
+    console.error(`[${timestamp}] [IndexNow] 💥 Error:`, error)
+    return { success: false, message: 'Error submitting to IndexNow' }
   }
-  
-  return { success: false, message: 'Failed to submit after all retry attempts' }
 }
 
 export async function submitToIndexNow(
   urls: string[]
 ): Promise<{ success: boolean; message: string }> {
-  return submitWithRetry(urls, 2, 500) // Max 2 retries with 500ms base delay
+  // Create a deduplication key based on sorted URLs
+  const dedupeKey = JSON.stringify(urls.sort())
+  
+  // Return existing pending request if one is in flight
+  if (pendingRequests.has(dedupeKey)) {
+    console.log('[IndexNow] Returning existing pending request for:', dedupeKey)
+    return pendingRequests.get(dedupeKey)!
+  }
+  
+  // Create new request and store it
+  const request = submitWithoutRetry(urls).finally(() => {
+    // Clean up pending request after completion
+    pendingRequests.delete(dedupeKey)
+  })
+  
+  pendingRequests.set(dedupeKey, request)
+  return request
 }
 
 /**
