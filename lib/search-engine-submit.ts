@@ -115,7 +115,7 @@ async function submitToBingWebmaster(urls: string[]) {
 
     // Handle missing API key gracefully
     if (response.status === 200 && data.success && data.message && data.message.includes("skipped")) {
-      console.warn("[Bing Skipped]", {
+      console.info("[Bing Skipped]", {
         message: data.message,
         note: data.note,
       })
@@ -191,30 +191,38 @@ export async function submitToSearchEngines(
   const indexNowResult = await submitToIndexNow(urls)
   
   // Optionally submit to Bing API if configured (backup method)
-  let bingResult = null
-  const hasBingKey = process.env.BING_WEBMASTER_API_KEY
-  if (hasBingKey) {
-    bingResult = await submitToBingWebmaster(urls)
-  } else {
-    console.info("[Bing Submit] Bing API key not configured - IndexNow is sufficient")
-    bingResult = null
-  }
+  // The API handles the key check and skips gracefully if not configured
+  const bingResult = await submitToBingWebmaster(urls)
 
   const results = [indexNowResult, bingResult].filter(r => r !== null)
-  const successful = results.filter(r => r.success).length
+  // Count successful (actual submissions) and skipped separately
+  // Note: rate-limited requests are considered successful as they are queued
+  const successful = results.filter(r => r.success && !r.skipped).length
+  const skipped = results.filter(r => r.skipped).length
   const failed = results.filter(r => !r.success).length
+
+  const successfulServices = results.filter(r => r.success && !r.skipped).map(r => r.service).join(", ")
+  const skippedServices = results.filter(r => r.skipped).map(r => r.service).join(", ")
+
+  let message = "Failed to submit to search engines"
+  if (successful > 0) {
+    message = `Successfully submitted to ${successfulServices}`
+    if (skipped > 0) {
+      message += ` (${skippedServices} skipped)`
+    }
+  } else if (skipped > 0) {
+    message = `Search engine submission skipped (${skippedServices})`
+  }
 
   const summary = {
     type,
     urls,
     totalServices: results.length,
-    successful,
+    successful, // Only counts actual submissions
+    skipped,
     failed,
     results: results,
-    message:
-      successful > 0
-        ? `Successfully submitted to ${results.filter(r => r.success).map(r => r.service).join(", ")}`
-        : "Failed to submit to search engines",
+    message,
   }
 
   console.info("[Search Engine Submission] Complete", summary)
