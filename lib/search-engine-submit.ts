@@ -210,7 +210,11 @@ export async function submitToSearchEngines(
   const skipped = results.filter(r => r.skipped).length
   const failed = results.filter(r => !r.success).length
 
-  const successfulServices = results.filter(r => r.success && !r.skipped).map(r => r.service).join(", ")
+  const successfulServices = results
+    .filter(r => r.success && !r.skipped)
+    .map(r => r.rateLimited ? `${r.service} (queued)` : r.service)
+    .join(", ")
+
   const skippedServices = results.filter(r => r.skipped).map(r => r.service).join(", ")
 
   let message = "Failed to submit to search engines"

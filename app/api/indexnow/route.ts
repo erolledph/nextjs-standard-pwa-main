@@ -5,10 +5,11 @@ export const runtime = "edge"
 const INDEXNOW_API_URL = "https://api.indexnow.org/indexnow"
 const INDEXNOW_KEY = process.env.NEXT_PUBLIC_INDEXNOW_KEY || ""
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ""
-const KEY_LOCATION = `${SITE_URL}/${INDEXNOW_KEY}.txt`
+// Ensure no double slashes if SITE_URL has a trailing slash
+const KEY_LOCATION = `${SITE_URL.replace(/\/$/, "")}/${INDEXNOW_KEY}.txt`
 
 // Extract host from SITE_URL (e.g., "https://worldfoodrecipes.sbs" → "worldfoodrecipes.sbs")
-const HOST = SITE_URL.replace(/^https?:\/\//, "")
+const HOST = SITE_URL.replace(/^https?:\/\//, "").replace(/\/$/, "")
 
 export async function POST(request: NextRequest) {
   try {
