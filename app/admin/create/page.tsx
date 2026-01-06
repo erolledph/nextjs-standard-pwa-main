@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Bold, Italic, Link2, List, ListOrdered, Heading1, Heading2, Code, Quote, Eye, EyeOff, Image, Plus, Trash2 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { toast } from "sonner"
-import { submitBlogPostToIndexNow, submitRecipePostToIndexNow } from "@/lib/search-engine-submit"
+import { submitBlogPostToIndexNow, submitRecipePostToIndexNow } from "@/lib/indexnow"
 
 function CreatePostContent() {
   const router = useRouter()
