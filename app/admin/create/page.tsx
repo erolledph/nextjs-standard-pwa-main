@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Bold, Italic, Link2, List, ListOrdered, Heading1, Heading2, Code, Quote, Eye, EyeOff, Image, Plus, Trash2 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { toast } from "sonner"
-import { submitBlogPostToSearchEngines, submitRecipePostToSearchEngines } from "@/lib/search-engine-submit"
+import { submitBlogPostToIndexNow, submitRecipePostToIndexNow } from "@/lib/indexnow"
 
 function CreatePostContent() {
   const router = useRouter()
@@ -240,25 +240,26 @@ function CreatePostContent() {
 
       // Submit to search engines
       if (slug) {
-        const loadingToast = toast.loading(`Submitting ${contentType === "recipes" ? "recipe" : "post"} to search engines...`)
-        
-        const submitResult = contentType === "recipes" 
-          ? await submitRecipePostToSearchEngines(slug)
-          : await submitBlogPostToSearchEngines(slug)
+        // Post saved successfully! Now submit to IndexNow.
+        try {
+          console.log("Notifying search engines via IndexNow...")
+          const indexNowResult = contentType === "recipes"
+            ? await submitRecipePostToIndexNow(slug)
+            : await submitBlogPostToIndexNow(slug)
 
-        toast.dismiss(loadingToast)
-
-        if (submitResult.successful && submitResult.successful > 0) {
-          toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created and submitted to search engines!`)
-        } else {
-          toast.warning(
-            `${contentType === "recipes" ? "Recipe" : "Post"} created but search engine submission failed: ${submitResult.message}`
-          )
+          if (indexNowResult.success) {
+            toast.success("Submitted to search engines!")
+          } else {
+            console.warn("IndexNow warning:", indexNowResult.message)
+            toast.warning(`IndexNow warning: ${indexNowResult.message}`)
+          }
+        } catch (err) {
+          console.error("Failed to submit to IndexNow:", err)
+          // Don't block the user flow if IndexNow fails
         }
-      } else {
-        toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created successfully!`)
       }
 
+      toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created successfully!`)
       router.push(`/admin/dashboard?tab=${contentType === "recipes" ? "recipes" : "content"}`)
     } catch (err) {
       const message = err instanceof Error ? err.message : `Failed to create ${contentType === "recipes" ? "recipe" : "post"}`
