@@ -191,14 +191,8 @@ export async function submitToSearchEngines(
   const indexNowResult = await submitToIndexNow(urls)
   
   // Optionally submit to Bing API if configured (backup method)
-  let bingResult = null
-  const hasBingKey = process.env.BING_WEBMASTER_API_KEY
-  if (hasBingKey) {
-    bingResult = await submitToBingWebmaster(urls)
-  } else {
-    console.info("[Bing Submit] Bing API key not configured - IndexNow is sufficient")
-    bingResult = null
-  }
+  // The API handles the key check and skips gracefully if not configured
+  const bingResult = await submitToBingWebmaster(urls)
 
   const results = [indexNowResult, bingResult].filter(r => r !== null)
   const successful = results.filter(r => r.success).length
