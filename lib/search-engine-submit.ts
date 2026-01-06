@@ -1,223 +1,56 @@
 /**
- * Helper functions to submit URLs to search engines
- * Used for automatic indexing of new content
+ * Submit URLs to IndexNow to notify search engines of new/updated content.
  */
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ""
-
-/**
- * Submit blog post slug to IndexNow and Bing
- */
-export async function submitBlogPostToSearchEngines(slug: string) {
-  const url = `${SITE_URL}/blog/${slug}`
-  return submitToSearchEngines([url], "blog")
-}
-
-/**
- * Submit recipe post slug to IndexNow and Bing
- */
-export async function submitRecipePostToSearchEngines(slug: string) {
-  const url = `${SITE_URL}/recipes/${slug}`
-  return submitToSearchEngines([url], "recipe")
-}
-
-/**
- * Submit multiple URLs to IndexNow
- */
-async function submitToIndexNow(urls: string[]) {
+export async function submitToIndexNow(urls: string[]): Promise<{
+  success: boolean
+  message: string
+}> {
   try {
     const response = await fetch("/api/indexnow", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ urls }),
     })
 
     const data = await response.json()
 
-    // Handle rate limiting gracefully (429 is not a failure, just a retry-later)
-    if (response.status === 429) {
-      console.warn("[IndexNow Rate Limited]", {
-        status: response.status,
-        message: data.message,
-        retryAfter: data.retryAfter,
-      })
-      return {
-        success: true, // Still consider it successful - IndexNow received the request
-        service: "IndexNow",
-        message: `Rate limited - ${data.retryAfter || 'please retry later'}`,
-        rateLimited: true,
-      }
-    }
-
     if (!response.ok) {
-      console.error("[IndexNow Submission Failed]", {
-        status: response.status,
-        error: data.error,
-        details: data.details,
-      })
+      console.error("IndexNow submission failed:", data)
       return {
         success: false,
-        service: "IndexNow",
-        error: data.error,
+        message: data.error || "Failed to submit to IndexNow",
       }
     }
-
-    console.info("[IndexNow Submission Success]", {
-      urls,
-      message: data.message,
-    })
 
     return {
       success: true,
-      service: "IndexNow",
       message: data.message,
     }
   } catch (error) {
-    console.error("[IndexNow Submission Error]", {
-      urls,
-      error: String(error),
-    })
+    console.error("Error submitting to IndexNow:", error)
     return {
       success: false,
-      service: "IndexNow",
-      error: `IndexNow submission failed: ${String(error)}`,
+      message: "Network error submitting to IndexNow",
     }
   }
 }
 
 /**
- * Submit multiple URLs to Bing Webmaster Tools
+ * Helper to submit a single blog post by slug
  */
-async function submitToBingWebmaster(urls: string[]) {
-  try {
-    const response = await fetch("/api/bing-submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls }),
-    })
-
-    const data = await response.json()
-
-    // Handle rate limiting gracefully
-    if (response.status === 429) {
-      console.warn("[Bing Rate Limited]", {
-        status: response.status,
-        message: data.message,
-        retryAfter: data.retryAfter,
-      })
-      return {
-        success: true, // Still consider it successful
-        service: "Bing",
-        message: `Rate limited - ${data.retryAfter || 'please retry later'}`,
-        rateLimited: true,
-      }
-    }
-
-    // Handle missing API key gracefully
-    if (response.status === 200 && data.success && data.message && data.message.includes("skipped")) {
-      console.warn("[Bing Skipped]", {
-        message: data.message,
-        note: data.note,
-      })
-      return {
-        success: true,
-        service: "Bing",
-        message: data.message,
-        skipped: true,
-      }
-    }
-
-    if (!response.ok) {
-      console.error("[Bing Submission Failed]", {
-        status: response.status,
-        error: data.error,
-        details: data.details,
-      })
-      return {
-        success: false,
-        service: "Bing",
-        error: data.error,
-      }
-    }
-
-    console.info("[Bing Submission Success]", {
-      urls,
-      message: data.message,
-    })
-
-    return {
-      success: true,
-      service: "Bing",
-      message: data.message,
-    }
-  } catch (error) {
-    console.error("[Bing Submission Error]", {
-      urls,
-      error: String(error),
-    })
-    return {
-      success: false,
-      service: "Bing",
-      error: `Bing submission failed: ${String(error)}`,
-    }
-  }
+export async function submitBlogPostToIndexNow(slug: string) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ""
+  const url = `${siteUrl}/blog/${slug}`
+  return submitToIndexNow([url])
 }
 
 /**
- * Submit URLs to search engines (IndexNow is primary, Bing is optional)
- * IndexNow alone is sufficient - it notifies Google, Bing, and Yandex
+ * Helper to submit a single recipe post by slug
  */
-export async function submitToSearchEngines(
-  urls: string[],
-  type: "blog" | "recipe" | "ai-recipe"
-) {
-  if (!urls || urls.length === 0) {
-    console.warn("[Search Engine Submission] No URLs provided")
-    return {
-      success: false,
-      message: "No URLs provided for submission",
-      successful: 0,
-      failed: 0,
-    }
-  }
-
-  console.info("[Search Engine Submission] Starting", {
-    type,
-    urlCount: urls.length,
-    urls,
-  })
-
-  // Submit to IndexNow (primary method - notifies Google, Bing, Yandex)
-  const indexNowResult = await submitToIndexNow(urls)
-  
-  // Optionally submit to Bing API if configured (backup method)
-  let bingResult = null
-  const hasBingKey = process.env.BING_WEBMASTER_API_KEY
-  if (hasBingKey) {
-    bingResult = await submitToBingWebmaster(urls)
-  } else {
-    console.info("[Bing Submit] Bing API key not configured - IndexNow is sufficient")
-    bingResult = null
-  }
-
-  const results = [indexNowResult, bingResult].filter(r => r !== null)
-  const successful = results.filter(r => r.success).length
-  const failed = results.filter(r => !r.success).length
-
-  const summary = {
-    type,
-    urls,
-    totalServices: results.length,
-    successful,
-    failed,
-    results: results,
-    message:
-      successful > 0
-        ? `Successfully submitted to ${results.filter(r => r.success).map(r => r.service).join(", ")}`
-        : "Failed to submit to search engines",
-  }
-
-  console.info("[Search Engine Submission] Complete", summary)
-
-  return summary
+export async function submitRecipePostToIndexNow(slug: string) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ""
+  const url = `${siteUrl}/recipes/${slug}`
+  return submitToIndexNow([url])
 }

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Bold, Italic, Link2, List, ListOrdered, Heading1, Heading2, Code, Quote, Eye, EyeOff, Image, Plus, Trash2 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { toast } from "sonner"
-import { submitBlogPostToSearchEngines, submitRecipePostToSearchEngines } from "@/lib/search-engine-submit"
+import { submitBlogPostToIndexNow, submitRecipePostToIndexNow } from "@/lib/search-engine-submit"
 
 function CreatePostContent() {
   const router = useRouter()
@@ -238,20 +238,26 @@ function CreatePostContent() {
       const responseData = await response.json()
       const slug = responseData.slug
 
-      // Submit to search engines (IndexNow + Bing)
+      // Submit to IndexNow
       if (slug) {
-        toast.loading(`Submitting ${contentType === "recipes" ? "recipe" : "post"} to search engines...`)
+        const loadingToast = toast.loading(`Notifying search engines via IndexNow...`)
         
-        const submitResult = contentType === "recipes" 
-          ? await submitRecipePostToSearchEngines(slug)
-          : await submitBlogPostToSearchEngines(slug)
+        try {
+          const indexNowResult = contentType === "recipes"
+            ? await submitRecipePostToIndexNow(slug)
+            : await submitBlogPostToIndexNow(slug)
 
-        if (submitResult.successful && submitResult.successful > 0) {
-          toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created and submitted to search engines!`)
-        } else {
-          toast.warning(
-            `${contentType === "recipes" ? "Recipe" : "Post"} created but search engine submission failed. You can resubmit later.`
-          )
+          toast.dismiss(loadingToast)
+
+          if (indexNowResult.success) {
+            toast.success("Submitted to search engines!")
+          } else {
+            console.warn("IndexNow warning:", indexNowResult.message)
+            toast.warning(`IndexNow: ${indexNowResult.message}`)
+          }
+        } catch (err) {
+          toast.dismiss(loadingToast)
+          console.error("Failed to submit to IndexNow:", err)
         }
       } else {
         toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created successfully!`)
