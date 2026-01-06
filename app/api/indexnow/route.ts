@@ -5,27 +5,47 @@ export const runtime = 'edge'
 const INDEXNOW_KEY = '37ced97b3f05467fa60919e05ed8b79c'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ''
 
+// Helper for logging in edge runtime
+function logIndexNow(level: 'info' | 'error', message: string, data?: any) {
+  const timestamp = new Date().toISOString()
+  const logMessage = `[${timestamp}] [IndexNow] [${level.toUpperCase()}] ${message}`
+  
+  if (data) {
+    if (level === 'error') {
+      console.error(logMessage, data)
+    } else {
+      console.log(logMessage, data)
+    }
+  } else {
+    if (level === 'error') {
+      console.error(logMessage)
+    } else {
+      console.log(logMessage)
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    console.log('[IndexNow] API Route Called')
-    console.log('[IndexNow] SITE_URL from env:', SITE_URL)
-    console.log('[IndexNow] INDEXNOW_KEY:', INDEXNOW_KEY.substring(0, 8) + '...')
+    logIndexNow('info', 'API Route Called')
+    logIndexNow('info', `SITE_URL from env: ${SITE_URL || 'NOT SET'}`)
+    logIndexNow('info', `INDEXNOW_KEY: ${INDEXNOW_KEY.substring(0, 8)}...`)
     
     const body = await request.json()
     const { urls } = body
 
     if (!urls || !Array.isArray(urls) || urls.length === 0) {
-      console.error('[IndexNow] No URLs provided')
+      logIndexNow('error', 'No URLs provided')
       return NextResponse.json(
-        { error: 'URLs array required' },
+        { error: 'URLs array required', success: false },
         { status: 400 }
       )
     }
 
     if (!SITE_URL) {
-      console.error('[IndexNow] CRITICAL: SITE_URL not configured in environment')
+      logIndexNow('error', 'CRITICAL: SITE_URL not configured in environment')
       return NextResponse.json(
-        { error: 'Server configuration error: SITE_URL not set' },
+        { error: 'Server configuration error: NEXT_PUBLIC_SITE_URL not set in Cloudflare Pages environment variables', success: false },
         { status: 500 }
       )
     }
@@ -33,11 +53,12 @@ export async function POST(request: NextRequest) {
     const hostname = new URL(SITE_URL).hostname
     const keyLocation = `${SITE_URL}/${INDEXNOW_KEY}.txt`
 
-    console.log('========== INDEXNOW API REQUEST ==========')
-    console.log('Host:', hostname)
-    console.log('Key Location:', keyLocation)
-    console.log('URLs to submit:', urls)
-    console.log('=========================================')
+    logIndexNow('info', 'IndexNow API Request', {
+      host: hostname,
+      keyLocation: keyLocation,
+      urlsCount: urls.length,
+      urls: urls
+    })
 
     const response = await fetch('https://api.indexnow.org/indexnow', {
       method: 'POST',
@@ -53,46 +74,59 @@ export async function POST(request: NextRequest) {
     const statusCode = response.status
     const responseText = await response.text()
 
-    console.log('========== INDEXNOW API RESPONSE ==========')
-    console.log('Status Code:', statusCode)
-    console.log('Response Body:', responseText)
-    console.log('=========================================')
+    logIndexNow('info', `IndexNow API Response - Status: ${statusCode}`, { body: responseText })
 
     if (statusCode === 200 || statusCode === 202) {
-      console.log('[IndexNow] ✅ SUCCESS - URLs submitted to IndexNow')
+      logIndexNow('info', `✅ SUCCESS - Submitted ${urls.length} URL(s) to IndexNow`)
       return NextResponse.json(
         {
           success: true,
-          message: `Submitted ${urls.length} URL(s)`,
+          message: `Submitted ${urls.length} URL(s) to IndexNow`,
         },
         { status: 200 }
       )
     }
 
     // Detailed error logging for non-success responses
-    console.error('[IndexNow] ❌ FAILED - Status:', statusCode, 'Response:', responseText)
+    logIndexNow('error', `Failed with status ${statusCode}`, {
+      responseText,
+      host: hostname,
+      urls: urls
+    })
     
     if (statusCode === 403) {
-      console.error('[IndexNow] 403 Forbidden - Check if:')
-      console.error('  - Key file exists: ' + keyLocation)
-      console.error('  - Key matches: ' + INDEXNOW_KEY)
-      console.error('  - File is accessible publicly')
+      logIndexNow('error', '403 Forbidden - Verification file missing or key incorrect', {
+        expectedKeyLocation: keyLocation,
+        expectedKey: INDEXNOW_KEY.substring(0, 8) + '...'
+      })
     }
     
     if (statusCode === 422) {
-      console.error('[IndexNow] 422 Unprocessable - URLs may not match host:')
-      console.error('  - Host expected: ' + hostname)
-      console.error('  - URLs provided:', urls)
+      logIndexNow('error', '422 Unprocessable - URL host mismatch', {
+        expectedHost: hostname,
+        providedUrls: urls
+      })
     }
 
     return NextResponse.json(
-      { error: `Failed (HTTP ${statusCode})`, details: responseText },
+      { 
+        error: `Failed (HTTP ${statusCode})`, 
+        details: responseText,
+        success: false
+      },
       { status: statusCode }
     )
   } catch (error) {
-    console.error('[IndexNow] Exception:', error)
+    logIndexNow('error', 'Exception in IndexNow API', {
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined
+    })
     return NextResponse.json(
-      { error: 'Server error', details: String(error) },
+      { 
+        error: 'Server error', 
+        details: error instanceof Error ? error.message : String(error),
+        success: false
+      },
       { status: 500 }
     )
   }
