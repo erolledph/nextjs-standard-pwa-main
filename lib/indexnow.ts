@@ -1,36 +1,75 @@
 'use client'
 
-export async function submitToIndexNow(
-  urls: string[]
+// Retry with exponential backoff for 429 rate limit errors
+async function submitWithRetry(
+  urls: string[],
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000
 ): Promise<{ success: boolean; message: string }> {
   const timestamp = new Date().toISOString()
   
-  try {
-    console.log(`[${timestamp}] [IndexNow] Submitting ${urls.length} URL(s)`, urls)
-    
-    const response = await fetch('/api/indexnow', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls }),
-    })
-    
-    const data = await response.json()
-    
-    if (!response.ok) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[${timestamp}] [IndexNow] Attempt ${attempt + 1}/${maxRetries + 1}: Submitting ${urls.length} URL(s)`, urls)
+      
+      const response = await fetch('/api/indexnow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls }),
+      })
+      
+      const data = await response.json()
+      
+      // Success
+      if (response.ok) {
+        console.log(`[${timestamp}] [IndexNow] ✅ Submission successful:`, data)
+        return { success: true, message: data.message }
+      }
+      
+      // 429 Rate Limit - retry with exponential backoff
+      if (response.status === 429) {
+        if (attempt < maxRetries) {
+          const delayMs = baseDelayMs * Math.pow(2, attempt) + Math.random() * 1000 // exponential backoff + jitter
+          console.warn(`[${timestamp}] [IndexNow] ⚠️ Rate limited (429). Retrying in ${delayMs}ms...`, {
+            attempt,
+            maxRetries,
+            delayMs
+          })
+          
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, delayMs))
+          continue // Try again
+        } else {
+          console.error(`[${timestamp}] [IndexNow] ❌ Rate limit exceeded after ${maxRetries + 1} attempts`)
+          return { 
+            success: false, 
+            message: 'IndexNow rate limit exceeded. Please try again later. Your post was saved successfully.' 
+          }
+        }
+      }
+      
+      // Other errors
       console.error(`[${timestamp}] [IndexNow] ❌ Submission failed:`, {
         status: response.status,
         error: data.error,
         details: data.details
       })
       return { success: false, message: data.error || 'Failed' }
+    } catch (error) {
+      console.error(`[${timestamp}] [IndexNow] 💥 Error on attempt ${attempt + 1}:`, error)
+      if (attempt === maxRetries) {
+        return { success: false, message: 'Error submitting to IndexNow' }
+      }
     }
-    
-    console.log(`[${timestamp}] [IndexNow] ✅ Submission successful:`, data)
-    return { success: true, message: data.message }
-  } catch (error) {
-    console.error(`[${timestamp}] [IndexNow] 💥 Error:`, error)
-    return { success: false, message: 'Error submitting to IndexNow' }
   }
+  
+  return { success: false, message: 'Failed to submit after all retry attempts' }
+}
+
+export async function submitToIndexNow(
+  urls: string[]
+): Promise<{ success: boolean; message: string }> {
+  return submitWithRetry(urls, 2, 500) // Max 2 retries with 500ms base delay
 }
 
 /**
