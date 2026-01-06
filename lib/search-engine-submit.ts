@@ -5,6 +5,15 @@
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ""
 
+interface SearchEngineSubmissionResult {
+  success: boolean
+  service: string
+  message?: string
+  error?: string
+  skipped?: boolean
+  rateLimited?: boolean
+}
+
 /**
  * Submit blog post slug to IndexNow and Bing
  */
@@ -24,7 +33,7 @@ export async function submitRecipePostToSearchEngines(slug: string) {
 /**
  * Submit multiple URLs to IndexNow
  */
-async function submitToIndexNow(urls: string[]) {
+async function submitToIndexNow(urls: string[]): Promise<SearchEngineSubmissionResult> {
   try {
     const response = await fetch("/api/indexnow", {
       method: "POST",
@@ -88,7 +97,7 @@ async function submitToIndexNow(urls: string[]) {
 /**
  * Submit multiple URLs to Bing Webmaster Tools
  */
-async function submitToBingWebmaster(urls: string[]) {
+async function submitToBingWebmaster(urls: string[]): Promise<SearchEngineSubmissionResult> {
   try {
     const response = await fetch("/api/bing-submit", {
       method: "POST",
