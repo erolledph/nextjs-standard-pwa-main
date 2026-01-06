@@ -241,6 +241,7 @@ function CreatePostContent() {
       // Submit to search engines
       if (slug) {
         // Post saved successfully! Now submit to IndexNow.
+        toast.loading("📡 Submitting to search engines...")
         try {
           console.log("Notifying search engines via IndexNow...")
           const indexNowResult = contentType === "recipes"
@@ -252,14 +253,14 @@ function CreatePostContent() {
           } else {
             // Check if it's a config error vs other error
             if (indexNowResult.message.includes("not configured") || indexNowResult.message.includes("SITE_URL")) {
-              toast.error(`⚠️ Search engine submission failed: ${indexNowResult.message}. Please configure NEXT_PUBLIC_SITE_URL in Cloudflare Pages environment variables.`)
+              toast.error(`⚠️ Config Error: ${indexNowResult.message}\n\nFix: Add NEXT_PUBLIC_SITE_URL to Cloudflare Pages environment variables`)
             } else {
               toast.warning(`Search engine submission warning: ${indexNowResult.message}`)
             }
           }
         } catch (err) {
           console.error("Failed to submit to IndexNow:", err)
-          toast.error("Failed to notify search engines - this won't affect your post")
+          toast.error("Failed to notify search engines - but your post was saved")
           // Don't block the user flow if IndexNow fails
         }
       }
