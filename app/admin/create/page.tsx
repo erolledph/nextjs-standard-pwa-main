@@ -238,19 +238,21 @@ function CreatePostContent() {
       const responseData = await response.json()
       const slug = responseData.slug
 
-      // Submit to search engines (IndexNow + Bing)
+      // Submit to search engines
       if (slug) {
-        toast.loading(`Submitting ${contentType === "recipes" ? "recipe" : "post"} to search engines...`)
+        const loadingToast = toast.loading(`Submitting ${contentType === "recipes" ? "recipe" : "post"} to search engines...`)
         
         const submitResult = contentType === "recipes" 
           ? await submitRecipePostToSearchEngines(slug)
           : await submitBlogPostToSearchEngines(slug)
 
+        toast.dismiss(loadingToast)
+
         if (submitResult.successful && submitResult.successful > 0) {
           toast.success(`${contentType === "recipes" ? "Recipe" : "Post"} created and submitted to search engines!`)
         } else {
           toast.warning(
-            `${contentType === "recipes" ? "Recipe" : "Post"} created but search engine submission failed. You can resubmit later.`
+            `${contentType === "recipes" ? "Recipe" : "Post"} created but search engine submission failed: ${submitResult.message}`
           )
         }
       } else {
