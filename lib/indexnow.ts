@@ -3,10 +3,58 @@
 // Client-side request deduplication to prevent duplicate submissions
 const pendingRequests = new Map<string, Promise<{ success: boolean; message: string }>>()
 
+// Track failed submissions to implement exponential backoff
+const failedSubmissions = new Map<string, { count: number; nextRetryTime: number }>()
+
+// Key for tracking rate limit state
+const RATE_LIMIT_KEY = '__indexnow_rate_limited'
+const RATE_LIMIT_RESET_TIME_KEY = '__indexnow_rate_limit_reset'
+
+/**
+ * Check if we're currently rate limited
+ */
+function isClientRateLimited(): boolean {
+  if (typeof window === 'undefined') return false
+  
+  const rateLimited = sessionStorage.getItem(RATE_LIMIT_KEY)
+  if (!rateLimited) return false
+  
+  const resetTime = parseInt(sessionStorage.getItem(RATE_LIMIT_RESET_TIME_KEY) || '0', 10)
+  const now = Date.now()
+  
+  if (now >= resetTime) {
+    // Reset has expired
+    sessionStorage.removeItem(RATE_LIMIT_KEY)
+    sessionStorage.removeItem(RATE_LIMIT_RESET_TIME_KEY)
+    return false
+  }
+  
+  return true
+}
+
+/**
+ * Mark us as rate limited
+ */
+function setClientRateLimited(retryAfterSeconds: number): void {
+  if (typeof window === 'undefined') return
+  
+  sessionStorage.setItem(RATE_LIMIT_KEY, 'true')
+  sessionStorage.setItem(RATE_LIMIT_RESET_TIME_KEY, String(Date.now() + retryAfterSeconds * 1000))
+}
+
 async function submitWithoutRetry(
   urls: string[]
 ): Promise<{ success: boolean; message: string }> {
   const timestamp = new Date().toISOString()
+  
+  // Check client-side rate limit
+  if (isClientRateLimited()) {
+    console.warn(`[${timestamp}] [IndexNow] ⏸ Client rate limited - skipping submission`)
+    return { 
+      success: false, 
+      message: 'IndexNow rate limit exceeded. Please try again later. Your post was saved successfully.' 
+    }
+  }
   
   try {
     console.log(`[${timestamp}] [IndexNow] Submitting ${urls.length} URL(s) to IndexNow`, urls)
@@ -25,9 +73,13 @@ async function submitWithoutRetry(
       return { success: true, message: data.message }
     }
     
-    // 429 Rate Limit - don't retry on client, let server handle it
+    // 429 Rate Limit - set client-side rate limiting
     if (response.status === 429) {
-      console.error(`[${timestamp}] [IndexNow] ❌ Rate limit exceeded (429)`)
+      const retryAfter = response.headers.get('Retry-After')
+      const retryAfterSeconds = retryAfter ? parseInt(retryAfter, 10) : 300
+      setClientRateLimited(retryAfterSeconds)
+      
+      console.error(`[${timestamp}] [IndexNow] ❌ Rate limit exceeded (429) - rate limited for ${retryAfterSeconds}s`)
       return { 
         success: false, 
         message: 'IndexNow rate limit exceeded. Please try again later. Your post was saved successfully.' 

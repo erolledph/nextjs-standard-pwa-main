@@ -5,6 +5,34 @@ export const runtime = 'edge'
 const INDEXNOW_KEY = '37ced97b3f05467fa60919e05ed8b79c'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || ''
 
+// Simple per-instance rate limiting for edge runtime
+// Edge instances are ephemeral, so this is a "soft" limit to catch duplicate submissions
+// The real rate limiting happens on the CLIENT side with deduplication
+const requestTimestamps: number[] = []
+const MAX_REQUESTS_PER_15_MIN = 50 // Conservative: IndexNow allows ~100 per 15 min
+const WINDOW_MS = 15 * 60 * 1000 // 15 minutes
+
+function isRateLimited(): boolean {
+  const now = Date.now()
+  const windowStart = now - WINDOW_MS
+  
+  // Remove old timestamps outside the window
+  while (requestTimestamps.length > 0 && requestTimestamps[0] < windowStart) {
+    requestTimestamps.shift()
+  }
+  
+  // Check if we've exceeded the limit
+  if (requestTimestamps.length >= MAX_REQUESTS_PER_HOUR) {
+    return true
+  }
+  
+  return false
+}
+
+function recordRequest(): void {
+  requestTimestamps.push(Date.now())
+}
+
 // Helper for logging in edge runtime
 function logIndexNow(level: 'info' | 'error', message: string, data?: any) {
   const timestamp = new Date().toISOString()
@@ -30,6 +58,23 @@ export async function POST(request: NextRequest) {
     logIndexNow('info', 'API Route Called')
     logIndexNow('info', `SITE_URL from env: ${SITE_URL || 'NOT SET'}`)
     logIndexNow('info', `INDEXNOW_KEY: ${INDEXNOW_KEY.substring(0, 8)}...`)
+    logIndexNow('info', `Rate limit status: ${requestTimestamps.length}/${MAX_REQUESTS_PER_15_MIN} in last 15 min`)
+    
+    // Check rate limit BEFORE processing
+    if (isRateLimited()) {
+      logIndexNow('error', `Rate limit exceeded. ${requestTimestamps.length}/${MAX_REQUESTS_PER_15_MIN} requests in last 15 minutes`)
+      return NextResponse.json(
+        { 
+          error: 'IndexNow rate limit exceeded. Please try again later.', 
+          success: false,
+          retryAfter: 300
+        },
+        { 
+          status: 429,
+          headers: { 'Retry-After': '300' }
+        }
+      )
+    }
     
     const body = await request.json()
     const { urls } = body
@@ -77,7 +122,9 @@ export async function POST(request: NextRequest) {
     logIndexNow('info', `IndexNow API Response - Status: ${statusCode}`, { body: responseText })
 
     if (statusCode === 200 || statusCode === 202) {
-      logIndexNow('info', `✅ SUCCESS - Submitted ${urls.length} URL(s) to IndexNow`)
+      // Record the successful request for rate limiting
+      recordRequest()
+      logIndexNow('info', `✅ SUCCESS - Submitted ${urls.length} URL(s) to IndexNow. Requests: ${requestTimestamps.length}/${MAX_REQUESTS_PER_15_MIN}`)
       return NextResponse.json(
         {
           success: true,
