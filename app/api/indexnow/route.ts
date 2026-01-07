@@ -22,7 +22,7 @@ function isRateLimited(): boolean {
   }
   
   // Check if we've exceeded the limit
-  if (requestTimestamps.length >= MAX_REQUESTS_PER_HOUR) {
+  if (requestTimestamps.length >= MAX_REQUESTS_PER_15_MIN) {
     return true
   }
   
