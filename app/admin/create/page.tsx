@@ -256,7 +256,7 @@ function CreatePostContent() {
             // Check if it's a config error vs other error
             if (indexNowResult.message.includes("not configured") || indexNowResult.message.includes("SITE_URL")) {
               toast.error(`⚠️ Config Error: ${indexNowResult.message}\n\nFix: Add NEXT_PUBLIC_SITE_URL to Cloudflare Pages environment variables`)
-            } else if (indexNowResult.message.includes("429")) {
+            } else if (indexNowResult.message.includes("429") || indexNowResult.message.includes("rate limit")) {
               toast.error(`⚠️ Rate Limited: Too many submissions. Wait a few minutes before creating more posts.\n\n(Your post was saved successfully!)`)
             } else {
               toast.warning(`Search engine submission warning: ${indexNowResult.message}`)
