@@ -254,8 +254,10 @@ function CreatePostContent() {
           } else {
             toast.dismiss(loadingToastId)
             // Check if it's a config error vs other error
-            if (indexNowResult.message.includes("not configured") || indexNowResult.message.includes("SITE_URL")) {
-              toast.error(`⚠️ Config Error: ${indexNowResult.message}\n\nFix: Add NEXT_PUBLIC_SITE_URL to Cloudflare Pages environment variables`)
+            if (indexNowResult.message.includes("not configured") || indexNowResult.message.includes("NEXT_PUBLIC_SITE_URL")) {
+              toast.error(`⚠️ Client Config Error: ${indexNowResult.message}\n\nFix: Add NEXT_PUBLIC_SITE_URL to your environment variables.`)
+            } else if (indexNowResult.message.includes("Server configuration error")) {
+              toast.error(`🔌 Server Config Error: ${indexNowResult.message}\n\nFix: Ensure NEXT_PUBLIC_SITE_URL is set in your hosting provider's environment variables (e.g., Cloudflare Pages, Vercel).`)
             } else if (indexNowResult.message.includes("429") || indexNowResult.message.includes("rate limit")) {
               toast.error(`⚠️ Rate Limited: Too many submissions. Wait a few minutes before creating more posts.\n\n(Your post was saved successfully!)`)
             } else {
